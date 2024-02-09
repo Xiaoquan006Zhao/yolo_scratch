@@ -330,7 +330,6 @@ def get_evaluation_bboxes(
 
             train_idx += 1
 
-    model.train()
     return all_pred_boxes, all_true_boxes
 
 
@@ -403,8 +402,6 @@ def check_class_accuracy(model, loader, threshold):
     print(f"Class accuracy is: {(correct_class/(tot_class_preds+1e-16))*100:2f}%")
     print(f"No obj accuracy is: {(correct_noobj/(tot_noobj+1e-16))*100:2f}%")
     print(f"Obj accuracy is: {(correct_obj/(tot_obj+1e-16))*100:2f}%")
-    model.train()
-
 
 def get_mean_std(loader):
     # var[X] = E[X**2] - E[X]**2
@@ -513,8 +510,6 @@ def plot_couple_examples(model, loader, thresh, iou_thresh, anchors):
             )
             for idx, (box) in enumerate(boxes_scale_i):
                 bboxes[idx] += box
-
-        model.train()
 
     for i in range(batch_size):
         nms_boxes = non_max_suppression(

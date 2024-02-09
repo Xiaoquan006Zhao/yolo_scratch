@@ -82,7 +82,7 @@ def main():
     ).to(config.DEVICE)
 
     for epoch in range(config.NUM_EPOCHS):
-        
+
         for x, y in train_loader:
            x = x.to(config.DEVICE)
            for idx in range(8):
@@ -123,8 +123,6 @@ def main():
                     save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
                     import time
                     time.sleep(10)
-
-            model.train()
 
 
 if __name__ == "__main__":
