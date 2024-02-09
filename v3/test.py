@@ -16,7 +16,9 @@ from utils import (
     load_checkpoint,
     check_class_accuracy,
     get_loaders,
-    plot_couple_examples
+    plot_couple_examples,
+    non_max_suppression,
+    plot_image
 )
 from loss import YoloLoss
 import warnings
@@ -68,7 +70,8 @@ def main():
         train_csv_path=config.DATASET + "/train.csv", test_csv_path=config.DATASET + "/test.csv"
     )
 
-    if config.LOAD_MODEL:
+    # load model
+    if True:
         load_checkpoint(
             config.CHECKPOINT_FILE, model, optimizer, config.LEARNING_RATE
         )
@@ -79,10 +82,18 @@ def main():
     ).to(config.DEVICE)
 
     for epoch in range(config.NUM_EPOCHS):
-        #plot_couple_examples(model, test_loader, 0.6, 0.5, scaled_anchors)
-        train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors)
-
         
+        for x, y in train_loader:
+           x = x.to(config.DEVICE)
+           for idx in range(8):
+               bboxes = cells_to_bboxes(model(x))
+               bboxes = non_max_suppression(bboxes[idx], iou_threshold=0.5, threshold=0.4, box_format="midpoint")
+               plot_image(x[idx].permute(1,2,0).to("cpu"), bboxes)
+
+           import sys
+           sys.exit()
+
+        train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors)
 
         #print(f"Currently epoch {epoch}")
         #print("On Train Eval loader:")
