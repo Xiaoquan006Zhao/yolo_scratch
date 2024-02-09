@@ -84,14 +84,14 @@ def main():
         load_checkpoint(torch.load(LOAD_MODEL_FILE), model, optimizer)
 
     train_dataset = VOCDataset(
-        "PASCAL_VOC/100examples.csv",
+        "../PASCAL_VOC/100examples.csv",
         transform=transform,
         img_dir=IMG_DIR,
         label_dir=LABEL_DIR,
     )
 
     test_dataset = VOCDataset(
-        "PASCAL_VOC/test.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR,
+        "../PASCAL_VOC/test.csv", transform=transform, img_dir=IMG_DIR, label_dir=LABEL_DIR,
     )
 
     train_loader = DataLoader(
