@@ -24,7 +24,6 @@ warnings.filterwarnings("ignore")
 
 torch.backends.cudnn.benchmark = True
 
-
 def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
     loop = tqdm(train_loader, leave=True)
     losses = []
