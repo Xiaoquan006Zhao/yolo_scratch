@@ -65,7 +65,7 @@ def main():
     scaler = torch.cuda.amp.GradScaler()
 
     train_loader, test_loader, train_eval_loader = get_loaders(
-        train_csv_path= "../" + config.DATASET + "/100examples.csv", test_csv_path= "../" + config.DATASET + "/test.csv"
+        train_csv_path=config.DATASET + "/train.csv", test_csv_path=config.DATASET + "/test.csv"
     )
 
     if config.LOAD_MODEL:
@@ -82,7 +82,9 @@ def main():
         #plot_couple_examples(model, test_loader, 0.6, 0.5, scaled_anchors)
         train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors)
 
-        
+        #if config.SAVE_MODEL:
+        #    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+
         #print(f"Currently epoch {epoch}")
         #print("On Train Eval loader:")
         #print("On Train loader:")
@@ -105,18 +107,8 @@ def main():
                 num_classes=config.NUM_CLASSES,
             )
             print(f"MAP: {mapval.item()}")
-
-            if mapval.item() > 0.9:
-                if config.SAVE_MODEL:
-                    checkpoint = {
-                        "state_dict": model.state_dict(),
-                        "optimizer": optimizer.state_dict(),
-                    }
-                    save_checkpoint(checkpoint, filename = config.CHECKPOINT_FILE)
-                    import time
-                    time.sleep(10)
-
             model.train()
-        
+
+
 if __name__ == "__main__":
     main()
