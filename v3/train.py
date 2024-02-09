@@ -108,9 +108,13 @@ def main():
 
             if mapval.item() > 0.9:
                 if config.SAVE_MODEL:
-                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
-                import time
-                time.sleep(10)
+                    checkpoint = {
+                        "state_dict": model.state_dict(),
+                        "optimizer": optimizer.state_dict(),
+                    }
+                    save_checkpoint(checkpoint, filename=f"checkpoint.pth.tar")
+                    import time
+                    time.sleep(10)
 
             model.train()
         
