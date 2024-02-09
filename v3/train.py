@@ -112,7 +112,7 @@ def main():
                         "state_dict": model.state_dict(),
                         "optimizer": optimizer.state_dict(),
                     }
-                    save_checkpoint(checkpoint, filename=f"checkpoint.pth.tar")
+                    save_checkpoint(checkpoint, filename=f"overfit.pth.tar")
                     import time
                     time.sleep(10)
 
