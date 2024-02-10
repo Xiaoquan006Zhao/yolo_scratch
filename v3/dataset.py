@@ -15,6 +15,7 @@ class Dataset(torch.utils.data.Dataset):
 		num_classes=20, transform=None
 	): 
 		# Read the csv file with image names and labels 
+		print(csv_file)
 		self.label_list = pd.read_csv(csv_file) 
 		# Image and label directories 
 		self.image_dir = image_dir 
