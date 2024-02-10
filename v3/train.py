@@ -1,117 +1,146 @@
-"""
-Main file for training Yolo model on Pascal VOC and COCO dataset
-"""
-
 import config
 import torch
-import torch.optim as optim
-
-from model import YOLOv3
+from dataset import Dataset
+from PIL import Image, ImageFile 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+import torch.optim as optim 
 from tqdm import tqdm
+import config
+from model import YOLOv3
+from loss import YOLOLoss
 from utils import (
-    mean_average_precision,
-    cells_to_bboxes,
-    get_evaluation_bboxes,
-    save_checkpoint,
-    load_checkpoint,
-    check_class_accuracy,
-    get_loaders,
-    plot_couple_examples
+	save_checkpoint,
 )
-from loss import YoloLoss
-import warnings
-warnings.filterwarnings("ignore")
 
-torch.backends.cudnn.benchmark = True
+# Creating a dataset object 
+dataset = Dataset( 
+	csv_file= config.train_csv_file,
+	image_dir= config.image_dir,
+	label_dir= config.label_dir,
+	grid_sizes=[13, 26, 52], 
+	anchors=config.ANCHORS, 
+	transform=config.test_transform 
+) 
 
-def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
-    loop = tqdm(train_loader, leave=True)
-    losses = []
-    for batch_idx, (x, y) in enumerate(loop):
-        x = x.to(config.DEVICE)
-        y0, y1, y2 = (
-            y[0].to(config.DEVICE),
-            y[1].to(config.DEVICE),
-            y[2].to(config.DEVICE),
-        )
+# Creating a dataloader object 
+loader = torch.utils.data.DataLoader( 
+	dataset=dataset, 
+	batch_size=1, 
+	shuffle=True, 
+) 
 
-        with torch.cuda.amp.autocast():
-            out = model(x)
-            loss = (
-                loss_fn(out[0], y0, scaled_anchors[0])
-                + loss_fn(out[1], y1, scaled_anchors[1])
-                + loss_fn(out[2], y2, scaled_anchors[2])
-            )
+# Defining the grid size and the scaled anchors 
+GRID_SIZE = [13, 26, 52] 
+scaled_anchors = torch.tensor(config.ANCHORS) / ( 
+	1 / torch.tensor(GRID_SIZE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
+) 
 
-        losses.append(loss.item())
-        optimizer.zero_grad()
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
+# Getting a batch from the dataloader 
+x, y = next(iter(loader)) 
 
-        # update progress bar
-        mean_loss = sum(losses) / len(losses)
-        loop.set_postfix(loss=mean_loss)
+# Getting the boxes coordinates from the labels 
+# and converting them into bounding boxes without scaling 
+boxes = [] 
+for i in range(y[0].shape[1]): 
+	anchor = scaled_anchors[i] 
+	boxes += config.convert_cells_to_bboxes( 
+			y[i], is_predictions=False, s=y[i].shape[2], anchors=anchor 
+			)[0] 
 
+# Applying non-maximum suppression 
+boxes = config.nms(boxes, iou_threshold=1, threshold=0.7) 
 
-
-def main():
-    model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
-    optimizer = optim.Adam(
-        model.parameters(), lr=config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY
-    )
-    loss_fn = YoloLoss()
-    scaler = torch.cuda.amp.GradScaler()
-
-    train_loader, test_loader, train_eval_loader = get_loaders(
-        train_csv_path=config.DATASET + "/100examples.csv", test_csv_path=config.DATASET + "/test.csv"
-    )
-
-    if config.LOAD_MODEL:
-        load_checkpoint(
-            config.CHECKPOINT_FILE, model, optimizer, config.LEARNING_RATE
-        )
-
-    scaled_anchors = (
-        torch.tensor(config.ANCHORS)
-        * torch.tensor(config.S).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
-    ).to(config.DEVICE)
-
-    for epoch in range(config.NUM_EPOCHS):
-        #plot_couple_examples(model, test_loader, 0.6, 0.5, scaled_anchors)
-        train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors)
-
-        
-
-        #print(f"Currently epoch {epoch}")
-        #print("On Train Eval loader:")
-        #print("On Train loader:")
-        #check_class_accuracy(model, train_loader, threshold=config.CONF_THRESHOLD)
-
-        if epoch > 0 and epoch % 3 == 0:
-            check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
-            pred_boxes, true_boxes = get_evaluation_bboxes(
-                test_loader,
-                model,
-                iou_threshold=config.NMS_IOU_THRESH,
-                anchors=config.ANCHORS,
-                threshold=config.CONF_THRESHOLD,
-            )
-            mapval = mean_average_precision(
-                pred_boxes,
-                true_boxes,
-                iou_threshold=config.MAP_IOU_THRESH,
-                box_format="midpoint",
-                num_classes=config.NUM_CLASSES,
-            )
-            print(f"MAP: {mapval.item()}")
-
-            if mapval.item() > 0.85:
-                if config.SAVE_MODEL:
-                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
-                    import time
-                    time.sleep(10)
+# Plotting the image with the bounding boxes 
+config.plot_image(x[0].permute(1,2,0).to("cpu"), boxes)
 
 
-if __name__ == "__main__":
-    main()
+# Define the train function to train the model 
+def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
+	# Creating a progress bar 
+	progress_bar = tqdm(loader, leave=True) 
+
+	# Initializing a list to store the losses 
+	losses = [] 
+
+	# Iterating over the training data 
+	for _, (x, y) in enumerate(progress_bar): 
+		x = x.to(config.device) 
+		y0, y1, y2 = ( 
+			y[0].to(config.device), 
+			y[1].to(config.device), 
+			y[2].to(config.device), 
+		) 
+
+		with torch.cuda.amp.autocast(): 
+			# Getting the model predictions 
+			outputs = model(x) 
+			# Calculating the loss at each scale 
+			loss = ( 
+				loss_fn(outputs[0], y0, scaled_anchors[0]) 
+				+ loss_fn(outputs[1], y1, scaled_anchors[1]) 
+				+ loss_fn(outputs[2], y2, scaled_anchors[2]) 
+			) 
+
+		# Add the loss to the list 
+		losses.append(loss.item()) 
+
+		# Reset gradients 
+		optimizer.zero_grad() 
+
+		# Backpropagate the loss 
+		scaler.scale(loss).backward() 
+
+		# Optimization step 
+		scaler.step(optimizer) 
+
+		# Update the scaler for next iteration 
+		scaler.update() 
+
+		# update progress bar with loss 
+		mean_loss = sum(losses) / len(losses) 
+		progress_bar.set_postfix(loss=mean_loss)
+
+# Creating the model from YOLOv3 class 
+model = YOLOv3().to(config.device) 
+
+# Defining the optimizer 
+optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
+
+# Defining the loss function 
+loss_fn = YOLOLoss() 
+
+# Defining the scaler for mixed precision training 
+scaler = torch.cuda.amp.GradScaler() 
+
+# Defining the train dataset 
+train_dataset = Dataset( 
+	csv_file="./data/pascal voc/train.csv", 
+	image_dir="./data/pascal voc/images/", 
+	label_dir="./data/pascal voc/labels/", 
+	anchors=config.ANCHORS, 
+	transform=config.train_transform 
+) 
+
+# Defining the train data loader 
+train_loader = torch.utils.data.DataLoader( 
+	train_dataset, 
+	batch_size = config.batch_size, 
+	num_workers = 2, 
+	shuffle = True, 
+	pin_memory = True, 
+) 
+
+# Scaling the anchors 
+scaled_anchors = ( 
+	torch.tensor(config.ANCHORS) *
+	torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
+).to(config.device) 
+
+# Training the model 
+for e in range(1, config.epochs+1): 
+	print("Epoch:", e) 
+	training_loop(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors) 
+
+	# Saving the model 
+	if config.save_model: 
+		save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")

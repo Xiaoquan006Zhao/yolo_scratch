@@ -1,129 +1,74 @@
-"""
-Main file for training Yolo model on Pascal VOC and COCO dataset
-"""
-
-import config
 import torch
-import torch.optim as optim
-
+import config
 from model import YOLOv3
-from tqdm import tqdm
+from loss import YOLOLoss
+import torch.optim as optim 
 from utils import (
-    mean_average_precision,
-    cells_to_bboxes,
-    get_evaluation_bboxes,
-    save_checkpoint,
-    load_checkpoint,
-    check_class_accuracy,
-    get_loaders,
-    plot_couple_examples,
-    non_max_suppression,
-    plot_image
+	load_checkpoint,	
+	convert_cells_to_bboxes,
+	plot_image,
+	nms,
 )
-from loss import YoloLoss
-import warnings
-warnings.filterwarnings("ignore")
+from dataset import Dataset
 
-torch.backends.cudnn.benchmark = True
+# Taking a sample image and testing the model 
+# Setting the load_model to True 
+load_model = True
 
+# Defining the model, optimizer, loss function and scaler 
+model = YOLOv3().to(config.device) 
+optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
+loss_fn = YOLOLoss() 
+scaler = torch.cuda.amp.GradScaler() 
 
-def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
-    loop = tqdm(train_loader, leave=True)
-    losses = []
-    for batch_idx, (x, y) in enumerate(loop):
-        x = x.to(config.DEVICE)
-        y0, y1, y2 = (
-            y[0].to(config.DEVICE),
-            y[1].to(config.DEVICE),
-            y[2].to(config.DEVICE),
-        )
+# Loading the checkpoint 
+if load_model: 
+	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
 
-        with torch.cuda.amp.autocast():
-            out = model(x)
-            loss = (
-                loss_fn(out[0], y0, scaled_anchors[0])
-                + loss_fn(out[1], y1, scaled_anchors[1])
-                + loss_fn(out[2], y2, scaled_anchors[2])
-            )
+# Defining the test dataset and data loader 
+test_dataset = Dataset( 
+	csv_file=config.test_csv_file,
+	image_dir=config.image_dir,
+	label_dir=config.label_dir,
+	anchors=config.ANCHORS, 
+	transform=config.test_transform 
+) 
+test_loader = torch.utils.data.DataLoader( 
+	test_dataset, 
+	batch_size = 1, 
+	num_workers = 2, 
+	shuffle = True, 
+) 
 
-        losses.append(loss.item())
-        optimizer.zero_grad()
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
+# Getting a sample image from the test data loader 
+x, y = next(iter(test_loader)) 
+x = x.to(config.device) 
 
-        # update progress bar
-        mean_loss = sum(losses) / len(losses)
-        loop.set_postfix(loss=mean_loss)
+model.eval() 
+with torch.no_grad(): 
+	# Getting the model predictions 
+	output = model(x) 
+	# Getting the bounding boxes from the predictions 
+	bboxes = [[] for _ in range(x.shape[0])] 
+	anchors = ( 
+			torch.tensor(config.ANCHORS) 
+				* torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
+			).to(config.device) 
 
+	# Getting bounding boxes for each scale 
+	for i in range(3): 
+		batch_size, A, S, _, _ = output[i].shape 
+		anchor = anchors[i] 
+		boxes_scale_i = convert_cells_to_bboxes( 
+							output[i], anchor, s=S, is_predictions=True
+						) 
+		for idx, (box) in enumerate(boxes_scale_i): 
+			bboxes[idx] += box 
+model.train() 
 
-
-def main():
-    model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
-    optimizer = optim.Adam(
-        model.parameters(), lr=config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY
-    )
-    loss_fn = YoloLoss()
-    scaler = torch.cuda.amp.GradScaler()
-
-    train_loader, test_loader, train_eval_loader = get_loaders(
-        train_csv_path=config.DATASET + "/100examples.csv", test_csv_path=config.DATASET + "/test.csv"
-    )
-
-    # load model
-    if True:
-        load_checkpoint(
-            config.CHECKPOINT_FILE, model, optimizer, config.LEARNING_RATE
-        )
-
-    scaled_anchors = (
-        torch.tensor(config.ANCHORS)
-        * torch.tensor(config.S).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
-    ).to(config.DEVICE)
-
-    for epoch in range(config.NUM_EPOCHS):
-
-        for x, y in train_loader:
-           x = x.to(config.DEVICE)
-           for idx in range(8):
-               bboxes = cells_to_bboxes(model(x))
-               bboxes = non_max_suppression(bboxes[idx], iou_threshold=0.5, threshold=0.4, box_format="midpoint")
-               plot_image(x[idx].permute(1,2,0).to("cpu"), bboxes)
-
-           import sys
-           sys.exit()
-
-        train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors)
-
-        #print(f"Currently epoch {epoch}")
-        #print("On Train Eval loader:")
-        #print("On Train loader:")
-        #check_class_accuracy(model, train_loader, threshold=config.CONF_THRESHOLD)
-
-        if epoch > 0 and epoch % 3 == 0:
-            check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
-            pred_boxes, true_boxes = get_evaluation_bboxes(
-                test_loader,
-                model,
-                iou_threshold=config.NMS_IOU_THRESH,
-                anchors=config.ANCHORS,
-                threshold=config.CONF_THRESHOLD,
-            )
-            mapval = mean_average_precision(
-                pred_boxes,
-                true_boxes,
-                iou_threshold=config.MAP_IOU_THRESH,
-                box_format="midpoint",
-                num_classes=config.NUM_CLASSES,
-            )
-            print(f"MAP: {mapval.item()}")
-
-            if mapval.item() > 0.85:
-                if config.SAVE_MODEL:
-                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
-                    import time
-                    time.sleep(10)
-
-
-if __name__ == "__main__":
-    main()
+# Plotting the image with bounding boxes for each image in the batch 
+for i in range(batch_size): 
+	# Applying non-max suppression to remove overlapping bounding boxes 
+	nms_boxes = nms(bboxes[i], iou_threshold=0.5, threshold=0.6) 
+	# Plotting the image with bounding boxes 
+	plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
