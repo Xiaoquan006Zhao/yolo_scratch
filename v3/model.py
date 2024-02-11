@@ -52,11 +52,11 @@ class ResidualBlock(nn.Module):
 	
 	# Defining forward pass 
 	def forward(self, x): 
-		for layer in self.layers: 
-			residual = x 
-			x = layer(x) 
-			if self.use_residual: 
-				x = x + residual 
+		original_x = x 
+		x = self.layers(x)  
+
+		if self.use_residual:
+			x = x + original_x  
 		return x
 
 # Defining scale prediction class 
