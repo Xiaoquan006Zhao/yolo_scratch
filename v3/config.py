@@ -3,8 +3,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 
 import cv2 
   
-# train_csv_file = "../data/pascal voc/100examples.csv"
-train_csv_file = "../data/pascal voc/train.csv"
+train_csv_file = "../data/pascal voc/100examples.csv"
+# train_csv_file = "../data/pascal voc/train.csv"
 test_csv_file = "../data/pascal voc/test.csv"
 image_dir = "../data/pascal voc/images/"
 label_dir = "../data/pascal voc/labels/"  
@@ -24,7 +24,7 @@ ANCHORS = [
 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
 ] 
 # Batch size for training 
-batch_size = 32
+batch_size = 16
 # Learning rate for training 
 leanring_rate = 1e-5
 # Number of epochs for training 

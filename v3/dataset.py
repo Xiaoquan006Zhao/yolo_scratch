@@ -69,11 +69,11 @@ class Dataset(torch.utils.data.Dataset):
 			# Because it's not prediction, we only pass in width and height (aspect ratio)
 			iou_anchors = iou(torch.tensor(box[2:4]), self.anchors, is_pred=False) 
 
-			print(iou_anchors)
-			
 			# Selecting the best anchor box 
 			anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
 			x, y, width, height, class_label = box 
+
+			print(anchor_indices)
 
 			# At each scale, assigning the bounding box to the 
 			# best matching anchor box 
