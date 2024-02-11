@@ -34,7 +34,7 @@ class Dataset(torch.utils.data.Dataset):
 		self.num_anchors_per_scale = self.num_anchors // 3
 		# Number of classes 
 		self.num_classes = num_classes 
-		# Ignore IoU threshold 
+		# Ignore IoU threshold: See logic (and comments) of where this threshold is used to understand
 		self.ignore_iou_thresh = 0.5
 
 	def __len__(self): 
@@ -69,59 +69,69 @@ class Dataset(torch.utils.data.Dataset):
 			# Because it's not prediction, we only pass in width and height (aspect ratio)
 			iou_anchors = iou(torch.tensor(box[2:4]), self.anchors, is_pred=False) 
 
-			# Selecting the best anchor box 
+			# Selecting the best anchor box and maintain the order from [0 to 8]
+			# Since the config.Anchors is organized in 3x3 mannner, 
+			# the iou_anchors calculation return the iou score from least scale to most scale [13, 26, 52]
+			# so later when dividing by self.num_anchors_per_scale, we can get the scale of current anchor
 			anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
 			x, y, width, height, class_label = box 
-
-			print(anchor_indices)
 
 			# At each scale, assigning the bounding box to the 
 			# best matching anchor box 
 			has_anchor = [False] * 3
 			for anchor_idx in anchor_indices: 
+				# which scale of [13, 26, 52], more detail refer to anchor_indices calculation
 				scale_idx = anchor_idx // self.num_anchors_per_scale 
+				# which anchor which in the scale
 				anchor_on_scale = anchor_idx % self.num_anchors_per_scale 
 				
-				# Identifying the grid size for the scale 
+				# Identifying the grid size for the scale
 				s = self.grid_sizes[scale_idx] 
 				
 				# Identifying the cell to which the bounding box belongs 
 				i, j = int(s * y), int(s * x) 
-				anchor_taken = targets[scale_idx][anchor_on_scale, i, j, 0] 
-				
-				# Check if the anchor box is already assigned 
-				if not anchor_taken and not has_anchor[scale_idx]: 
 
+				# locate the anchor within scale and grid
+				anchor_taken = targets[scale_idx][anchor_on_scale, i, j, 0] 
+
+				# In the following situations we do not consider if the anchor box within grid is already assigned
+				# Because the anchors are ordered by IoU score, 
+				# thus the best anchors has already been assigned to a cell
+				# And multiple anchor (aspect ratio) do not share value, we don't need to worry about overwriting
+
+				# If the anchor box within grid is not assigned 
+				if not anchor_taken and not has_anchor[scale_idx]: 
 					# Set the probability to 1 
 					targets[scale_idx][anchor_on_scale, i, j, 0] = 1
 
-					# Calculating the center of the bounding box relative 
-					# to the cell 
+					# Calculating the center of the bounding box relative to the cell 
 					x_cell, y_cell = s * x - j, s * y - i 
-
 					# Calculating the width and height of the bounding box 
 					# relative to the cell 
-					width_cell, height_cell = (width * s, height * s) 
-
+					width_cell, height_cell = width * s, height * s
 					# Idnetify the box coordinates 
-					box_coordinates = torch.tensor( 
-										[x_cell, y_cell, width_cell, 
-										height_cell] 
-									) 
+					box_coordinates = torch.tensor([x_cell, y_cell, width_cell, height_cell]) 
 
 					# Assigning the box coordinates to the target 
 					targets[scale_idx][anchor_on_scale, i, j, 1:5] = box_coordinates 
-
 					# Assigning the class label to the target 
 					targets[scale_idx][anchor_on_scale, i, j, 5] = int(class_label) 
 
 					# Set the anchor box as assigned for the scale 
+					# The current scale we have already identified the object, 
+					# We can skip this scale later
 					has_anchor[scale_idx] = True
 
-				# If the anchor box is already assigned, check if the 
-				# IoU is greater than the threshold 
+				# If the anchor box within grid is not assigned, and If the IoU is higher than ignore threshold, 
+				# it implies that the anchor box significantly overlaps with the ground truth box 
+				# but is not the best fit (since the best fit was assigned in the first if statement)
 				elif not anchor_taken and iou_anchors[anchor_idx] > self.ignore_iou_thresh: 
 					# Set the probability to -1 to ignore the anchor box 
+					# This anchor box overlaps with a ground truth object, 
+					# but not enough to be considered the primary box for detection, 
+					# yet it shouldn't be treated as a complete negative example (background) either.
+					# Because later in loss calcuation, we calculate loss based on objectness == 0 or == 1
+					# thus -1 is ignored
 					targets[scale_idx][anchor_on_scale, i, j, 0] = -1
 
 		# Return the image and the target 

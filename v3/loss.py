@@ -24,7 +24,6 @@ class YOLOLoss(nn.Module):
 			(pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), 
 		) 
 
-		
 		# Reshaping anchors to match predictions 
 		anchors = anchors.reshape(1, 3, 1, 1, 2) 
 		# Box prediction confidence 

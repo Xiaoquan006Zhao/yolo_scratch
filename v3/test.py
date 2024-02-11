@@ -48,20 +48,18 @@ model.eval()
 with torch.no_grad(): 
 	# Getting the model predictions 
 	output = model(x) 
+
 	# Getting the bounding boxes from the predictions 
 	bboxes = [[] for _ in range(x.shape[0])] 
 	anchors = ( 
-			torch.tensor(config.ANCHORS) 
-				* torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
+			torch.tensor(config.ANCHORS) * torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
 			).to(config.device) 
 
 	# Getting bounding boxes for each scale 
 	for i in range(3): 
 		batch_size, A, S, _, _ = output[i].shape 
 		anchor = anchors[i] 
-		boxes_scale_i = convert_cells_to_bboxes( 
-							output[i], anchor, s=S, is_predictions=True
-						) 
+		boxes_scale_i = convert_cells_to_bboxes(output[i], anchor, s=S, is_predictions=True) 
 		for idx, (box) in enumerate(boxes_scale_i): 
 			bboxes[idx] += box 
 model.train() 
@@ -69,6 +67,7 @@ model.train()
 # Plotting the image with bounding boxes for each image in the batch 
 for i in range(batch_size): 
 	# Applying non-max suppression to remove overlapping bounding boxes 
-	nms_boxes = nms(bboxes[i], iou_threshold=0.5, threshold=0.6) 
+	nms_boxes = nms(bboxes[i], enough_overlap_threshold=0.5, valid_prediction_threshold=0.6) 
+
 	# Plotting the image with bounding boxes 
 	plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)

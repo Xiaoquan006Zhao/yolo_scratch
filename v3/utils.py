@@ -62,36 +62,27 @@ def iou(box1, box2, is_pred=True):
 		return iou_score
 
 # Non-maximum suppression function to remove overlapping bounding boxes 
-def nms(bboxes, iou_threshold, threshold): 
-	# Filter out bounding boxes with confidence below the threshold. 
-	bboxes = [box for box in bboxes if box[1] > threshold] 
+def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
+    # Filter out bounding boxes with objectness below the valid_prediction_threshold
+	# Check convert_cells_to_bboxes method for why objectness is stored at index 1
+    bboxes = [box for box in bboxes if box[1] > valid_prediction_threshold]
 
-	# Sort the bounding boxes by confidence in descending order. 
-	bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True) 
+    # Sort the bounding boxes by confidence in descending order
+    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
 
 	# Initialize the list of bounding boxes after non-maximum suppression. 
-	bboxes_nms = [] 
+    bboxes_nms = []
+    while bboxes:
+        # Get the bounding box with the highest confidence
+        first_box = bboxes.pop(0)
+        bboxes_nms.append(first_box)
 
-	while bboxes: 
-		# Get the first bounding box. 
-		first_box = bboxes.pop(0) 
+        # Keep only bounding boxes that do not overlap significantly with the first_box  
+		# And skip for different classes, because prediction for different classes should be independent
+		# Check convert_cells_to_bboxes method for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
+        bboxes = [box for box in bboxes if box[0] != first_box[0] or iou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
 
-		# Iterate over the remaining bounding boxes. 
-		for box in bboxes: 
-		# If the bounding boxes do not overlap or if the first bounding box has 
-		# a higher confidence, then add the second bounding box to the list of 
-		# bounding boxes after non-maximum suppression. 
-			if box[0] != first_box[0] or iou( 
-				torch.tensor(first_box[2:]), 
-				torch.tensor(box[2:]), 
-			) < iou_threshold: 
-				# Check if box is not in bboxes_nms 
-				if box not in bboxes_nms: 
-					# Add box to bboxes_nms 
-					bboxes_nms.append(box) 
-
-	# Return bounding boxes after non-maximum suppression. 
-	return bboxes_nms
+    return bboxes_nms
 
 # Function to convert cells to bounding boxes 
 def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True): 
@@ -110,12 +101,12 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 		box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2]) 
 		box_predictions[..., 2:] = torch.exp( 
 			box_predictions[..., 2:]) * anchors 
-		scores = torch.sigmoid(predictions[..., 0:1]) 
+		objectness = torch.sigmoid(predictions[..., 0:1]) 
 		best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 	
 	# Else we will just calculate scores and best class. 
 	else: 
-		scores = predictions[..., 0:1] 
+		objectness = predictions[..., 0:1] 
 		best_class = predictions[..., 5:6] 
 
 	# Calculate cell indices 
@@ -132,11 +123,9 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 				cell_indices.permute(0, 1, 3, 2, 4)) 
 	width_height = 1 / s * box_predictions[..., 2:4] 
 
-	# Concatinating the values and reshaping them in 
-	# (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	converted_bboxes = torch.cat( 
-		(best_class, scores, x, y, width_height), dim=-1
-	).reshape(batch_size, num_anchors * s * s, 6) 
+	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
+	converted_bboxes = torch.cat((best_class, objectness, x, y, width_height), dim=-1).reshape(
+		batch_size, num_anchors * s * s, 6) 
 
 	# Returning the reshaped and converted bounding box list 
 	return converted_bboxes.tolist()
