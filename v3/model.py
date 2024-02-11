@@ -53,7 +53,9 @@ class ResidualBlock(nn.Module):
 	# Defining forward pass 
 	def forward(self, x): 
 		original_x = x 
-		x = self.layers(x)  
+		
+		for layer in self.layers:
+			x = layer(x)
 
 		if self.use_residual:
 			x = x + original_x  
