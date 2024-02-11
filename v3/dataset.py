@@ -15,7 +15,6 @@ class Dataset(torch.utils.data.Dataset):
 		num_classes=20, transform=None
 	): 
 		# Read the csv file with image names and labels 
-		print(csv_file)
 		self.label_list = pd.read_csv(csv_file) 
 		# Image and label directories 
 		self.image_dir = image_dir 
@@ -60,16 +59,18 @@ class Dataset(torch.utils.data.Dataset):
 			bboxes = augs["bboxes"] 
 
 		# Below assumes 3 scale predictions (as paper) and same num of anchors per scale 
-		# target : [probabilities, x, y, width, height, class_label] 
+		# target : [object probabilities, x, y, width, height, class_label] 
 		targets = [torch.zeros((self.num_anchors_per_scale, s, s, 6)) 
 				for s in self.grid_sizes] 
 		
 		# Identify anchor box and cell for each bounding box 
 		for box in bboxes: 
-			# Calculate iou of bounding box with anchor boxes 
-			iou_anchors = iou(torch.tensor(box[2:4]), 
-							self.anchors, 
-							is_pred=False) 
+			# Calculate iou of bounding box with anchor boxes
+			# Because it's not prediction, we only pass in width and height (aspect ratio)
+			iou_anchors = iou(torch.tensor(box[2:4]), self.anchors, is_pred=False) 
+
+			print(iou_anchors)
+			
 			# Selecting the best anchor box 
 			anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
 			x, y, width, height, class_label = box 

@@ -3,7 +3,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 
 import cv2 
   
-train_csv_file = "../data/pascal voc/100examples.csv"
+# train_csv_file = "../data/pascal voc/100examples.csv"
+train_csv_file = "../data/pascal voc/train.csv"
 test_csv_file = "../data/pascal voc/test.csv"
 image_dir = "../data/pascal voc/images/"
 label_dir = "../data/pascal voc/labels/"  
