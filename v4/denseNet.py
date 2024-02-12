@@ -97,7 +97,7 @@ class DenseBlock(nn.Module):
 
 def test_DenseBlock():
     x = torch.randn(1,3,224,224)
-    model = DenseBlock(3,5)
+    model = DenseBlock(5,3)
     print('Denseblock Output shape : ',model(x).shape)
     print('Model ',model)
     # del model
