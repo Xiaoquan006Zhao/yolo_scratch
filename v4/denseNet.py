@@ -53,7 +53,6 @@ class DenseLayer(nn.Module):
         x = self.BN2(x)
         x = self.relu(x)
         x = self.conv2(x)
-        x = torch.cat([x_in,x],1)
 
         return x
 
@@ -91,6 +90,7 @@ class DenseBlock(nn.Module):
         saved_outputs = [x]  # Initialize list to save the output of each layer
         for layer in self.deep_nn:
             layer_input = torch.cat(saved_outputs, dim=1)  # Concatenate all previous outputs
+            print(layer_input.shape)
             x = layer(layer_input)
             saved_outputs.append(x)  # Save current output for concatenation with future inputs
         return x
