@@ -57,20 +57,63 @@ class DenseLayer(nn.Module):
 
         return x
 
-def test_DenseLayer():
-    x = torch.randn(1,64,224,224)
-    model = DenseLayer(64)
-    # print(model(x).shape)
-    # print(model)
+# def test_DenseLayer():
+#     x = torch.randn(1,64,224,224)
+#     model = DenseLayer(64)
+#     # print(model(x).shape)
+#     # print(model)
+#     # del model
+#     return model
+
+
+# model = test_DenseLayer()
+
+# architecture = 'denselayer'
+# model_graph = draw_graph(model, input_size=(1,64,224,224), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
+# model_graph.visual_graph
+
+class DenseBlock(nn.Module):
+    def __init__(self,layer_num,in_channels):
+        """
+        Looping through total number of layers in the denseblock. 
+        Adding k number of channels in each loop as each layer generates tensor with k channels.
+        Args:
+            layer_num (int) : total number of dense layers in the dense block
+            in_channels (int) : input number of channels 
+        """
+        super(DenseBlock,self).__init__()
+        self.layer_num = layer_num
+        self.deep_nn = nn.ModuleList()
+
+        for num in range(self.layer_num):
+            self.deep_nn.add_module(f"DenseLayer_{num}",DenseLayer(in_channels+k*num))
+
+    def forward(self,x):
+        """
+        Args:
+            x (tensor) : input tensor to be passed through the dense block
+        Attributes:
+            x (tensor) : output tensor 
+        """
+        for layer in self.deep_nn:
+            x = layer(x)
+        return x
+
+def test_DenseBlock():
+    x = torch.randn(1,3,224,224)
+    model = DenseBlock(3,3)
+    print('Denseblock Output shape : ',model(x).shape)
+    print('Model ',model)
     # del model
     return model
 
 
-model = test_DenseLayer()
+model = test_DenseBlock()
 
-architecture = 'denselayer'
-model_graph = draw_graph(model, input_size=(1,64,224,224), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
+architecture = 'denseblock'
+model_graph = draw_graph(model, input_size=(1,3,224,224), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
 model_graph.visual_graph
+
 
 
 
