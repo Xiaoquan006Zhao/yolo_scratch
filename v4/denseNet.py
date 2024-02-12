@@ -84,15 +84,17 @@ class DenseBlock(nn.Module):
         self.deep_nn = nn.ModuleList()
 
         for num in range(self.layer_num):
-            self.deep_nn.add_module(f"DenseLayer_{num}",DenseLayer(in_channels+k*num))
+            self.deep_nn.add_module(f"DenseLayer_{num}", DenseLayer(in_channels+k*num))
 
     def forward(self, x):
         saved_outputs = [x]  # Initialize list to save the output of each layer
+        dense_output = x
         for layer in self.deep_nn:
-            layer_input = torch.cat(saved_outputs, dim=1)  # Concatenate all previous outputs
-            x = layer(layer_input)
+            x = layer(dense_output)
+            dense_output = torch.cat(saved_outputs, dim=1)  # Concatenate all previous outputs
             saved_outputs.append(x)  # Save current output for concatenation with future inputs
-        return x
+
+        return dense_output
 
 # def test_DenseBlock():
 #     x = torch.randn(1,3,224,224)
