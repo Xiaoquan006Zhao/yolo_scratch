@@ -37,11 +37,19 @@ class CSPBlock(nn.Module):
         out = torch.cat((part1, part2_dense), dim=1)
         return out
 
-# Example of using CSPBlock with DenseBlock
-dense_block = DenseBlock(layer_num=4, in_channels=4)  # Example DenseBlock initialization
-csp_block = CSPBlock(process_block=dense_block, in_channels=8)
+def test_CSPBlock():
+    x = torch.randn(1,8,224,224)
+    model = DenseBlock(5,3)
+    dense_block = DenseBlock(layer_num=4, in_channels=4)  # Example DenseBlock initialization
+    model = CSPBlock(process_block=dense_block, in_channels=8)
 
-# Test CSPBlock
-x = torch.randn(1, 8, 128, 128)  # Example input tensor
-output = csp_block(x)
-print(output.shape)
+    print('CSPblock Output shape : ',model(x).shape)
+    print('Model ',model)
+    # del model
+    return model
+
+model = test_CSPBlock()
+
+architecture = 'denseblock'
+model_graph = draw_graph(model, input_size=(1,8,224,224), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
+model_graph.visual_graph
