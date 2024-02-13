@@ -33,8 +33,7 @@ class YOLOLoss(nn.Module):
 		# Calculating intersection over union for prediction and target 
 		ious = iou(box_preds[obj], target[..., 1:5][obj]).detach() 
 		# Calculating Object loss 
-		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), 
-							ious * target[..., 0:1][obj]) 
+		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj]) 
 
 		
 		# Predicted box coordinates 
