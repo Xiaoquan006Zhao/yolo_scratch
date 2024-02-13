@@ -3,7 +3,7 @@ import torch.nn as nn
 from IPython.display import Image
 import torchvision
 from torchview import draw_graph
-import config
+from ..config import dense_growth_rate
 
 # set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -16,7 +16,7 @@ model_parameters['densenet201'] = [6,12,48,32]
 model_parameters['densenet264'] = [6,12,64,48]
 
 # growth rate
-k = config.dense_growth_rate
+k = dense_growth_rate
 compression_factor = 0.5
 
 class DenseLayer(nn.Module):
