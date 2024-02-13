@@ -142,7 +142,6 @@ class YOLOv4(nn.Module):
 				outputs.append(layer(x)) 
 				continue
 			
-			print(x.shape)
 			x = layer(x) 
 
 			if isinstance(layer, CBMBlock) and (layer.in_channels == 512 + config.dense_growth_rate*8 or layer.in_channels == 256 + config.dense_growth_rate*8 ): 
