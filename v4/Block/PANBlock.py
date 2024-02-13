@@ -109,7 +109,7 @@ def test_PAN():
     f1 = torch.randn(1, 128, 52, 52)  # High resolution
     f2 = torch.randn(1, 256, 26, 26)  # Medium resolution
     f3 = torch.randn(1, 512, 13, 13)  # Low resolution
-    features = [f1, f2, f3]
+    features = (f1, f2, f3)
 
     # Pass the feature maps through the PAN model
     outputs = pan(features)
