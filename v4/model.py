@@ -92,11 +92,11 @@ class YOLOv4(nn.Module):
 		self.num_classes = num_classes 
 		self.in_channels = in_channels 
 
-		dense_block_1 = DenseBlock(layer_num=1)
-		dense_block_2 = DenseBlock(layer_num=2)
-		dense_block_3 = DenseBlock(layer_num=8)
-		dense_block_4 = DenseBlock(layer_num=8)
-		dense_block_5 = DenseBlock(layer_num=4)
+		dense_block_1 = DenseBlock(layer_num=1, in_channels=64)
+		dense_block_2 = DenseBlock(layer_num=2, in_channels=128)
+		dense_block_3 = DenseBlock(layer_num=8, in_channels=256)
+		dense_block_4 = DenseBlock(layer_num=8, in_channels=512)
+		dense_block_5 = DenseBlock(layer_num=4, in_channels=1024)
 
 		# Layers list for YOLOv3 
 		self.layers = nn.ModuleList([ 
