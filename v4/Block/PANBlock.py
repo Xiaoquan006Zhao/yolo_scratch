@@ -118,6 +118,8 @@ def test_PAN():
     for i, output in enumerate(outputs):
         print(f'Output {i+1} Shape: {output.shape}')
 
+    return model
+
 # Run the test function
 
 model = test_PAN()
