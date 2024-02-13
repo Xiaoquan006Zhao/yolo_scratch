@@ -79,6 +79,15 @@ class PAN(nn.Module):
                 outputs.append(layer(x)) 
                 continue
 
+            elif isinstance(layer, DownSample): 
+                # last concate
+                if len(route_connections) == 0:
+                     route_connections.append(f3)
+                layer.target_size = (route_connections[-1].size()[2:])
+                x = torch.cat([layer(x), route_connections[-1]], dim=1) 
+                route_connections.pop()
+                continue
+
             # CBMBlock will execute here as well
             x = layer(x) 
 
@@ -88,14 +97,7 @@ class PAN(nn.Module):
             elif isinstance(layer, nn.Upsample): 
                 x = torch.cat([x, route_connections[-1]], dim=1) 
                 route_connections.pop() 
-
-            elif isinstance(layer, DownSample): 
-                # last concate
-                if len(route_connections) == 0:
-                     route_connections.append(f3)
-                x = torch.cat([x, route_connections[-1]], dim=1) 
-                route_connections.pop() 
-
+            
         return outputs
 
 
