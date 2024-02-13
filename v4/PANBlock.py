@@ -99,27 +99,27 @@ class PAN(nn.Module):
             #     x = torch.cat([x, route_connections[-1]], dim=1) 
             #     route_connections.pop() 
 
-        return outputs
+        return outputs[::-1]
 
 
-def test_PAN():
-    # Initialize the PAN model with a predefined list of channels
-    pan = PAN([128, 256, 512], num_classes=20)
+# def test_PAN():
+#     # Initialize the PAN model with a predefined list of channels
+#     pan = PAN([128, 256, 512], num_classes=20)
     
-    # Create dummy feature maps as input
-    f1 = torch.randn(1, 128, 52, 52)  # High resolution
-    f2 = torch.randn(1, 256, 26, 26)  # Medium resolution
-    f3 = torch.randn(1, 512, 13, 13)  # Low resolution
-    features = [f1, f2, f3]
+#     # Create dummy feature maps as input
+#     f1 = torch.randn(1, 128, 52, 52)  # High resolution
+#     f2 = torch.randn(1, 256, 26, 26)  # Medium resolution
+#     f3 = torch.randn(1, 512, 13, 13)  # Low resolution
+#     features = [f1, f2, f3]
 
-    # Pass the feature maps through the PAN model
-    outputs = pan(features)
+#     # Pass the feature maps through the PAN model
+#     outputs = pan(features)
     
-    # Print the shape of the outputs for verification
-    for i, output in enumerate(outputs):
-        print(f'Output {i+1} Shape: {output.shape}')
+#     # Print the shape of the outputs for verification
+#     for i, output in enumerate(outputs):
+#         print(f'Output {i+1} Shape: {output.shape}')
 
-    return pan
+#     return pan
 
 # # Run the test function
 # model = test_PAN()

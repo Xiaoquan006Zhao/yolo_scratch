@@ -31,7 +31,7 @@ class YOLOLoss(nn.Module):
         ], dim=-1)
         
         # CIoU loss for bounding box regression
-        box_loss = 1 - ciou(box_preds[obj], target[..., 1:5][obj])
+        box_loss = ciou(box_preds[obj], target[..., 1:5][obj]).detach()
 
         # Objectness loss for predicting the presence of an object
         object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
