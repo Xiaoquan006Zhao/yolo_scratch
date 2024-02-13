@@ -100,7 +100,7 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check convert_cells_to_bboxes method for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or iou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
 
     return bboxes_nms
 

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchview import draw_graph
-from denseBlock import *
+from DenseBlock import *
 
 class SPPBlock(nn.Module):
     def __init__(self, pool_sizes=[1, 5, 9, 13]):
@@ -29,21 +29,21 @@ class SPPBlock(nn.Module):
             output.append(upsampled)
         
         # Concatenate along the channel dimension
-        output = torch.cat(output, 1)  # New shape: [batch_size, channels * (len(pool_sizes) + 1), height, width]
+        output = torch.cat(output, 1)  # New shape: [batch_size, channels * (len(pool_sizes)), height, width]
         return output
 
-test_shape = (1,512,13,13)
-x = torch.randn(test_shape)
+# test_shape = (1,512,13,13)
+# x = torch.randn(test_shape)
 
-def test_SPPBlock():
-    model = SPPBlock()
-    print(model(x).shape)
-    # print(model)
-    # del model
-    return model
+# def test_SPPBlock():
+#     model = SPPBlock()
+#     print(model(x).shape)
+#     # print(model)
+#     # del model
+#     return model
 
-model = test_SPPBlock()
+# model = test_SPPBlock()
 
-architecture = 'denselayer'
-model_graph = draw_graph(model, input_size=(test_shape), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
-model_graph.visual_graph
+# architecture = 'denselayer'
+# model_graph = draw_graph(model, input_size=(test_shape), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
+# model_graph.visual_graph

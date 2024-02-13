@@ -3,15 +3,14 @@ import torch.nn as nn
 from IPython.display import Image
 import torchvision
 from torchview import draw_graph
-from denseBlock import *
+from DenseBlock import *
 
 class CSPBlock(nn.Module):
-    def __init__(self, process_block, in_channels):
+    def __init__(self, process_block):
         """
         Initialize the CSPBlock.
         Args:
         dense_block (DenseBlock): The dense block to be used in one of the paths.
-        in_channels (int): Number of input channels to the block.
         transition_channels (int, optional): Number of channels after transition layer, if None, it uses in_channels.
         """
         super(CSPBlock, self).__init__()

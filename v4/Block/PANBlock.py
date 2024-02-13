@@ -5,7 +5,7 @@ from basic import (
     CBMBlock,
 )
 from torchview import draw_graph
-from denseBlock import *
+from DenseBlock import *
 
 class DownSample(nn.Module):
     def __init__(self, target_size):
@@ -120,28 +120,28 @@ def test_PAN():
 
     return pan
 
-# Run the test function
-model = test_PAN()
+# # Run the test function
+# model = test_PAN()
 
-class PANWrapper(nn.Module):
-    def __init__(self, pan_model):
-        super().__init__()
-        self.pan_model = pan_model
+# class PANWrapper(nn.Module):
+#     def __init__(self, pan_model):
+#         super().__init__()
+#         self.pan_model = pan_model
 
-    def forward(self, *inputs):
-        # Package the multiple inputs into a list before forwarding them to the PAN model
-        features = list(inputs)
-        return self.pan_model(features)
+#     def forward(self, *inputs):
+#         # Package the multiple inputs into a list before forwarding them to the PAN model
+#         features = list(inputs)
+#         return self.pan_model(features)
 
-# Wrap your PAN model
-model = PANWrapper(model)
+# # Wrap your PAN model
+# model = PANWrapper(model)
 
-architecture = 'denseblock'
-model_graph = draw_graph(model, 
-                         input_size=([(1, 128, 52, 52),(1, 256, 26, 26),(1, 512, 13, 13)]), 
-                         graph_dir ='TB' , 
-                         roll=True, 
-                         expand_nested=True, 
-                         graph_name=f'self_{architecture}',
-                         save_graph=True,filename=f'self_{architecture}')
-model_graph.visual_graph
+# architecture = 'denseblock'
+# model_graph = draw_graph(model, 
+#                          input_size=([(1, 128, 52, 52),(1, 256, 26, 26),(1, 512, 13, 13)]), 
+#                          graph_dir ='TB' , 
+#                          roll=True, 
+#                          expand_nested=True, 
+#                          graph_name=f'self_{architecture}',
+#                          save_graph=True,filename=f'self_{architecture}')
+# model_graph.visual_graph
