@@ -137,7 +137,7 @@ class YOLOv4(nn.Module):
 			CNNBlock(256, 128, kernel_size=1, stride=1, padding=0), 
 			ScalePrediction(128, num_classes=num_classes),
 			SPPBlock(config.SPP_pool_sizes),
-			CBMBlock(len(config.SPP_pool_sizes)*512, 512, 1),
+			CBMBlock(len(config.SPP_pool_sizes)*128, 128, 1),
 			PAN(config.PAN_channels, num_classes=20),
 		]) 
 	
