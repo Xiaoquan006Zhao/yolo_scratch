@@ -12,7 +12,7 @@ class SPPBlock(nn.Module):
     def forward(self, x):
         # x is the input feature map, assumed to be of size [batch_size, channels, height, width]
         batch_size, channels, height, width = x.size()
-        output = [x]  # Include the original feature map in the output
+        output = []  # Include the original feature map in the output
         
         for pool_size in self.pool_sizes:
             # Calculate kernel and stride sizes to cover the whole feature map
