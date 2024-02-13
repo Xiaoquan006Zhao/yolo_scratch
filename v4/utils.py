@@ -57,7 +57,7 @@ def ciou(box1, box2, is_pred=True):
 		diagonal_length = torch.square(enclosing_x_max - enclosing_x_min) + torch.square(enclosing_y_max - enclosing_y_min)
 
 		# Calculate the aspect ratio term
-		v = (4 / (np.pi ** 2)) * torch.pow(torch.atan(box2_width / box2_height) - torch.atan(box1_width / box1_height), 2)
+		v = (4 / (np.pi ** 2)) * torch.pow(torch.atan(box2_width / box2_height) - torch.atan2(box1_width, box1_height), 2)
 		alpha = v / (1 - iou + v + 1e-6)
 
 		# Calculate CIoU loss

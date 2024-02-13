@@ -30,11 +30,13 @@ class YOLOLoss(nn.Module):
             torch.exp(pred[..., 3:5]) * anchors  # Width and height
         ], dim=-1)
         
+        cious = ciou(box_preds[obj], target[..., 1:5][obj])
+
         # CIoU loss for bounding box regression
-        box_loss = ciou(box_preds[obj], target[..., 1:5][obj]).detach()
+        box_loss = ciou(box_preds[obj], target[..., 1:5][obj]).mean()
 
         # Objectness loss for predicting the presence of an object
-        object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
+        object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), cious * target[..., 0:1][obj])
 
         # Calculating class loss
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
