@@ -61,7 +61,7 @@ def ciou(box1, box2, is_pred=True):
 		alpha = v / (1 - iou + v + 1e-6)
 
 		# Calculate CIoU loss
-		ciou_loss = 1 - iou + (center_distance / (diagonal_length + 1e-6)) + alpha * v
+		ciou_loss = iou + (center_distance / (diagonal_length + 1e-6)) + alpha * v
 
 		return ciou_loss
 	else: 
