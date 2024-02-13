@@ -16,6 +16,7 @@ class CBMBlock(nn.Module):
         self.bn = nn.BatchNorm2d(out_channels)
         self.mish = Mish()
         self.route = route
+        self.in_channels = in_channels
 
     def forward(self, x):
         x = self.conv(x)
