@@ -1,6 +1,6 @@
 import config
 import torch
-from Dataset import Dataset
+from dataset import Dataset
 from PIL import Image, ImageFile 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 import torch.optim as optim 

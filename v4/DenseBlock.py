@@ -3,7 +3,7 @@ import torch.nn as nn
 from IPython.display import Image
 import torchvision
 from torchview import draw_graph
-from ..config import dense_growth_rate
+from config import dense_growth_rate
 
 # set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

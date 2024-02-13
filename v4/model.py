@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches 
 import config
 
-from Block.basic import CBMBlock
-from Block.CSPBlock import CSPBlock
-from Block.PANBlock import PAN
-from Block.SPPBlock import SPPBlock
-from Block.DenseBlock import DenseBlock
+from BasicBlock import CBMBlock
+from CSPBlock import CSPBlock
+from PANBlock import PAN
+from SPPBlock import SPPBlock
+from DenseBlock import DenseBlock
 
 # Defining CNN Block 
 class CNNBlock(nn.Module): 
@@ -162,7 +162,7 @@ class YOLOv4(nn.Module):
 			elif isinstance(layer, nn.Upsample): 
 				x = torch.cat([x, route_connections[-1]], dim=1) 
 				route_connections.pop() 
-				
+
 		# Because return is done in PAN layer
 		# return outputs
 

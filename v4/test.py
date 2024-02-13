@@ -9,7 +9,7 @@ from utils import (
 	plot_image,
 	nms,
 )
-from Dataset import Dataset
+from dataset import Dataset
 
 # Taking a sample image and testing the model 
 # Setting the load_model to True 
