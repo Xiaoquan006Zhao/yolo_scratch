@@ -83,7 +83,7 @@ class PAN(nn.Module):
             x = layer(x) 
 
             if isinstance(layer, CBMBlock) and layer.route is True:
-                route_connections.insert(x, 0)
+                route_connections.insert(0, x)
 
             elif isinstance(layer, nn.Upsample): 
                 if len(route_connections) == 0:
