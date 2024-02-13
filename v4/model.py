@@ -92,29 +92,29 @@ class YOLOv4(nn.Module):
 		self.num_classes = num_classes 
 		self.in_channels = in_channels 
 
-		dense_block_1 = DenseBlock(layer_num=1, in_channels=64/2)
-		dense_block_2 = DenseBlock(layer_num=2, in_channels=128/2)
-		dense_block_3 = DenseBlock(layer_num=8, in_channels=256/2)
-		dense_block_4 = DenseBlock(layer_num=8, in_channels=512/2)
-		dense_block_5 = DenseBlock(layer_num=4, in_channels=1024/2)
+		self.dense_block_1 = DenseBlock(layer_num=1, in_channels=64//2)
+		self.dense_block_2 = DenseBlock(layer_num=2, in_channels=128//2)
+		self.dense_block_3 = DenseBlock(layer_num=8, in_channels=256//2)
+		self.dense_block_4 = DenseBlock(layer_num=8, in_channels=512//2)
+		self.dense_block_5 = DenseBlock(layer_num=4, in_channels=1024//2)
 
 		# Layers list for YOLOv3 
 		self.layers = nn.ModuleList([ 
 			CNNBlock(in_channels, 32, kernel_size=3, stride=1, padding=1), 
 			CNNBlock(32, 64, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(process_block=dense_block_1),
+			CSPBlock(process_block=self.dense_block_1),
 			CBMBlock(64 + config.dense_growth_rate*1, 64, 3),
 			CNNBlock(64, 128, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(process_block=dense_block_2),
+			CSPBlock(process_block=self.dense_block_2),
 			CBMBlock(128 + config.dense_growth_rate*2, 128, 3),
 			CNNBlock(128, 256, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(process_block=dense_block_3),
+			CSPBlock(process_block=self.dense_block_3),
 			CBMBlock(256 + config.dense_growth_rate*8, 256, 3),
 			CNNBlock(256, 512, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(process_block=dense_block_4),
+			CSPBlock(process_block=self.dense_block_4),
 			CBMBlock(512 + config.dense_growth_rate*8, 512, 3),
 			CNNBlock(512, 1024, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(process_block=dense_block_5),
+			CSPBlock(process_block=self.dense_block_5),
 			CBMBlock(1024 + config.dense_growth_rate*4, 1024, 3), 
 
 			CNNBlock(1024, 512, kernel_size=1, stride=1, padding=0), 
@@ -153,10 +153,10 @@ class YOLOv4(nn.Module):
 			if isinstance(layer, ScalePrediction): 
 				outputs.append(layer(x)) 
 				continue
-
+			
 			x = layer(x) 
 
-			if isinstance(layer, ResidualBlock) and layer.num_repeats == 8: 
+			if isinstance(layer, CSPBlock) and (layer.process_block == self.dense_block_3 or layer.process_block == self.dense_block_4): 
 				route_connections.append(x) 
 			
 			elif isinstance(layer, nn.Upsample): 
