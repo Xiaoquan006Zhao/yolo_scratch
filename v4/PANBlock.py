@@ -80,7 +80,7 @@ class PAN(nn.Module):
                 continue
 
             # CBMBlock will execute here as well
-            # print(x.shape)
+            print(x.shape)
             x = layer(x) 
 
             if isinstance(layer, CBMBlock) and layer.route is True:
