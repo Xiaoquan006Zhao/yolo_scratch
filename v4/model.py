@@ -80,10 +80,12 @@ class ScalePrediction(nn.Module):
 	# Defining the forward pass and reshaping the output to the desired output 
 	# format: (batch_size, 3, grid_size, grid_size, num_classes + 5) 
 	def forward(self, x): 
-		output = self.pred(x) 
-		output = output.view(x.size(0), 3, self.num_classes + 5, x.size(2), x.size(3)) 
-		output = output.permute(0, 1, 3, 4, 2) 
-		return output
+		# output = self.pred(x) 
+		# output = output.view(x.size(0), 3, self.num_classes + 5, x.size(2), x.size(3)) 
+		# output = output.permute(0, 1, 3, 4, 2) 
+
+		# just return x because we are v4 not v3, model prediction does not happen here
+		return x
 
 # Class for defining YOLOv3 model 
 class YOLOv4(nn.Module): 
@@ -154,7 +156,7 @@ class YOLOv4(nn.Module):
 				outputs.append(layer(x)) 
 				continue
 			
-			print(x.shape)
+			# print(x.shape)
 			x = layer(x) 
 
 			if isinstance(layer, CBMBlock) and (layer.in_channels == 512 + config.dense_growth_rate*8 or layer.in_channels == 256 + config.dense_growth_rate*8 ): 
