@@ -11,7 +11,7 @@ label_dir = "../data/pascal voc/labels/"
 
 dense_growth_rate = 32
 SPP_pool_sizes=[1, 5, 9, 13]
-PAN_channels = [128, 256, 512]
+PAN_channels = [256, 512, 1024]
 
 # Device 
 device = "cuda" if torch.cuda.is_available() else "cpu"
