@@ -56,11 +56,11 @@ class PAN(nn.Module):
             CBMBlock(channels_list[0]+channels_list[0], channels_list[0], kernel_size=1),
             ScalePrediction(channels_list[0], num_classes= self.num_classes),
             CBMBlock(channels_list[0], channels_list[0], kernel_size=1),
-            DownSample(),
+            nn.Upsample(scale_factor=0.5),
             CBMBlock(channels_list[0]+channels_list[0], channels_list[0], kernel_size=1),
             ScalePrediction(channels_list[0], num_classes= self.num_classes),
             CBMBlock(channels_list[0], channels_list[0], kernel_size=1),
-            DownSample(),
+            nn.Upsample(scale_factor=0.5),
             CBMBlock(channels_list[0]+channels_list[2], channels_list[0], kernel_size=1),
             ScalePrediction(channels_list[0], num_classes= self.num_classes),
         ])
@@ -79,15 +79,6 @@ class PAN(nn.Module):
                 outputs.append(layer(x)) 
                 continue
 
-            elif isinstance(layer, DownSample): 
-                # last concate
-                if len(route_connections) == 0:
-                     route_connections.append(f3)
-                layer.target_size = (route_connections[-1].size()[2:])
-                x = torch.cat([layer(x), route_connections[-1]], dim=1) 
-                route_connections.pop()
-                continue
-
             # CBMBlock will execute here as well
             x = layer(x) 
 
@@ -95,9 +86,18 @@ class PAN(nn.Module):
                 route_connections.append(x, 0)
 
             elif isinstance(layer, nn.Upsample): 
+                if len(route_connections) == 0:
+                     route_connections.append(f3)
                 x = torch.cat([x, route_connections[-1]], dim=1) 
                 route_connections.pop() 
-            
+
+            # elif isinstance(layer, DownSample): 
+            #     # last concate
+            #     if len(route_connections) == 0:
+            #          route_connections.append(f3)
+            #     x = torch.cat([x, route_connections[-1]], dim=1) 
+            #     route_connections.pop() 
+
         return outputs
 
 
