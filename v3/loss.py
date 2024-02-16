@@ -54,4 +54,5 @@ class YOLOLoss(nn.Module):
 			+ object_loss 
 			+ no_object_loss 
 			+ class_loss 
+			# how much is the loss's numerical value compare to others?
 		)
