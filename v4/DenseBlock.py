@@ -94,20 +94,20 @@ class DenseBlock(nn.Module):
 
         return previous_output
 
-test_shape = (1,3,224,224)
-def test_DenseBlock():
-    x = torch.randn(test_shape)
-    model = DenseBlock(5,3)
-    print('Denseblock Output shape : ',model(x).shape)
-    print('Model ',model)
-    # del model
-    return model
+# test_shape = (1,3,224,224)
+# def test_DenseBlock():
+#     x = torch.randn(test_shape)
+#     model = DenseBlock(5,3)
+#     print('Denseblock Output shape : ',model(x).shape)
+#     print('Model ',model)
+#     # del model
+#     return model
 
-model = test_DenseBlock()
+# model = test_DenseBlock()
 
-architecture = 'denseblock'
-model_graph = draw_graph(model, input_size=(test_shape), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
-model_graph.visual_graph
+# architecture = 'denseblock'
+# model_graph = draw_graph(model, input_size=(test_shape), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
+# model_graph.visual_graph
 
 
 # class TransitionLayer(nn.Module):

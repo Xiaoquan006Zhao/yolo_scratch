@@ -139,7 +139,7 @@ class YOLOv4(nn.Module):
 			
 			x = layer(x) 
 
-			if isinstance(layer, CBMBlock) and (layer.in_channels == 512 + config.dense_growth_rate*8 or layer.in_channels == 256 + config.dense_growth_rate*8 ): 
+			if isinstance(layer, CSPBlock) and (layer.in_channels == 512 or layer.in_channels == 256): 
 				route_connections.append(x) 
 			
 			elif isinstance(layer, nn.Upsample): 
