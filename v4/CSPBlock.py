@@ -15,6 +15,7 @@ class CSPBlock(nn.Module):
         """
         super(CSPBlock, self).__init__()
         self.process_block = process_block
+        self.in_channel = process_block.in_channel * 2
 
     def forward(self, x):
         """
