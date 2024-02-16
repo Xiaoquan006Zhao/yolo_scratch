@@ -3,16 +3,28 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 
 import cv2 
   
-train_csv_file = "../data/pascal voc/100examples.csv"
-# train_csv_file = "../data/pascal voc/train.csv"
-test_csv_file = "../data/pascal voc/test.csv"
-image_dir = "../data/pascal voc/images/"
-label_dir = "../data/pascal voc/labels/"  
+
+which_dataset = "soybean"
+
+# Class labels 
+#class_labels = [ 
+#	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
+#	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
+#	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
+#]
+
+class_labels = ["pod"]
+
+#train_csv_file = f"../data/{which_dataset}/100examples.csv"
+train_csv_file = f"../data/{which_dataset}/train.csv"
+test_csv_file = f"../data/{which_dataset}/test.csv"
+image_dir = f"../data/{which_dataset}/images/"
+label_dir = f"../data/{which_dataset}/labels/"  
 
 # Device 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 # Load and save model variable 
-load_model = False
+load_model = True
 save_model = True
 # model checkpoint file name 
 checkpoint_file = "checkpoint.pth.tar"
@@ -28,17 +40,11 @@ batch_size = 16
 # Learning rate for training 
 leanring_rate = 1e-5
 # Number of epochs for training 
-epochs = 20
+epochs = 50
 # Image size 
 image_size = 416
 # Grid cell sizes 
 s = [image_size // 32, image_size // 16, image_size // 8] 
-# Class labels 
-class_labels = [ 
-	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
-	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
-	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
-]
 
 # Transform for training 
 train_transform = A.Compose( 
@@ -94,7 +100,6 @@ test_transform = A.Compose(
 					label_fields=[] 
 				) 
 )
-
 
 
 

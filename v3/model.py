@@ -131,6 +131,9 @@ class YOLOv3(nn.Module):
 			if isinstance(layer, ScalePrediction): 
 				outputs.append(layer(x)) 
 				continue
+			
+			#print(self.num_classes)
+			#print(x.shape)
 			x = layer(x) 
 
 			if isinstance(layer, ResidualBlock) and layer.num_repeats == 8: 
@@ -140,6 +143,5 @@ class YOLOv3(nn.Module):
 				x = torch.cat([x, route_connections[-1]], dim=1) 
 				route_connections.pop() 
 		return outputs
-
 
 

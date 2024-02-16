@@ -16,7 +16,7 @@ from dataset import Dataset
 load_model = True
 
 # Defining the model, optimizer, loss function and scaler 
-model = YOLOv3().to(config.device) 
+model = YOLOv3(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 

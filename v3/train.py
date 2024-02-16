@@ -9,6 +9,7 @@ import config
 from model import YOLOv3
 from loss import YOLOLoss
 from utils import (
+	load_checkpoint,
 	save_checkpoint,
 )
 
@@ -59,7 +60,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		progress_bar.set_postfix(loss=mean_loss)
 
 # Creating the model from YOLOv3 class 
-model = YOLOv3().to(config.device) 
+model = YOLOv3(num_classes=len(config.class_labels)).to(config.device) 
 
 # Defining the optimizer 
 optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
@@ -69,6 +70,9 @@ loss_fn = YOLOLoss()
 
 # Defining the scaler for mixed precision training 
 scaler = torch.cuda.amp.GradScaler() 
+
+if config.load_model: 
+	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
 
 # Defining the train dataset 
 train_dataset = Dataset( 
