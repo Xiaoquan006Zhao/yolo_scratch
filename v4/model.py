@@ -105,23 +105,18 @@ class YOLOv4(nn.Module):
 			CNNBlock(in_channels, 32, kernel_size=3, stride=1, padding=1), 
 			CNNBlock(32, 64, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(process_block=self.dense_block_1),
-			CBMBlock(64 + config.dense_growth_rate*1, 64, 1),
 			CNNBlock(64, 128, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(process_block=self.dense_block_2),
-			CBMBlock(128 + config.dense_growth_rate*2, 128, 1),
 			CNNBlock(128, 256, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(process_block=self.dense_block_3),
-			CBMBlock(256 + config.dense_growth_rate*8, 256, 1),
 			ScalePrediction(256, num_classes=num_classes), 
 
 			CNNBlock(256, 512, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(process_block=self.dense_block_4),
-			CBMBlock(512 + config.dense_growth_rate*8, 512, 1),
 			ScalePrediction(512, num_classes=num_classes), 
 
 			CNNBlock(512, 1024, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(process_block=self.dense_block_5),
-			CBMBlock(1024 + config.dense_growth_rate*4, 1024, 1), 
 			ScalePrediction(1024, num_classes=num_classes), 
 
 			SPPBlock(config.SPP_pool_sizes),
