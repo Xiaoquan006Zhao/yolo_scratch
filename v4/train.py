@@ -9,6 +9,7 @@ import config
 from model import YOLOv4
 from loss import YOLOLoss
 from utils import (
+	load_checkpoint,
 	save_checkpoint,
 )
 
@@ -69,6 +70,9 @@ loss_fn = YOLOLoss()
 
 # Defining the scaler for mixed precision training 
 scaler = torch.cuda.amp.GradScaler() 
+
+if config.load_model: 
+	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
 
 # Defining the train dataset 
 train_dataset = Dataset( 
