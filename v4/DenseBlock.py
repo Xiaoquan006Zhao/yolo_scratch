@@ -85,31 +85,31 @@ class DenseBlock(nn.Module):
         self.deep_nn = nn.ModuleList()
 
         for num in range(self.layer_num):
-            self.deep_nn.add_module(f"DenseLayer_{num}", DenseLayer(in_channels+k*num))
+            self.deep_nn.add_module(f"DenseLayer_{num}", DenseLayer(in_channels))
 
     def forward(self, x):
-        saved_outputs = [x]  # Initialize list to save the output of each layer
+        previous_output = None
         for layer in self.deep_nn:
-            layer_input = torch.cat(saved_outputs, dim=1)  # Concatenate all previous outputs
+            layer_input = x + previous_output if previous_output else x 
             x = layer(layer_input)
-            saved_outputs.append(x)  # Save current output for concatenation with future inputs
+            previous_output = x  
 
-        return torch.cat(saved_outputs, dim=1) 
+        return previous_output
 
-# test_shape = (1,3,224,224)
-# def test_DenseBlock():
-#     x = torch.randn(test_shape)
-#     model = DenseBlock(5,3)
-#     print('Denseblock Output shape : ',model(x).shape)
-#     print('Model ',model)
-#     # del model
-#     return model
+test_shape = (1,3,224,224)
+def test_DenseBlock():
+    x = torch.randn(test_shape)
+    model = DenseBlock(5,3)
+    print('Denseblock Output shape : ',model(x).shape)
+    print('Model ',model)
+    # del model
+    return model
 
-# model = test_DenseBlock()
+model = test_DenseBlock()
 
-# architecture = 'denseblock'
-# model_graph = draw_graph(model, input_size=(test_shape), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
-# model_graph.visual_graph
+architecture = 'denseblock'
+model_graph = draw_graph(model, input_size=(test_shape), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
+model_graph.visual_graph
 
 
 # class TransitionLayer(nn.Module):
