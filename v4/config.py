@@ -9,7 +9,6 @@ test_csv_file = "../data/pascal voc/test.csv"
 image_dir = "../data/pascal voc/images/"
 label_dir = "../data/pascal voc/labels/"  
 
-dense_growth_rate = 32
 SPP_pool_sizes=[1, 5, 9, 13]
 PAN_channels = [256, 512, 1024]
 

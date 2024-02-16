@@ -3,7 +3,6 @@ import torch.nn as nn
 from IPython.display import Image
 import torchvision
 from torchview import draw_graph
-from config import dense_growth_rate
 
 # set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -16,7 +15,6 @@ model_parameters['densenet201'] = [6,12,48,32]
 model_parameters['densenet264'] = [6,12,64,48]
 
 # growth rate
-k = dense_growth_rate
 compression_factor = 0.5
 
 class DenseLayer(nn.Module):
@@ -29,9 +27,9 @@ class DenseLayer(nn.Module):
         """
         super(DenseLayer,self).__init__()
         self.BN1 = nn.BatchNorm2d(num_features = in_channels)
-        self.conv1 = nn.Conv2d( in_channels=in_channels , out_channels=4*k , kernel_size=1 , stride=1 , padding=0 , bias = False )
-        self.BN2 = nn.BatchNorm2d(num_features = 4*k)
-        self.conv2 = nn.Conv2d( in_channels=4*k , out_channels=k , kernel_size=3 , stride=1 , padding=1 , bias = False )
+        self.conv1 = nn.Conv2d( in_channels=in_channels , out_channels= 4 * in_channels , kernel_size=1 , stride=1 , padding=0 , bias = False )
+        self.BN2 = nn.BatchNorm2d(num_features = 4* in_channels)
+        self.conv2 = nn.Conv2d( in_channels=4*in_channels , out_channels=in_channels , kernel_size=3 , stride=1 , padding=1 , bias = False )
         self.relu = nn.ReLU()
 
     def forward(self,x):
@@ -90,7 +88,7 @@ class DenseBlock(nn.Module):
     def forward(self, x):
         previous_output = None
         for layer in self.deep_nn:
-            layer_input = x + previous_output if previous_output else x 
+            layer_input = x + previous_output if previous_output is not None else x 
             x = layer(layer_input)
             previous_output = x  
 
