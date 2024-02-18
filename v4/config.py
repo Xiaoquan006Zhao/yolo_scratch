@@ -3,22 +3,25 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 
 import cv2 
   
-train_csv_file = "../data/pascal voc/100examples.csv"
-# train_csv_file = "../data/pascal voc/train.csv"
-test_csv_file = "../data/pascal voc/test.csv"
-image_dir = "../data/pascal voc/images/"
-label_dir = "../data/pascal voc/labels/"  
+dataset = "pascal voc"
+train_csv_file = f"../data/{dataset}/100examples.csv"
+# train_csv_file = f"../data/{dataset}/train.csv"
+test_csv_file = f"../data/{dataset}/test.csv"
+image_dir = f"../data/{dataset}/images/"
+label_dir = f"../data/{dataset}/labels/"  
 
 SPP_pool_sizes=[1, 5, 9, 13]
 PAN_channels = [256, 512, 1024]
 
 # Device 
 device = "cuda" if torch.cuda.is_available() else "cpu"
+
 # Load and save model variable 
 load_model = False
 save_model = True
 # model checkpoint file name 
-checkpoint_file = "checkpoint.pth.tar"
+checkpoint_file = f"{dataset}_checkpoint.pth.tar"
+
 # Anchor boxes for each feature map scaled between 0 and 1 
 # 3 feature maps at 3 different scales based on YOLOv3 paper 
 ANCHORS = [ 
@@ -26,6 +29,7 @@ ANCHORS = [
 	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
 ] 
+
 # Batch size for training 
 batch_size = 16
 # Learning rate for training 

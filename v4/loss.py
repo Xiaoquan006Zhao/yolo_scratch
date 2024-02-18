@@ -8,7 +8,7 @@ class YOLOLoss(nn.Module):
     def __init__(self):
         super().__init__()
         self.bce = nn.BCEWithLogitsLoss()
-        self.cross_entropy = nn.CrossEntropyLoss()
+        self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, pred, target, anchors):

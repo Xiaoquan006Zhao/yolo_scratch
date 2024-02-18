@@ -1,4 +1,5 @@
 import torch 
+import os
 import numpy as np
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches 
@@ -251,13 +252,18 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
 
 # Function to load checkpoint 
 def load_checkpoint(checkpoint_file, model, optimizer, lr): 
-	print("==> Loading checkpoint") 
-	checkpoint = torch.load(checkpoint_file, map_location=config.device) 
-	model.load_state_dict(checkpoint["state_dict"]) 
-	optimizer.load_state_dict(checkpoint["optimizer"]) 
+    if not os.path.exists(checkpoint_file):
+        # If the checkpoint file does not exist, print a message and return early.
+        print(f"==> Checkpoint file {checkpoint_file} does not exist. Skipping load.")
+        return
+    
+    print("==> Loading checkpoint")
+    checkpoint = torch.load(checkpoint_file, map_location=torch.device('cuda')) # Assuming you are using a CUDA device, adjust accordingly.
+    model.load_state_dict(checkpoint["state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer"])
 
-	for param_group in optimizer.param_groups: 
-		param_group["lr"] = lr 
+    for param_group in optimizer.param_groups:
+        param_group["lr"] = lr
 
 
 
