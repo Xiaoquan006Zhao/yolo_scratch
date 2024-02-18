@@ -4,9 +4,11 @@ from IPython.display import Image
 import torchvision
 from torchview import draw_graph
 from DenseBlock import *
+from DropBlock import DropBlock
+
 
 class CSPBlock(nn.Module):
-    def __init__(self, process_block):
+    def __init__(self, process_block, use_dropblock=True, dropblock_params={'block_size': 5, 'keep_prob': 0.9}):
         """
         Initialize the CSPBlock.
         Args:
@@ -15,6 +17,11 @@ class CSPBlock(nn.Module):
         """
         super(CSPBlock, self).__init__()
         self.process_block = process_block
+        self.use_dropblock = use_dropblock
+        if use_dropblock:
+            self.dropblock = DropBlock(**dropblock_params)
+
+        # because half of the CSP input channels is passed into process_block
         self.in_channels = process_block.in_channels * 2
 
     def forward(self, x):
@@ -33,6 +40,10 @@ class CSPBlock(nn.Module):
         
         # Concatenate the processed parts
         out = torch.cat((part1, part2_dense), dim=1)
+
+        if self.use_dropblock:
+            out = self.dropblock(out)
+
         return out
 
 # test_shape = (1,3,224,224)

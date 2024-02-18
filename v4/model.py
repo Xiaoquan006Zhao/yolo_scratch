@@ -121,7 +121,7 @@ class YOLOv4(nn.Module):
 
 			SPPBlock(config.SPP_pool_sizes),
 			CBMBlock(len(config.SPP_pool_sizes)*1024, 1024, 1),
-			PAN(config.PAN_channels, num_classes=20),
+			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
 	# Forward pass for YOLOv3 with route connections and scale predictions 

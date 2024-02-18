@@ -6,6 +6,7 @@ from BasicBlock import (
 )
 from torchview import draw_graph
 from DenseBlock import *
+from DropBlock import DropBlock
 
 class DownSample(nn.Module):
     def __init__(self, target_size):
@@ -40,28 +41,39 @@ class ScalePrediction(nn.Module):
 		return output
 
 class PAN(nn.Module):
-    def __init__(self, channels_list, num_classes=20):
+    def __init__(self, channels_list, num_classes, use_dropblock=True, dropblock_params={'block_size': 5, 'keep_prob': 0.9}):
         """
         channels_list: List of channel sizes for each feature map level.
         """
         super(PAN, self).__init__()
         self.num_classes = num_classes 
+        self.use_dropblock = use_dropblock
+        if use_dropblock:
+            self.dropblock = DropBlock(**dropblock_params)
+
 
         self.layers = nn.ModuleList([ 
             CBMBlock(channels_list[2], channels_list[0], kernel_size=1), 
             nn.Upsample(scale_factor=2), 
             CBMBlock(channels_list[0]+channels_list[1], channels_list[0], kernel_size=1, route=True),
+            DropBlock(**dropblock_params) if use_dropblock else nn.Identity(),
+
             CBMBlock(channels_list[0], channels_list[0], kernel_size=1),
             nn.Upsample(scale_factor=2),
             CBMBlock(channels_list[0]+channels_list[0], channels_list[0], kernel_size=1),
+            DropBlock(**dropblock_params) if use_dropblock else nn.Identity(),
             ScalePrediction(channels_list[0], num_classes= self.num_classes),
+
             CBMBlock(channels_list[0], channels_list[0], kernel_size=1),
             nn.Upsample(scale_factor=0.5),
             CBMBlock(channels_list[0]+channels_list[0], channels_list[0], kernel_size=1),
+            DropBlock(**dropblock_params) if use_dropblock else nn.Identity(),
             ScalePrediction(channels_list[0], num_classes= self.num_classes),
+
             CBMBlock(channels_list[0], channels_list[0], kernel_size=1),
             nn.Upsample(scale_factor=0.5),
             CBMBlock(channels_list[0]+channels_list[2], channels_list[0], kernel_size=1),
+            DropBlock(**dropblock_params) if use_dropblock else nn.Identity(),
             ScalePrediction(channels_list[0], num_classes= self.num_classes),
         ])
     

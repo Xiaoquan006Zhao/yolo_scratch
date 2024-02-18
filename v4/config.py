@@ -35,17 +35,19 @@ batch_size = 16
 # Learning rate for training 
 leanring_rate = 1e-5
 # Number of epochs for training 
-epochs = 20
+epochs = 60
 # Image size 
 image_size = 416
 # Grid cell sizes 
 s = [image_size // 32, image_size // 16, image_size // 8] 
+
 # Class labels 
 class_labels = [ 
 	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
 	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
 	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
 ]
+num_classes = len(class_labels)
 
 # Transform for training 
 train_transform = A.Compose( 
