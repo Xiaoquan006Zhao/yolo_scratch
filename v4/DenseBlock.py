@@ -81,6 +81,7 @@ class DenseBlock(nn.Module):
         super(DenseBlock,self).__init__()
         self.layer_num = layer_num
         self.deep_nn = nn.ModuleList()
+        self.in_channels = in_channels
 
         for num in range(self.layer_num):
             self.deep_nn.add_module(f"DenseLayer_{num}", DenseLayer(in_channels))
