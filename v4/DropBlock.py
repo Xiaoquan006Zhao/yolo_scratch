@@ -19,7 +19,11 @@ class DropBlock(nn.Module):
             block_mask = F.max_pool2d(mask.unsqueeze(1), kernel_size=self.block_size, stride=1, padding=self.block_size // 2)
             block_mask = 1 - block_mask.squeeze(1)
 
-            # Recompute keep_prob
+            # Adjusting block_mask to match x's channel dimension
+            block_mask = block_mask.unsqueeze(1)  # Add channel dimension
+            block_mask = block_mask.repeat(1, x.size(1), 1, 1)  # Repeat block_mask to match x's channel dimension
+
+            # Recompute keep_prob with adjusted block_mask
             out = x * block_mask * (block_mask.numel() / block_mask.sum())  
             return out
 

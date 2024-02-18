@@ -8,7 +8,7 @@ from DropBlock import DropBlock
 
 
 class CSPBlock(nn.Module):
-    def __init__(self, process_block, use_dropblock=True, dropblock_params={'block_size': 5, 'keep_prob': 0.9}):
+    def __init__(self, process_block, use_dropblock=True, dropblock_params={'block_size': 5, 'keep_probability': 0.9}):
         """
         Initialize the CSPBlock.
         Args:
