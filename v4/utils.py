@@ -9,98 +9,33 @@ import config
 # Defining a function to calculate Intersection over Union (IoU) 
 def ciou(box1, box2, is_pred=True): 
 	if is_pred: 
-		# IoU score for prediction and label 
-		# box1 (prediction) and box2 (label) are both in [x, y, width, height] format 
+		# Convert from center to corner format
+		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0] - box1[..., 2] / 2, box1[..., 1] - box1[..., 3] / 2, box1[..., 0] + box1[..., 2] / 2, box1[..., 1] + box1[..., 3] / 2
+		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0] - box2[..., 2] / 2, box2[..., 1] - box2[..., 3] / 2, box2[..., 0] + box2[..., 2] / 2, box2[..., 1] + box2[..., 3] / 2
 		
-		# Box coordinates of prediction 
-		b1_x1 = box1[..., 0:1] - box1[..., 2:3] / 2
-		b1_y1 = box1[..., 1:2] - box1[..., 3:4] / 2
-		b1_x2 = box1[..., 0:1] + box1[..., 2:3] / 2
-		b1_y2 = box1[..., 1:2] + box1[..., 3:4] / 2
-
-		# Box coordinates of ground truth 
-		b2_x1 = box2[..., 0:1] - box2[..., 2:3] / 2
-		b2_y1 = box2[..., 1:2] - box2[..., 3:4] / 2
-		b2_x2 = box2[..., 0:1] + box2[..., 2:3] / 2
-		b2_y2 = box2[..., 1:2] + box2[..., 3:4] / 2
-
-		# Get the coordinates of the intersection rectangle 
-		x1 = torch.max(b1_x1, b2_x1) 
-		y1 = torch.max(b1_y1, b2_y1) 
-		x2 = torch.min(b1_x2, b2_x2) 
-		y2 = torch.min(b1_y2, b2_y2) 
+		# Intersection area
+		inter_area = torch.clamp(torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1), min=0) * torch.clamp(torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1), min=0)
 		
-		# Make sure the intersection is at least 0 
-		intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0) 
+		# Union area
+		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - inter_area
+		
+		# IoU
+		iou = inter_area / (union_area + 1e-6)
 
-		# Calculate the union area 
-		box1_area = abs((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) 
-		box2_area = abs((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) 
-		union = box1_area + box2_area - intersection 
+		# Center distance
+		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
+		
+		# Enclosing box
+		c_x1, c_y1, c_x2, c_y2 = torch.min(b1_x1, b2_x1), torch.min(b1_y1, b2_y1), torch.max(b1_x2, b2_x2), torch.max(b1_y2, b2_y2)
+		c_diag = (c_x2 - c_x1)**2 + (c_y2 - c_y1)**2
+		
+		# Aspect ratio
+		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
+		alpha = v / (1 - iou + v + 1e-6)
+		
+		ciou_score = iou - (center_distance / (c_diag + 1e-6)) - alpha * v
 
-		# Calculate the IoU score 
-		epsilon = 1e-6
-		iou_score = intersection / (union + epsilon) 
-
-		# Return IoU score 
-		return iou_score 
-	# if is_pred: 
-	# 	# Calculate the center points of box1 and box2
-	# 	box1_center_x = box1[..., 0:1]
-	# 	box1_center_y = box1[..., 1:2]
-	# 	box2_center_x = box2[..., 0:1]
-	# 	box2_center_y = box2[..., 1:2]
-
-	# 	# Calculate the width and height of box1 and box2
-	# 	box1_width = box1[..., 2:3]
-	# 	box1_height = box1[..., 3:4]
-	# 	box2_width = box2[..., 2:3]
-	# 	box2_height = box2[..., 3:4]
-
-	# 	# Calculate the top left and bottom right corners of box1 and box2
-	# 	box1_x1 = box1_center_x - box1_width / 2
-	# 	box1_y1 = box1_center_y - box1_height / 2
-	# 	box1_x2 = box1_center_x + box1_width / 2
-	# 	box1_y2 = box1_center_y + box1_height / 2
-
-	# 	box2_x1 = box2_center_x - box2_width / 2
-	# 	box2_y1 = box2_center_y - box2_height / 2
-	# 	box2_x2 = box2_center_x + box2_width / 2
-	# 	box2_y2 = box2_center_y + box2_height / 2
-
-	# 	# Calculate the area of box1 and box2
-	# 	box1_area = box1_width * box1_height
-	# 	box2_area = box2_width * box2_height
-
-	# 	# Calculate intersection area
-	# 	inter_width = torch.min(box1_x2, box2_x2) - torch.max(box1_x1, box2_x1)
-	# 	inter_height = torch.min(box1_y2, box2_y2) - torch.max(box1_y1, box2_y1)
-	# 	inter_area = torch.clamp(inter_width, min=0) * torch.clamp(inter_height, min=0)
-
-	# 	# Calculate union area
-	# 	union_area = box1_area + box2_area - inter_area
-
-	# 	# Calculate IoU
-	# 	iou = inter_area / (union_area + 1e-6)
-
-	# 	# Calculate the center distance
-	# 	center_distance = torch.square(box1_center_x - box2_center_x) + torch.square(box1_center_y - box2_center_y)
-
-	# 	# Calculate the diagonal length of the smallest enclosing box covering both boxes
-	# 	enclosing_x_max = torch.max(box1_x2, box2_x2)
-	# 	enclosing_x_min = torch.min(box1_x1, box2_x1)
-	# 	enclosing_y_max = torch.max(box1_y2, box2_y2)
-	# 	enclosing_y_min = torch.min(box1_y1, box2_y1)
-	# 	diagonal_length = torch.square(enclosing_x_max - enclosing_x_min) + torch.square(enclosing_y_max - enclosing_y_min)
-
-	# 	# Calculate the aspect ratio term
-	# 	v = (4 / (np.pi ** 2)) * torch.pow(torch.atan(box2_width / box2_height) - torch.atan2(box1_width, box1_height), 2)
-	# 	alpha = v / (1 - iou + v + 1e-6)
-
-	# 	# Calculate CIoU loss
-	# 	ciou_loss = iou + (center_distance / (diagonal_length + 1e-6)) + alpha * v
-
-	# 	return ciou_loss
+		return ciou_score
 	else: 
 		# IoU score based on width and height of bounding boxes 
 		
