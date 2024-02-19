@@ -37,7 +37,7 @@ leanring_rate = 1e-5
 # Number of epochs for training 
 epochs = 60
 # Image size 
-image_size = 832
+image_size = 416
 # Grid cell sizes 
 s = [image_size // 32, image_size // 16, image_size // 8] 
 
