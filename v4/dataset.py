@@ -2,7 +2,7 @@ import torch
 import pandas as pd 
 import os 
 import numpy as np
-from PIL import Image, ImageFile 
+from PIL import Image, ImageFile, ImageDraw
 import config
 from utils import (
 	ciou,
@@ -59,6 +59,8 @@ class Dataset(torch.utils.data.Dataset):
 			augs = self.transform(image=image, bboxes=bboxes) 
 			image = augs["image"] 
 			bboxes = augs["bboxes"] 
+
+		self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"aumentation/{self.label_list.iloc[idx, 1]}")
 
 		targets = self.bbox_to_grid(bboxes)
 
@@ -143,5 +145,30 @@ class Dataset(torch.utils.data.Dataset):
 					targets[scale_idx][anchor_on_scale, i, j, 0] = -1
 
 		return targets
+
+	def save_augmented_image_with_bboxes(self, img, bboxes, file_path):
+		"""
+		Save an augmented image with bounding boxes drawn on it.
+
+		Args:
+		- img (numpy.ndarray): The augmented image.
+		- bboxes (list): A list of bounding boxes and class labels for the image.
+		- file_path (str): The path where the image will be saved.
+		"""
+		# Convert the numpy image to a PIL Image
+		img = Image.fromarray(img)
+		# Create a drawing context
+		draw = ImageDraw.Draw(img)
+		
+		# Iterate over the bounding boxes
+		for bbox in bboxes:
+			# Each bbox is (x_min, y_min, x_max, y_max, class_label)
+			# You might need to adjust this depending on how your bboxes are defined
+			box = bbox[:4]
+			# Draw the rectangle
+			draw.rectangle(((box[0], box[1]), (box[2], box[3])), outline="red")
+		
+		# Save the image
+		img.save(file_path)
 
 
