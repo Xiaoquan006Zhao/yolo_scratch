@@ -60,7 +60,7 @@ class Dataset(torch.utils.data.Dataset):
 			image = augs["image"] 
 			bboxes = augs["bboxes"] 
 
-		self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"aumentation/{self.label_list.iloc[idx, 0]}")
+		# self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"aumentation/{self.label_list.iloc[idx, 0]}")
 
 		targets = self.bbox_to_grid(bboxes)
 
