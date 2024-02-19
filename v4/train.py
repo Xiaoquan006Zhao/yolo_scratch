@@ -6,9 +6,11 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 import torch.optim as optim 
 from tqdm import tqdm
 import config
+import os
 from model import YOLOv4
 from loss import YOLOLoss
 from utils import (
+	delete_all_files_in_augmentation_folder,
 	load_checkpoint,
 	save_checkpoint,
 )
@@ -58,6 +60,8 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		# update progress bar with loss 
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
+
+delete_all_files_in_augmentation_folder()
 
 # Creating the model from YOLOv3 class 
 model = YOLOv4().to(config.device) 
