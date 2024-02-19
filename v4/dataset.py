@@ -155,6 +155,19 @@ class Dataset(torch.utils.data.Dataset):
 		- bboxes (list): A list of bounding boxes and class labels for the image.
 		- file_path (str): The path where the image will be saved.
 		"""
+		# Check if img is a Tensor and convert it to a numpy array
+		if isinstance(img, torch.Tensor):
+			# Ensure tensor is on CPU and convert to numpy
+			img = img.cpu().numpy()
+		
+		# Convert the numpy image to a PIL Image
+		# If the image was a tensor, its format is likely CHW (channels, height, width)
+		# PIL expects HWC format, so we need to transpose the axes
+		if img.ndim == 3:  # This means image has channels
+			# Convert CHW to HWC
+			img = np.transpose(img, (1, 2, 0))
+		img = Image.fromarray((img * 255).astype(np.uint8))
+		
 		# Convert the numpy image to a PIL Image
 		img = Image.fromarray(img)
 		# Create a drawing context
