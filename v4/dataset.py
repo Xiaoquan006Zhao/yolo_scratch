@@ -162,14 +162,24 @@ class Dataset(torch.utils.data.Dataset):
 
 		# Create a drawing context
 		draw = ImageDraw.Draw(img)
+
+		img_width, img_height = img.size
 		
 		# Iterate over the bounding boxes
 		for bbox in bboxes:
-			# Each bbox is (x_min, y_min, x_max, y_max, class_label)
-			# You might need to adjust this depending on how your bboxes are defined
-			box = [bbox[0], bbox[1], bbox[2], bbox[3]]  # Adjusted for clarity
+			# Convert normalized coordinates to absolute pixel values
+			x_min, y_min, x_max, y_max = bbox[:4]
+			abs_x_min = x_min * img_width
+			abs_y_min = y_min * img_height
+			abs_x_max = x_max * img_width
+			abs_y_max = y_max * img_height
+			
+			# Ensure coordinates are correctly ordered
+			abs_x_min, abs_x_max = min(abs_x_min, abs_x_max), max(abs_x_min, abs_x_max)
+			abs_y_min, abs_y_max = min(abs_y_min, abs_y_max), max(abs_y_min, abs_y_max)
+			
 			# Draw the rectangle
-			draw.rectangle(((box[0], box[1]), (box[2], box[3])), outline="red")
+			draw.rectangle(((abs_x_min, abs_y_min), (abs_x_max, abs_y_max)), outline="red")
 		
 		# Ensure the directory exists before saving
 		os.makedirs(os.path.dirname(file_path), exist_ok=True)
