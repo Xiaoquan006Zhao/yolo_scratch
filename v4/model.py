@@ -89,7 +89,7 @@ class ScalePrediction(nn.Module):
 
 # Class for defining YOLOv3 model 
 class YOLOv4(nn.Module): 
-	def __init__(self, in_channels=3, num_classes=20): 
+	def __init__(self, in_channels=3, num_classes=config.num_classes): 
 		super().__init__() 
 		self.num_classes = num_classes 
 		self.in_channels = in_channels 

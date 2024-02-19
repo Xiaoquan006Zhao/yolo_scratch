@@ -3,16 +3,18 @@ import pandas as pd
 import os 
 import numpy as np
 from PIL import Image, ImageFile 
+import config
 from utils import (
 	ciou,
 )
+
 
 # Create a dataset class to load the images and labels from the folder 
 class Dataset(torch.utils.data.Dataset): 
 	def __init__( 
 		self, csv_file, image_dir, label_dir, anchors, 
 		image_size=416, grid_sizes=[13, 26, 52], 
-		num_classes=20, transform=None
+		num_classes=config.num_classes, transform=None
 	): 
 		# Read the csv file with image names and labels 
 		self.label_list = pd.read_csv(csv_file) 
@@ -58,6 +60,12 @@ class Dataset(torch.utils.data.Dataset):
 			image = augs["image"] 
 			bboxes = augs["bboxes"] 
 
+		targets = self.bbox_to_grid(bboxes)
+
+		# Return the image and the target 
+		return image, tuple(targets)
+
+	def bbox_to_grid(self, bboxes):
 		# Below assumes 3 scale predictions (as paper) and same num of anchors per scale 
 		# target : [object probabilities, x, y, width, height, class_label] 
 		targets = [torch.zeros((self.num_anchors_per_scale, s, s, 6)) 
@@ -134,7 +142,6 @@ class Dataset(torch.utils.data.Dataset):
 					# thus -1 is ignored
 					targets[scale_idx][anchor_on_scale, i, j, 0] = -1
 
-		# Return the image and the target 
-		return image, tuple(targets)
+		return targets
 
 
