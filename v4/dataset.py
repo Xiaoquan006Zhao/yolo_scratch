@@ -147,29 +147,19 @@ class Dataset(torch.utils.data.Dataset):
 		return targets
 
 	def save_augmented_image_with_bboxes(self, img, bboxes, file_path):
-		"""
-		Save an augmented image with bounding boxes drawn on it.
-
-		Args:
-		- img (numpy.ndarray): The augmented image.
-		- bboxes (list): A list of bounding boxes and class labels for the image.
-		- file_path (str): The path where the image will be saved.
-		"""
 		# Check if img is a Tensor and convert it to a numpy array
 		if isinstance(img, torch.Tensor):
 			# Ensure tensor is on CPU and convert to numpy
 			img = img.cpu().numpy()
-		
+
 		# Convert the numpy image to a PIL Image
 		# If the image was a tensor, its format is likely CHW (channels, height, width)
 		# PIL expects HWC format, so we need to transpose the axes
-		if img.ndim == 3:  # This means image has channels
+		if img.ndim == 3:  # This means the image has channels
 			# Convert CHW to HWC
 			img = np.transpose(img, (1, 2, 0))
 		img = Image.fromarray((img * 255).astype(np.uint8))
-		
-		# Convert the numpy image to a PIL Image
-		img = Image.fromarray(img)
+
 		# Create a drawing context
 		draw = ImageDraw.Draw(img)
 		
@@ -177,11 +167,15 @@ class Dataset(torch.utils.data.Dataset):
 		for bbox in bboxes:
 			# Each bbox is (x_min, y_min, x_max, y_max, class_label)
 			# You might need to adjust this depending on how your bboxes are defined
-			box = bbox[:4]
+			box = [bbox[0], bbox[1], bbox[2], bbox[3]]  # Adjusted for clarity
 			# Draw the rectangle
 			draw.rectangle(((box[0], box[1]), (box[2], box[3])), outline="red")
 		
+		# Ensure the directory exists before saving
+		os.makedirs(os.path.dirname(file_path), exist_ok=True)
+		
 		# Save the image
 		img.save(file_path)
+
 
 
