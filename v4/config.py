@@ -62,7 +62,7 @@ train_transform = A.Compose(
             brightness=0.5, contrast=0.5,
             saturation=0.5, hue=0.5, p=0.5
         ),
-        A.RandomCrop(width=256, height=256, p=0.5),
+        # A.RandomCrop(width=256, height=256, p=0.5),
         A.Rotate(limit=45, p=0.5),
         A.HorizontalFlip(p=0.5),
 
