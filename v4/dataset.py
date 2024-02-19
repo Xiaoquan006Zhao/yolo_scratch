@@ -60,7 +60,12 @@ class Dataset(torch.utils.data.Dataset):
 			image = augs["image"] 
 			bboxes = augs["bboxes"] 
 
-		self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"aumentation/{self.label_list.iloc[idx, 0]}")
+		augmentation_folder = 'augmentation'
+		num_items = len([name for name in os.listdir(augmentation_folder) if os.path.isfile(os.path.join(augmentation_folder, name))])
+
+		# Proceed only if there are less than 10 items in the folder
+		if num_items < 10:
+			self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"{augmentation_folder}/{self.label_list.iloc[idx, 0]}")
 
 		targets = self.bbox_to_grid(bboxes)
 
@@ -167,16 +172,20 @@ class Dataset(torch.utils.data.Dataset):
 		
 		# Iterate over the bounding boxes
 		for bbox in bboxes:
-			# Convert normalized coordinates to absolute pixel values
-			x_min, y_min, x_max, y_max = bbox[:4]
-			abs_x_min = x_min * img_width
-			abs_y_min = y_min * img_height
-			abs_x_max = x_max * img_width
-			abs_y_max = y_max * img_height
+			# Given bbox format is [center_x, center_y, width, height]
+			center_x, center_y, bbox_width, bbox_height = bbox[:4]
 			
-			# Ensure coordinates are correctly ordered
-			abs_x_min, abs_x_max = min(abs_x_min, abs_x_max), max(abs_x_min, abs_x_max)
-			abs_y_min, abs_y_max = min(abs_y_min, abs_y_max), max(abs_y_min, abs_y_max)
+			# Convert normalized midpoints and dimensions to absolute pixel values
+			abs_center_x = center_x * img_width
+			abs_center_y = center_y * img_height
+			abs_bbox_width = bbox_width * img_width
+			abs_bbox_height = bbox_height * img_height
+			
+			# Calculate the corners of the bounding box
+			abs_x_min = abs_center_x - (abs_bbox_width / 2)
+			abs_y_min = abs_center_y - (abs_bbox_height / 2)
+			abs_x_max = abs_center_x + (abs_bbox_width / 2)
+			abs_y_max = abs_center_y + (abs_bbox_height / 2)
 			
 			# Draw the rectangle
 			draw.rectangle(((abs_x_min, abs_y_min), (abs_x_max, abs_y_max)), outline="red")
@@ -186,6 +195,7 @@ class Dataset(torch.utils.data.Dataset):
 		
 		# Save the image
 		img.save(file_path)
+
 
 
 
