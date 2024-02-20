@@ -200,7 +200,6 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
 
-
 def delete_all_files_in_augmentation_folder():
 	augmentation_folder = config.augmentation_folder
 	# Check if the directory exists to avoid errors

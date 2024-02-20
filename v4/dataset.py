@@ -60,12 +60,15 @@ class Dataset(torch.utils.data.Dataset):
 			image = augs["image"] 
 			bboxes = augs["bboxes"] 
 
-		augmentation_folder = 'augmentation'
-		num_items = len([name for name in os.listdir(augmentation_folder) if os.path.isfile(os.path.join(augmentation_folder, name))])
+		if config.allow_augmentation:
+			augmentation_folder = 'augmentation'
+			num_items = len([name for name in os.listdir(augmentation_folder) if os.path.isfile(os.path.join(augmentation_folder, name))])
 
-		# Proceed only if there are less than 10 items in the folder
-		if num_items < 10:
-			self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"{augmentation_folder}/{self.label_list.iloc[idx, 0]}")
+			# Proceed only if there are less than 10 items in the folder
+			if num_items < 10:
+				self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"{augmentation_folder}/{self.label_list.iloc[idx, 0]}")
+			else:
+				config.allow_augmentation = False
 
 		targets = self.bbox_to_grid(bboxes)
 
