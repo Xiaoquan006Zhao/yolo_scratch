@@ -13,8 +13,7 @@ label_dir = f"../data/{dataset}/labels/"
 SPP_pool_sizes=[1, 5, 9, 13]
 PAN_channels = [256, 512, 1024]
 
-augmentation_folder = 'augmentation'
-allow_augmentation = True
+augmentation_folder = 'augmentation/'
 
 # Device 
 device = "cuda" if torch.cuda.is_available() else "cpu"

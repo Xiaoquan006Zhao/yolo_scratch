@@ -4,6 +4,7 @@ import os
 import numpy as np
 from PIL import Image, ImageFile, ImageDraw
 import config
+import random
 from utils import (
 	ciou,
 )
@@ -43,32 +44,7 @@ class Dataset(torch.utils.data.Dataset):
 		return len(self.label_list) 
 	
 	def __getitem__(self, idx): 
-		# Getting the label path 
-		label_path = os.path.join(self.label_dir, self.label_list.iloc[idx, 1]) 
-		# We are applying roll to move class label to the last column 
-		# 5 columns: x, y, width, height, class_label 
-		bboxes = np.roll(np.loadtxt(fname=label_path, 
-						delimiter=" ", ndmin=2), 4, axis=1).tolist() 
-		
-		# Getting the image path 
-		img_path = os.path.join(self.image_dir, self.label_list.iloc[idx, 0]) 
-		image = np.array(Image.open(img_path).convert("RGB")) 
-
-		# Albumentations augmentations 
-		if self.transform: 
-			augs = self.transform(image=image, bboxes=bboxes) 
-			image = augs["image"] 
-			bboxes = augs["bboxes"] 
-
-		if config.allow_augmentation:
-			augmentation_folder = 'augmentation'
-			num_items = len([name for name in os.listdir(augmentation_folder) if os.path.isfile(os.path.join(augmentation_folder, name))])
-
-			# Proceed only if there are less than 10 items in the folder
-			if num_items < 10:
-				self.save_augmented_image_with_bboxes(image, bboxes, file_path=f"{augmentation_folder}/{self.label_list.iloc[idx, 0]}")
-			else:
-				config.allow_augmentation = False
+		image, bboxes = self.parse_to_image_and_bboxes(idx)
 
 		targets = self.bbox_to_grid(bboxes)
 
@@ -154,7 +130,30 @@ class Dataset(torch.utils.data.Dataset):
 
 		return targets
 
-	def save_augmented_image_with_bboxes(self, img, bboxes, file_path):
+	def parse_to_image_and_bboxes(self, idx):
+		# Getting the label path 
+		label_path = os.path.join(self.label_dir, self.label_list.iloc[idx, 1]) 
+		# We are applying roll to move class label to the last column 
+		# 5 columns: x, y, width, height, class_label 
+		bboxes = np.roll(np.loadtxt(fname=label_path, 
+						delimiter=" ", ndmin=2), 4, axis=1).tolist() 
+		
+		# Getting the image path 
+		img_path = os.path.join(self.image_dir, self.label_list.iloc[idx, 0]) 
+		image = np.array(Image.open(img_path).convert("RGB")) 
+
+		# Albumentations augmentations 
+		if self.transform: 
+			augs = self.transform(image=image, bboxes=bboxes) 
+			image = augs["image"] 
+			bboxes = augs["bboxes"] 
+		
+		return image, bboxes
+
+	def save_augmented_image_with_bboxes(self, augmentation_folder_path):
+		random_index = random.randint(0, len(self.label_list) - 1)
+		img, bboxes = self.parse_to_image_and_bboxes(random_index)
+
 		# Check if img is a Tensor and convert it to a numpy array
 		if isinstance(img, torch.Tensor):
 			# Ensure tensor is on CPU and convert to numpy
@@ -193,6 +192,7 @@ class Dataset(torch.utils.data.Dataset):
 			# Draw the rectangle
 			draw.rectangle(((abs_x_min, abs_y_min), (abs_x_max, abs_y_max)), outline="red")
 		
+		file_path = augmentation_folder_path + self.label_list.iloc[random_index, 0]
 		# Ensure the directory exists before saving
 		os.makedirs(os.path.dirname(file_path), exist_ok=True)
 		
