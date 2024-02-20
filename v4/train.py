@@ -35,11 +35,13 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		with torch.cuda.amp.autocast(): 
 			# Getting the model predictions 
 			outputs = model(x) 
+
 			# Calculating the loss at each scale 
+			# the weight [4, 1, 0.4] is found in https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#41-compute-losses
 			loss = ( 
-				loss_fn(outputs[0], y0, scaled_anchors[0]) 
+				4 * loss_fn(outputs[0], y0, scaled_anchors[0]) 
 				+ loss_fn(outputs[1], y1, scaled_anchors[1]) 
-				+ loss_fn(outputs[2], y2, scaled_anchors[2]) 
+				+ 0.4 * loss_fn(outputs[2], y2, scaled_anchors[2]) 
 			) 
 
 		# Add the loss to the list 
