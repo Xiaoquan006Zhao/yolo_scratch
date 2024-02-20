@@ -102,7 +102,7 @@ num_items = len([name for name in os.listdir(augmentation_folder) if os.path.isf
 
 # Proceed only if there are less than 10 items in the folder
 if num_items < 10:
-	train_dataset.save_augmented_image_with_bboxes(file_path=augmentation_folder)
+	train_dataset.save_augmented_image_with_bboxes(augmentation_folder)
 
 # Scaling the anchors 
 scaled_anchors = ( 
