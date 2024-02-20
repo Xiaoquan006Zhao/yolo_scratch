@@ -69,15 +69,15 @@ train_transform = A.Compose(
         A.HorizontalFlip(p=0.5),
 
         # Additional transformations
-        A.VerticalFlip(p=0.5),  # Flip the image vertically
+        #A.VerticalFlip(p=0.5),  # Flip the image vertically
         # Adjust brightness and contrast
         A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),  
         # Add Gaussian noise
-        A.GaussNoise(var_limit=(10.0, 50.0), p=0.5),  
+        #A.GaussNoise(var_limit=(10.0, 50.0), p=0.5),  
         # Affine transformations: shift, scale, rotate
-        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.1, rotate_limit=45, p=0.5),  
+        #A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.1, rotate_limit=45, p=0.5),  
         # Elastic deformation
-        A.ElasticTransform(alpha=1, sigma=50, alpha_affine=50, p=0.5),  
+        #A.ElasticTransform(alpha=1, sigma=50, alpha_affine=50, p=0.5),  
         
 		# Normalize the image 
 		A.Normalize( 
