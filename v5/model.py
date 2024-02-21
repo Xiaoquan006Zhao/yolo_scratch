@@ -13,7 +13,7 @@ from Blocks.SPPF import SPPFBlock
 
 # yolo v5 architecture defination
 # https://user-images.githubusercontent.com/31005897/172404576-c260dcf9-76bb-4bc8-b6a9-f2d987792583.png
-
+# https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#1-model-structure
 
 # Class for defining YOLOv3 model 
 class YOLOv5(nn.Module): 
