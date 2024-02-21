@@ -78,7 +78,7 @@ class PAN(nn.Module):
 
         outputs.append(self.predication3(x))
 
-        return outputs # predictions derived from less channels to more channels
+        return outputs[::-1] # predictions returned from more channels to less channels (big to small)
 
 
 # def test_PAN():
