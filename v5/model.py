@@ -16,7 +16,7 @@ from Blocks.SPPF import SPPFBlock
 
 
 # Class for defining YOLOv3 model 
-class YOLOv4(nn.Module): 
+class YOLOv5(nn.Module): 
 	def __init__(self, in_channels=3, num_classes=config.num_classes): 
 		super().__init__() 
 		self.num_classes = num_classes 
@@ -44,7 +44,7 @@ class YOLOv4(nn.Module):
 	# Forward pass for YOLOv3 with route connections and scale predictions 
 	def forward(self, x): 
 		outputs = [] 
-		
+
 		for layer in self.layers: 
 			if isinstance(layer, PAN):
 				return layer(outputs)

@@ -7,7 +7,7 @@ import torch.optim as optim
 from tqdm import tqdm
 import config
 import os
-from model import YOLOv4
+from model import YOLOv5
 from loss import YOLOLoss
 from utils import (
 	delete_all_files_in_augmentation_folder,
@@ -65,7 +65,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 
 
 # Creating the model from YOLOv3 class 
-model = YOLOv4().to(config.device) 
+model = YOLOv5().to(config.device) 
 
 # Defining the optimizer 
 optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
