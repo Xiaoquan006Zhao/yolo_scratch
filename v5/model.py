@@ -37,7 +37,7 @@ class YOLOv5(nn.Module):
 			ConvBNMish(512, 1024, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(1024, bottleNeck_use_residual=True, BottleNeck_repeats=3),
 
-			SPPFBlock(1024, pool_repeats=5, pool_size=3),
+			SPPFBlock(1024, pool_size=5, pool_repeats=3),
 			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
