@@ -26,7 +26,7 @@ class PAN(nn.Module):
         self.CSP1 = CSPBlock(channels_list[2], bottleNeck_use_residual=False, BottleNeck_repeats=3)
 
         self.conv2 = ConvBNMish(channels_list[1], channels_list[0], kernel_size=1, stride=1,padding=0)
-        self.upsample2 = nn.Upsample(scale_factor=2), 
+        self.upsample2 = nn.Upsample(scale_factor=2)
         self.CSP2 = CSPBlock(channels_list[1], bottleNeck_use_residual=False, BottleNeck_repeats=3)
 
         self.predication1 = nn.Conv2d(channels_list[0], prediction_channels, kernel_size=1, stride=1, padding=0)
