@@ -86,13 +86,13 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 	box_predictions = predictions[..., 1:5] 
 
 	# If the input is predictions then we will pass the x and y coordinate 
-	# through sigmoid function and width and height to exponent function and 
+	# through sigmoid function and width and height to sigmoid function and 
 	# calculate the score and best class. 
 	if is_predictions: 
 		anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
-		box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2]) 
-		box_predictions[..., 2:] = torch.exp( 
-			box_predictions[..., 2:]) * anchors 
+		box_predictions[..., 0:2] = 2*torch.sigmoid(box_predictions[..., 0:2])-0.5
+		box_predictions[..., 2:4] = (2*torch.sigmoid(box_predictions[..., 2:4]) ** 2) * anchors
+		
 		objectness = torch.sigmoid(predictions[..., 0:1]) 
 		best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 	
@@ -110,13 +110,13 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 	) 
 
 	# Calculate x, y, width and height with proper scaling 
-	x = 1 / s * (box_predictions[..., 0:1] + cell_indices) 
-	y = 1 / s * (box_predictions[..., 1:2] +
-				cell_indices.permute(0, 1, 3, 2, 4)) 
-	width_height = 1 / s * box_predictions[..., 2:4] 
+	x = (box_predictions[..., 0:1] + cell_indices / s) 
+	y = (box_predictions[..., 1:2] +
+				cell_indices.permute(0, 1, 3, 2, 4) / s) 
+	width, height = box_predictions[..., 2:3],  box_predictions[..., 3:4]
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	converted_bboxes = torch.cat((best_class, objectness, x, y, width_height), dim=-1).reshape(
+	converted_bboxes = torch.cat((best_class, objectness, x, y, width, height), dim=-1).reshape(
 		batch_size, num_anchors * s * s, 6) 
 
 	# Returning the reshaped and converted bounding box list 

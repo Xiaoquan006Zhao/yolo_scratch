@@ -76,7 +76,9 @@ class Dataset(torch.utils.data.Dataset):
 				# which scale of [13, 26, 52], more detail refer to anchor_indices calculation
 				scale_idx = anchor_idx // self.num_anchors_per_scale 
 				# which anchor which in the scale
-				anchor_on_scale = anchor_idx % self.num_anchors_per_scale 
+				anchor_on_scale_index = anchor_idx % self.num_anchors_per_scale 
+
+				anchor_width, anchor_height = self.anchors[anchor_idx][0], self.anchors[anchor_idx][1]
 				
 				# Identifying the grid size for the scale
 				s = self.grid_sizes[scale_idx] 
@@ -85,7 +87,7 @@ class Dataset(torch.utils.data.Dataset):
 				i, j = int(s * y), int(s * x) 
 
 				# locate the anchor within scale and grid
-				anchor_taken = targets[scale_idx][anchor_on_scale, i, j, 0] 
+				anchor_taken = targets[scale_idx][anchor_on_scale_index, i, j, 0] 
 
 				# In the following situations we do not consider if the anchor box within grid is already assigned
 				# Because the anchors are ordered by IoU score, 
@@ -95,20 +97,23 @@ class Dataset(torch.utils.data.Dataset):
 				# If the anchor box within grid is not assigned 
 				if not anchor_taken and not has_anchor[scale_idx]: 
 					# Set the probability to 1 
-					targets[scale_idx][anchor_on_scale, i, j, 0] = 1
+					targets[scale_idx][anchor_on_scale_index, i, j, 0] = 1
 
 					# Calculating the center of the bounding box relative to the cell 
-					x_cell, y_cell = s * x - j, s * y - i 
-					# Calculating the width and height of the bounding box 
-					# relative to the cell 
-					width_cell, height_cell = width * s, height * s
+					bx_offsetted, by_offsetted = ((x-j/s)+0.5)/2, ((y-i/s)+0.5)/2
+					x_ground_truth, y_ground_truth = torch.log(bx_offsetted / (1 - bx_offsetted)), torch.log(by_offsetted / (1 - by_offsetted))
+
+					# Calculating the width and height of the bounding box relative to the cell 
+					bw_offseted, bh_offsetted = torch.sqrt(width/anchor_width)/2, torch.sqrt(height/anchor_height)/2
+					width_ground_truth, height_ground_truth = torch.log(bw_offseted), torch.log(bh_offsetted)
+
 					# Idnetify the box coordinates 
-					box_coordinates = torch.tensor([x_cell, y_cell, width_cell, height_cell]) 
+					box_coordinates = torch.tensor([x_ground_truth, y_ground_truth, width_ground_truth, height_ground_truth]) 
 
 					# Assigning the box coordinates to the target 
-					targets[scale_idx][anchor_on_scale, i, j, 1:5] = box_coordinates 
+					targets[scale_idx][anchor_on_scale_index, i, j, 1:5] = box_coordinates 
 					# Assigning the class label to the target 
-					targets[scale_idx][anchor_on_scale, i, j, 5] = int(class_label) 
+					targets[scale_idx][anchor_on_scale_index, i, j, 5] = int(class_label) 
 
 					# Set the anchor box as assigned for the scale 
 					# The current scale we have already identified the object, 
@@ -125,7 +130,7 @@ class Dataset(torch.utils.data.Dataset):
 					# yet it shouldn't be treated as a complete negative example (background) either.
 					# Because later in loss calcuation, we calculate loss based on objectness == 0 or == 1
 					# thus -1 is ignored
-					targets[scale_idx][anchor_on_scale, i, j, 0] = -1
+					targets[scale_idx][anchor_on_scale_index, i, j, 0] = -1
 
 		return targets
 
