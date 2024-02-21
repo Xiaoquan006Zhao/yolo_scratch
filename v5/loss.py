@@ -34,7 +34,7 @@ class YOLOLoss(nn.Module):
         cious = ciou(box_preds[obj], target[..., 1:5][obj])
 
         # CIoU loss for bounding box regression
-        box_loss = np.sum(1-cious)
+        box_loss = torch.sum(1-cious)
 
         # Objectness loss for predicting the presence of an object
         object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
