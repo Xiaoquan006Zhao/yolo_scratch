@@ -11,7 +11,7 @@ class SPPFBlock(nn.Module):
         self.pool_repeats = pool_repeats
         self.pool_size = pool_size
         self.conv1 = ConvBNMish(in_channels, out_channels=in_channels//2, kernel_size=1, stride=1, padding=0)
-        self.conv_out = ConvBNMish(in_channels * (pool_repeats + 1), in_channels, kernel_size=1, stride=1, padding=0)
+        self.conv_out = ConvBNMish(in_channels //2 * (pool_repeats + 1), in_channels, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
         x = self.conv1(x)
