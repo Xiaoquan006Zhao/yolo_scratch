@@ -9,7 +9,7 @@ from .BasicBlock import ConvBNMish
 from torchvision.ops import drop_block2d
 
 class CSPBlock(nn.Module):
-    def __init__(self, in_channels, bottleNeck_use_residual, BottleNeck_repeats, use_dropblock=True, dropblock_params={'block_size': 5, 'p': 0.1}):
+    def __init__(self, in_channels, out_channels, bottleNeck_use_residual, BottleNeck_repeats, use_dropblock=True, dropblock_params={'block_size': 5, 'p': 0.1}):
         super(CSPBlock, self).__init__()
         self.process_block = BottleNeck(in_channels//2, bottleNeck_use_residual)
         self.BottleNeck_repeats = BottleNeck_repeats
@@ -23,7 +23,6 @@ class CSPBlock(nn.Module):
         self.conv_part1 = ConvBNMish(conv_input_channels, conv_input_channels, kernel_size=1, stride=1, padding=0)
         self.conv_part2 = ConvBNMish(conv_input_channels, conv_input_channels, kernel_size=1, stride=1, padding=0)
 
-        out_channels = in_channels if bottleNeck_use_residual else in_channels // 2
         self.conv_out = ConvBNMish(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
