@@ -22,7 +22,9 @@ class CSPBlock(nn.Module):
         conv_input_channels = in_channels // 2
         self.conv_part1 = ConvBNMish(conv_input_channels, conv_input_channels, kernel_size=1, stride=1, padding=0)
         self.conv_part2 = ConvBNMish(conv_input_channels, conv_input_channels, kernel_size=1, stride=1, padding=0)
-        self.conv_out = ConvBNMish(in_channels, in_channels, kernel_size=1, stride=1, padding=0)
+
+        out_channels = in_channels if bottleNeck_use_residual else in_channels // 2
+        self.conv_out = ConvBNMish(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
         # Split input into two parts
