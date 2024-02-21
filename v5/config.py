@@ -32,6 +32,8 @@ ANCHORS = [
 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
 ] 
 
+numerical_stability = 1e-6
+
 # Batch size for training 
 batch_size = 4
 # Learning rate for training 

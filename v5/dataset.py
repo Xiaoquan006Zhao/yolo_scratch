@@ -4,6 +4,7 @@ import os
 import numpy as np
 from PIL import Image, ImageFile, ImageDraw
 import config
+from config import numerical_stability
 import random
 from utils import (
 	ciou,
@@ -101,7 +102,7 @@ class Dataset(torch.utils.data.Dataset):
 
 					# Calculating the center of the bounding box relative to the cell 
 					bx_offsetted, by_offsetted = (x-j/s), (y-i/s)
-					x_ground_truth, y_ground_truth = np.log(bx_offsetted / (1 - bx_offsetted)), np.log(by_offsetted / (1 - by_offsetted))
+					x_ground_truth, y_ground_truth = np.log(bx_offsetted / (1 - bx_offsetted + numerical_stability)), np.log(by_offsetted / (1 - by_offsetted + numerical_stability))
 
 					# Calculating the width and height of the bounding box relative to the cell 
 					# bw_offseted, bh_offsetted = np.sqrt(width/anchor_width)/2, np.sqrt(height/anchor_height)/2
