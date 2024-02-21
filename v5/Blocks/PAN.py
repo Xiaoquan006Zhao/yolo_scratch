@@ -5,8 +5,8 @@ from BasicBlock import (
     CBMBlock,
 )
 from torchview import draw_graph
-from BasicBlock import ConvBNMish
-from CSP import CSPBlock
+from .BasicBlock import ConvBNMish
+from .CSP import CSPBlock
 from torchvision.ops import drop_block2d
 
 class PAN(nn.Module):

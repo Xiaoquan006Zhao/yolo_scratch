@@ -4,7 +4,7 @@ from IPython.display import Image
 import torchvision
 from torchview import draw_graph
 
-from BasicBlock import ConvBNMish
+from .BasicBlock import ConvBNMish
 
 class BottleNeck(nn.Module):
     def __init__(self, in_channels, use_residual = True):

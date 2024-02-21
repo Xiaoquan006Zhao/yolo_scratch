@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchview import draw_graph
 
-from BasicBlock import ConvBNMish
+from .BasicBlock import ConvBNMish
 
 class SPPFBlock(nn.Module):
     def __init__(self, in_channels, pool_size, pool_repeats):

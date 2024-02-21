@@ -4,8 +4,8 @@ from IPython.display import Image
 import torchvision
 from torchview import draw_graph
 
-from BottleNeck import BottleNeck
-from BasicBlock import ConvBNMish
+from .BottleNeck import BottleNeck
+from .BasicBlock import ConvBNMish
 from torchvision.ops import drop_block2d
 
 class CSPBlock(nn.Module):
