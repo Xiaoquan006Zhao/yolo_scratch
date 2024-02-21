@@ -7,6 +7,22 @@ from .BasicBlock import ConvBNMish
 from .CSP import CSPBlock
 from torchvision.ops import drop_block2d
 
+class ScalePrediction(nn.Module): 
+    def __init__(self, in_channels, num_classes): 
+        super(ScalePrediction, self).__init__()
+        self.num_classes = num_classes
+        out_channels = (num_classes + 5) * 3
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
+        
+    
+    # Defining the forward pass and reshaping the output to the desired output 
+    # format: (batch_size, 3, grid_size, grid_size, num_classes + 5) 
+    def forward(self, x): 
+        output = self.conv1(x) 
+        output = output.view(x.size(0), 3, self.num_classes + 5, x.size(2), x.size(3)) 
+        output = output.permute(0, 1, 3, 4, 2) 
+        return output
+
 class PAN(nn.Module):
     def __init__(self, channels_list, num_classes, use_dropblock=True, dropblock_params={'block_size': 5, 'p': 0.1}):
         """
@@ -18,9 +34,6 @@ class PAN(nn.Module):
         self.use_dropblock = use_dropblock
         self.dropblock_params = dropblock_params
 
-        # 3 anchors, bbox + objectness = 5
-        prediction_channels = (num_classes + 5) * 3
-
         self.conv1 = ConvBNMish(channels_list[2], channels_list[1], kernel_size=1, stride=1,padding=0)
         self.upsample1 = nn.Upsample(scale_factor=2)
         self.CSP1 = CSPBlock(channels_list[2], channels_list[1], bottleNeck_use_residual=False, BottleNeck_repeats=3)
@@ -29,18 +42,18 @@ class PAN(nn.Module):
         self.upsample2 = nn.Upsample(scale_factor=2)
         self.CSP2 = CSPBlock(channels_list[1], channels_list[0], bottleNeck_use_residual=False, BottleNeck_repeats=3)
 
-        self.predication1 = nn.Conv2d(channels_list[0], prediction_channels, kernel_size=1, stride=1, padding=0)
+        self.predication1 = ScalePrediction(channels_list[0], self.num_classes)
 
         self.downsample1 = ConvBNMish(channels_list[0], channels_list[0], kernel_size=3, stride=2, padding=1)
         self.CSP3 = CSPBlock(channels_list[1], channels_list[1], bottleNeck_use_residual=False, BottleNeck_repeats=3)
 
-        self.predication2 = nn.Conv2d(channels_list[1], prediction_channels, kernel_size=1, stride=1, padding=0)
+        self.predication2 = ScalePrediction(channels_list[1], self.num_classes)
 
         self.downsample2 = ConvBNMish(channels_list[1], channels_list[1], kernel_size=3, stride=2, padding=1)
         self.CSP4 = CSPBlock(channels_list[2], channels_list[2], bottleNeck_use_residual=False, BottleNeck_repeats=3)
 
-        self.predication3 = nn.Conv2d(channels_list[2], prediction_channels, kernel_size=1, stride=1, padding=0)
-    
+        self.predication3 = ScalePrediction(channels_list[2], self.num_classes)
+
     def forward(self, features):
         """
         features: List of feature maps from the backbone at different levels.
