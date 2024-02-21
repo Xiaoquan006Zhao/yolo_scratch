@@ -101,11 +101,11 @@ class Dataset(torch.utils.data.Dataset):
 
 					# Calculating the center of the bounding box relative to the cell 
 					bx_offsetted, by_offsetted = ((x-j/s)+0.5)/2, ((y-i/s)+0.5)/2
-					x_ground_truth, y_ground_truth = torch.log(bx_offsetted / (1 - bx_offsetted)), torch.log(by_offsetted / (1 - by_offsetted))
+					x_ground_truth, y_ground_truth = np.log(bx_offsetted / (1 - bx_offsetted)), np.log(by_offsetted / (1 - by_offsetted))
 
 					# Calculating the width and height of the bounding box relative to the cell 
-					bw_offseted, bh_offsetted = torch.sqrt(width/anchor_width)/2, torch.sqrt(height/anchor_height)/2
-					width_ground_truth, height_ground_truth = torch.log(bw_offseted), torch.log(bh_offsetted)
+					bw_offseted, bh_offsetted = np.sqrt(width/anchor_width)/2, np.sqrt(height/anchor_height)/2
+					width_ground_truth, height_ground_truth = np.log(bw_offseted), np.log(bh_offsetted)
 
 					# Idnetify the box coordinates 
 					box_coordinates = torch.tensor([x_ground_truth, y_ground_truth, width_ground_truth, height_ground_truth]) 
