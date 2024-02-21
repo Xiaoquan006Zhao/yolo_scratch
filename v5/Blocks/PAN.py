@@ -51,13 +51,13 @@ class PAN(nn.Module):
         route_connections = [f1, f2] 
 
         x = self.conv1(x)
-        route_connections.insert(x, 0)
+        route_connections.insert(0, x)
         x = self.upsample1(x)
         x = torch.cat((x, route_connections.pop()), dim=1)
         x = self.CSP1(x)
 
         x = self.conv2(x)
-        route_connections.insert(x, 0)
+        route_connections.insert(0, x)
         x = self.upsample2(x)
         x = torch.cat((x, route_connections.pop()), dim=1)
         x = self.CSP2(x)
