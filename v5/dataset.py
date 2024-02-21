@@ -13,7 +13,7 @@ from utils import (
 class Dataset(torch.utils.data.Dataset): 
 	def __init__( 
 		self, csv_file, image_dir, label_dir, anchors, 
-		image_size=416, grid_sizes=[13, 26, 52], 
+		image_size, grid_sizes, 
 		num_classes=config.num_classes, transform=None
 	): 
 		# Read the csv file with image names and labels 
