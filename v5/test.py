@@ -5,7 +5,7 @@ from loss import YOLOLoss
 import torch.optim as optim 
 from utils import (
 	load_checkpoint,	
-	decodePrediction,
+	convert_cells_to_bboxes,
 	plot_image,
 	nms,
 )
@@ -16,7 +16,7 @@ from dataset import Dataset
 load_model = True
 
 # Defining the model, optimizer, loss function and scaler 
-model = YOLOv5().to(config.device) 
+model = YOLOv5(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
@@ -31,8 +31,6 @@ test_dataset = Dataset(
 	image_dir=config.image_dir,
 	label_dir=config.label_dir,
 	anchors=config.ANCHORS, 
-	image_size = config.image_size, 
-	grid_sizes = config.s, 
 	transform=config.test_transform 
 ) 
 test_loader = torch.utils.data.DataLoader( 
@@ -53,11 +51,15 @@ with torch.no_grad():
 
 	# Getting the bounding boxes from the predictions 
 	bboxes = [[] for _ in range(x.shape[0])] 
+	anchors = ( 
+			torch.tensor(config.ANCHORS) * torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
+			).to(config.device) 
 
 	# Getting bounding boxes for each scale 
 	for i in range(3): 
 		batch_size, A, S, _, _ = output[i].shape 
-		boxes_scale_i = decodePrediction(output[i], config.scaled_anchors[i], s=S) 
+		anchor = anchors[i] 
+		boxes_scale_i = convert_cells_to_bboxes(output[i], anchor, s=S, is_predictions=True) 
 		for idx, (box) in enumerate(boxes_scale_i): 
 			bboxes[idx] += box 
 model.train() 

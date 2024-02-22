@@ -1,47 +1,58 @@
 import torch
-import torch.nn as nn
-import math
-import numpy as np
+import torch.nn as nn 
 from utils import (
-    ciou,  
-    decodePrediction_bbox,
+	iou,
 )
 
-class YOLOLoss(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.bce = nn.BCEWithLogitsLoss()
-        self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
-        self.sigmoid = nn.Sigmoid()
+# Defining YOLO loss class 
+class YOLOLoss(nn.Module): 
+	def __init__(self): 
+		super().__init__() 
+		self.mse = nn.MSELoss() 
+		self.bce = nn.BCEWithLogitsLoss() 
+		self.cross_entropy = nn.CrossEntropyLoss() 
+		self.sigmoid = nn.Sigmoid() 
+	
+	def forward(self, pred, target, anchors): 
+		# Identifying which cells in target have objects 
+		# and which have no objects 
+		obj = target[..., 0] == 1
+		no_obj = target[..., 0] == 0
 
-    def forward(self, pred, target, scaled_anchor, scale):
-        # Identifying object and no-object cells in target
-        obj = target[..., 0] == 1
-        no_obj = target[..., 0] == 0
+		# Calculating No object loss 
+		no_object_loss = self.bce( 
+			(pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), 
+		) 
 
-        # Calculating No object loss
-        no_object_loss = self.bce(
-            pred[..., 0:1][no_obj], target[..., 0:1][no_obj],
-        )
+		# Reshaping anchors to match predictions 
+		anchors = anchors.reshape(1, 3, 1, 1, 2) 
 
-        # Reshaping anchors to match predictions
-        scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
+		# Box prediction confidence 
+		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 
-        box_preds = decodePrediction_bbox(pred, scaled_anchor, scale)
-        box_targets = decodePrediction_bbox(target, scaled_anchor, scale)
-        
-        cious = ciou(box_preds[obj], box_targets[obj])
+		# Calculating intersection over union for prediction and target 
+		ious = iou(box_preds[obj], target[..., 1:5][obj])
 
-        # CIoU loss for bounding box regression
-        box_loss = torch.mean(1-cious)
+		# Calculating Object loss 
+		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
+		
+		# Predicted box coordinates 
+		pred[..., 1:3] = self.sigmoid(pred[..., 1:3]) 
+		
+		# Target box coordinates 
+		target[..., 3:5] = torch.log(1e-6 + target[..., 3:5] / anchors) 
 
-        # Objectness loss for predicting the presence of an object
-        object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
+		# Calculating box coordinate loss 
+		box_loss = self.mse(pred[..., 1:5][obj], target[..., 1:5][obj]) 
 
-        # Calculating class loss
-        class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
+		# Claculating class loss 
+		class_loss = self.cross_entropy((pred[..., 5:][obj]), target[..., 5][obj].long()) 
 
-        loss = 4 * box_loss + object_loss + no_object_loss + 2 * class_loss 
-        assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
-
-        return (loss)
+		# Total loss 
+		return ( 
+			box_loss 
+			+ object_loss 
+			+ no_object_loss 
+			+ class_loss 
+			# how much is the loss's numerical value compare to others?
+		)

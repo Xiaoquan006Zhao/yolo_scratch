@@ -1,5 +1,4 @@
 import torch 
-import os
 import numpy as np
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches 
@@ -7,35 +6,44 @@ import config
 
 
 # Defining a function to calculate Intersection over Union (IoU) 
-def ciou(box1, box2, is_pred=True): 
+def iou(box1, box2, is_pred=True): 
 	if is_pred: 
-		# Convert from center to corner format
-		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0] - box1[..., 2] / 2, box1[..., 1] - box1[..., 3] / 2, box1[..., 0] + box1[..., 2] / 2, box1[..., 1] + box1[..., 3] / 2
-		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0] - box2[..., 2] / 2, box2[..., 1] - box2[..., 3] / 2, box2[..., 0] + box2[..., 2] / 2, box2[..., 1] + box2[..., 3] / 2
+		# IoU score for prediction and label 
+		# box1 (prediction) and box2 (label) are both in [x, y, width, height] format 
 		
-		# Intersection area
-		inter_area = torch.clamp(torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1), min=0) * torch.clamp(torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1), min=0)
-		
-		# Union area
-		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - inter_area
-		
-		# IoU
-		iou = inter_area / (union_area + 1e-6)
+		# Box coordinates of prediction 
+		b1_x1 = box1[..., 0:1] - box1[..., 2:3] / 2
+		b1_y1 = box1[..., 1:2] - box1[..., 3:4] / 2
+		b1_x2 = box1[..., 0:1] + box1[..., 2:3] / 2
+		b1_y2 = box1[..., 1:2] + box1[..., 3:4] / 2
 
-		# Center distance
-		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
-		
-		# Enclosing box
-		c_x1, c_y1, c_x2, c_y2 = torch.min(b1_x1, b2_x1), torch.min(b1_y1, b2_y1), torch.max(b1_x2, b2_x2), torch.max(b1_y2, b2_y2)
-		c_diag = (c_x2 - c_x1)**2 + (c_y2 - c_y1)**2
-		
-		# Aspect ratio
-		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
-		alpha = v / (1 - iou + v + 1e-6)
-		
-		ciou_score = iou - (center_distance / (c_diag + 1e-6)) - alpha * v
+		# Box coordinates of ground truth 
+		b2_x1 = box2[..., 0:1] - box2[..., 2:3] / 2
+		b2_y1 = box2[..., 1:2] - box2[..., 3:4] / 2
+		b2_x2 = box2[..., 0:1] + box2[..., 2:3] / 2
+		b2_y2 = box2[..., 1:2] + box2[..., 3:4] / 2
 
-		return ciou_score
+		# Get the coordinates of the intersection rectangle 
+		x1 = torch.max(b1_x1, b2_x1) 
+		y1 = torch.max(b1_y1, b2_y1) 
+		x2 = torch.min(b1_x2, b2_x2) 
+		y2 = torch.min(b1_y2, b2_y2) 
+		
+		# Make sure the intersection is at least 0 
+		intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0) 
+
+		# Calculate the union area 
+		box1_area = abs((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) 
+		box2_area = abs((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) 
+		union = box1_area + box2_area - intersection 
+
+		# Calculate the IoU score 
+		epsilon = 1e-6
+		iou_score = intersection / (union + epsilon) 
+
+		# Return IoU score 
+		return iou_score 
+	
 	else: 
 		# IoU score based on width and height of bounding boxes 
 		
@@ -56,7 +64,7 @@ def ciou(box1, box2, is_pred=True):
 # Non-maximum suppression function to remove overlapping bounding boxes 
 def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
-	# Check decodePrediction method for why objectness is stored at index 1
+	# Check convert_cells_to_bboxes method for why objectness is stored at index 1
     bboxes = [box for box in bboxes if box[1] > valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
@@ -71,15 +79,35 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
 
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
-		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
+		# Check convert_cells_to_bboxes method for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
+        bboxes = [box for box in bboxes if box[0] != first_box[0] or iou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
 
     return bboxes_nms
 
-def decodePrediction_bbox(predictions, anchors, s):
+# Function to convert cells to bounding boxes 
+def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True): 
+	# Batch size used on predictions 
+	batch_size = predictions.shape[0] 
+	# Number of anchors 
+	num_anchors = len(anchors) 
+	# List of all the predictions 
 	box_predictions = predictions[..., 1:5] 
-	box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
-	box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * anchors
+
+	# If the input is predictions then we will pass the x and y coordinate 
+	# through sigmoid function and width and height to exponent function and 
+	# calculate the score and best class. 
+	if is_predictions: 
+		anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
+		box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2]) 
+		box_predictions[..., 2:] = torch.exp( 
+			box_predictions[..., 2:]) * anchors 
+		objectness = torch.sigmoid(predictions[..., 0:1]) 
+		best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
+	
+	# Else we will just calculate scores and best class. 
+	else: 
+		objectness = predictions[..., 0:1] 
+		best_class = predictions[..., 5:6] 
 
 	# Calculate cell indices 
 	cell_indices = ( 
@@ -89,34 +117,18 @@ def decodePrediction_bbox(predictions, anchors, s):
 		.to(predictions.device) 
 	) 
 
-	x = (box_predictions[..., 0:1] + cell_indices / s) 
-	y = (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4) / s) 
-	width, height = box_predictions[..., 2:3],  box_predictions[..., 3:4]
-
-	# Adjusting predictions for box coordinates
-	box_preds = torch.cat([x, y, width, height], dim=-1)
-
-	return box_preds
-
-# Function to convert cells to bounding boxes 
-def decodePrediction(predictions, anchors, s): 
-	# Batch size used on predictions 
-	batch_size = predictions.shape[0] 
-	# Number of anchors 
-	num_anchors = 3
-
-	anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
-	box_preds = decodePrediction_bbox(predictions, anchors, s)
-		
-	objectness = torch.sigmoid(predictions[..., 0:1]) 
-	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
+	# Calculate x, y, width and height with proper scaling 
+	x = 1 / s * (box_predictions[..., 0:1] + cell_indices) 
+	y = 1 / s * (box_predictions[..., 1:2] +
+				cell_indices.permute(0, 1, 3, 2, 4)) 
+	width_height = 1 / s * box_predictions[..., 2:4] 
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
-		batch_size, num_anchors  * s * s, 6) 
+	converted_bboxes = torch.cat((best_class, objectness, x, y, width_height), dim=-1).reshape(
+		batch_size, num_anchors * s * s, 6) 
 
 	# Returning the reshaped and converted bounding box list 
-	return decoded_bboxes.tolist()
+	return converted_bboxes.tolist()
 
 # Function to plot images with bounding boxes and class labels 
 def plot_image(image, boxes): 
@@ -183,37 +195,14 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
 
 # Function to load checkpoint 
 def load_checkpoint(checkpoint_file, model, optimizer, lr): 
-    if not os.path.exists(checkpoint_file):
-        # If the checkpoint file does not exist, print a message and return early.
-        print(f"==> Checkpoint file {checkpoint_file} does not exist. Skipping load.")
-        return
-    
-    print("==> Loading checkpoint")
-    checkpoint = torch.load(checkpoint_file, map_location=torch.device('cuda')) # Assuming you are using a CUDA device, adjust accordingly.
-    model.load_state_dict(checkpoint["state_dict"])
-    optimizer.load_state_dict(checkpoint["optimizer"])
+	print("==> Loading checkpoint") 
+	checkpoint = torch.load(checkpoint_file, map_location=config.device) 
+	model.load_state_dict(checkpoint["state_dict"]) 
+	optimizer.load_state_dict(checkpoint["optimizer"]) 
 
-    for param_group in optimizer.param_groups:
-        param_group["lr"] = lr
+	for param_group in optimizer.param_groups: 
+		param_group["lr"] = lr 
 
-def delete_all_files_in_augmentation_folder():
-	augmentation_folder = config.augmentation_folder
-	# Check if the directory exists to avoid errors
-	if os.path.exists(augmentation_folder):
-		# List all files and directories in the augmentation folder
-		for filename in os.listdir(augmentation_folder):
-			file_path = os.path.join(augmentation_folder, filename)
-			try:
-				# Check if it is a file and then remove it
-				if os.path.isfile(file_path) or os.path.islink(file_path):
-					os.unlink(file_path)
-				# Optionally, if you want to remove directories as well, uncomment the following lines:
-				# elif os.path.isdir(file_path):
-				#     shutil.rmtree(file_path)
-			except Exception as e:
-				print(f'Failed to delete {file_path}. Reason: {e}')
-	else:
-		print(f"The directory {augmentation_folder} does not exist.")
 
 
 
