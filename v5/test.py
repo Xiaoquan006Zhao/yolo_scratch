@@ -5,7 +5,7 @@ from loss import YOLOLoss
 import torch.optim as optim 
 from utils import (
 	load_checkpoint,	
-	convert_cells_to_bboxes,
+	decodePrediction,
 	plot_image,
 	nms,
 )
@@ -61,7 +61,7 @@ with torch.no_grad():
 	for i in range(3): 
 		batch_size, A, S, _, _ = output[i].shape 
 		anchor = anchors[i] 
-		boxes_scale_i = convert_cells_to_bboxes(output[i], anchor, s=S, is_predictions=True) 
+		boxes_scale_i = decodePrediction(output[i], anchor, s=S) 
 		for idx, (box) in enumerate(boxes_scale_i): 
 			bboxes[idx] += box 
 model.train() 

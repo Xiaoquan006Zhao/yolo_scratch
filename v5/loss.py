@@ -4,6 +4,7 @@ import math
 import numpy as np
 from utils import (
     ciou,  
+    decodePrediction_bbox,
 )
 
 class YOLOLoss(nn.Module):
@@ -26,24 +27,7 @@ class YOLOLoss(nn.Module):
         # Reshaping anchors to match predictions
         scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
 
-        box_predictions = pred[..., 1:5] 
-        box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
-        box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * scaled_anchor
-
-        # Calculate cell indices 
-        cell_indices = ( 
-            torch.arange(scale) 
-            .repeat(pred.shape[0], 3, scale, 1) 
-            .unsqueeze(-1) 
-            .to(pred.device) 
-        ) 
-
-        x = (box_predictions[..., 0:1] + cell_indices / scale) 
-        y = (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4) / scale) 
-        width, height = box_predictions[..., 2:3],  box_predictions[..., 3:4]
-
-        # Adjusting predictions for box coordinates
-        box_preds = torch.cat([x, y, width, height], dim=-1)
+        box_preds = decodePrediction_bbox(pred, scaled_anchor, scale)
         
         cious = ciou(box_preds[obj], target[..., 1:5][obj])
 

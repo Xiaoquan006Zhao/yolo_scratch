@@ -56,7 +56,7 @@ def ciou(box1, box2, is_pred=True):
 # Non-maximum suppression function to remove overlapping bounding boxes 
 def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
-	# Check convert_cells_to_bboxes method for why objectness is stored at index 1
+	# Check decodePrediction method for why objectness is stored at index 1
     bboxes = [box for box in bboxes if box[1] > valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
@@ -71,35 +71,15 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
 
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
-		# Check convert_cells_to_bboxes method for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
+		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
         bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
 
     return bboxes_nms
 
-# Function to convert cells to bounding boxes 
-def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True): 
-	# Batch size used on predictions 
-	batch_size = predictions.shape[0] 
-	# Number of anchors 
-	num_anchors = len(anchors) 
-	# List of all the predictions 
+def decodePrediction_bbox(predictions, anchors, s):
 	box_predictions = predictions[..., 1:5] 
-
-	# If the input is predictions then we will pass the x and y coordinate 
-	# through sigmoid function and width and height to sigmoid function and 
-	# calculate the score and best class. 
-	if is_predictions: 
-		anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
-		box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
-		box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * anchors
-		
-		objectness = torch.sigmoid(predictions[..., 0:1]) 
-		best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
-	
-	# Else we will just calculate scores and best class. 
-	else: 
-		objectness = predictions[..., 0:1] 
-		best_class = predictions[..., 5:6] 
+	box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
+	box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * anchors
 
 	# Calculate cell indices 
 	cell_indices = ( 
@@ -109,13 +89,30 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 		.to(predictions.device) 
 	) 
 
-	# Calculate x, y, width and height with proper scaling 
 	x = (box_predictions[..., 0:1] + cell_indices / s) 
 	y = (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4) / s) 
 	width, height = box_predictions[..., 2:3],  box_predictions[..., 3:4]
 
+	# Adjusting predictions for box coordinates
+	box_preds = torch.cat([x, y, width, height], dim=-1)
+
+	return box_preds
+
+# Function to convert cells to bounding boxes 
+def decodePrediction(predictions, anchors, s): 
+	# Batch size used on predictions 
+	batch_size = predictions.shape[0] 
+	# Number of anchors 
+	num_anchors = len(anchors) 
+
+	box_preds = decodePrediction_bbox(predictions, anchors, s)
+		
+	objectness = torch.sigmoid(predictions[..., 0:1]) 
+	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
+	
+
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	converted_bboxes = torch.cat((best_class, objectness, x, y, width, height), dim=-1).reshape(
+	converted_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
 		batch_size, num_anchors * s * s, 6) 
 
 	# Returning the reshaped and converted bounding box list 
