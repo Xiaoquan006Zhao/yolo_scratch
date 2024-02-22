@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import math
+import numpy as np
 from utils import (
     ciou,  
 )
@@ -46,13 +48,16 @@ class YOLOLoss(nn.Module):
         cious = ciou(box_preds[obj], target[..., 1:5][obj])
 
         # CIoU loss for bounding box regression
-        box_loss = (1-cious).mean()
+        box_loss = torch.mean(1-cious)
 
         # Objectness loss for predicting the presence of an object
         object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
 
         # Calculating class loss
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
+
+        loss = 2 * box_loss + object_loss + no_object_loss + class_loss 
+        assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
 
         return ( 
             2 * box_loss 
