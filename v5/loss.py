@@ -30,7 +30,7 @@ class YOLOLoss(nn.Module):
         box_preds = decodePrediction_bbox(pred, scaled_anchor, scale)
         box_targets = decodePrediction_bbox(target, scaled_anchor, scale)
         
-        cious = ciou(box_preds[obj], box_targets[..., 1:5][obj])
+        cious = ciou(box_preds[obj], box_targets[obj])
 
         # CIoU loss for bounding box regression
         box_loss = torch.mean(1-cious)
