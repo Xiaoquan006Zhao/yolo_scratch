@@ -16,7 +16,7 @@ from utils import (
 )
 
 # Define the train function to train the model 
-def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
+def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors, scales): 
 	# Creating a progress bar 
 	progress_bar = tqdm(loader, leave=True) 
 
@@ -39,9 +39,9 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 			# Calculating the loss at each scale 
 			# the weight [4, 1, 0.4] is found in https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#41-compute-losses
 			loss = ( 
-				4 * loss_fn(outputs[0], y0, scaled_anchors[0]) 
-				+ loss_fn(outputs[1], y1, scaled_anchors[1]) 
-				+ 0.4 * loss_fn(outputs[2], y2, scaled_anchors[2]) 
+				4 * loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
+				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
+				+ 0.4 * loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
 			) 
 
 		# Add the loss to the list 
@@ -117,7 +117,7 @@ scaled_anchors = (
 # Training the model 
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
-	training_loop(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors) 
+	training_loop(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, config.s) 
 
 	# Saving the model 
 	if config.save_model: 
