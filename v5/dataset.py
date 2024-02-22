@@ -106,9 +106,6 @@ class Dataset(torch.utils.data.Dataset):
                     x_ground_truth = np.log((bx_offsetted + numerical_stability) / (1 - bx_offsetted + numerical_stability))
                     y_ground_truth = np.log((by_offsetted + numerical_stability) / (1 - by_offsetted + numerical_stability))
 
-                    assert x_ground_truth <= 1 and x_ground_truth >= 0, f"{x_ground_truth}"
-                    assert y_ground_truth <= 1 and y_ground_truth >= 0, f"{y_ground_truth}"
-
                     # Calculating the width and height of the bounding box relative to the cell 
                     # bw_offseted, bh_offsetted = np.sqrt(width/anchor_width)/2, np.sqrt(height/anchor_height)/2
                     bw_offseted, bh_offsetted = width/anchor_width, height/anchor_height
