@@ -44,7 +44,7 @@ class YOLOLoss(nn.Module):
         assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
 
         return ( 
-            2 * box_loss 
+            box_loss 
             + object_loss 
             + no_object_loss 
             + class_loss 
