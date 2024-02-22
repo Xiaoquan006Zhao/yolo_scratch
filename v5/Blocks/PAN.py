@@ -24,7 +24,7 @@ class ScalePrediction(nn.Module):
         return output
 
 class PAN(nn.Module):
-    def __init__(self, channels_list, num_classes, use_dropblock=True, dropblock_params={'block_size': 5, 'p': 0.1}):
+    def __init__(self, channels_list, num_classes, use_dropblock=False, dropblock_params={'block_size': 5, 'p': 0.1}):
         """
         channels_list: List of channel sizes for each feature map level, later index represent deeper result
         """
