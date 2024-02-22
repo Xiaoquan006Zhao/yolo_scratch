@@ -45,6 +45,11 @@ image_size = 416
 # Grid cell sizes 
 s = [image_size // 32, image_size // 16, image_size // 8] 
 
+scaled_anchors = ( 
+	torch.tensor(ANCHORS) *
+	torch.tensor(s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
+).to(device) 
+
 # Class labels 
 class_labels = [ 
 	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 

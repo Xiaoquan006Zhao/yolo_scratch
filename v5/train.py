@@ -109,15 +109,12 @@ if num_items < 10:
 	train_dataset.save_augmented_image_with_bboxes(augmentation_folder)
 
 # Scaling the anchors 
-scaled_anchors = ( 
-	torch.tensor(config.ANCHORS) *
-	torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
-).to(config.device) 
+
 
 # Training the model 
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
-	training_loop(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, config.s) 
+	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors, config.s) 
 
 	# Saving the model 
 	if config.save_model: 

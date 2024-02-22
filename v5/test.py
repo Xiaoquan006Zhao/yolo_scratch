@@ -53,15 +53,13 @@ with torch.no_grad():
 
 	# Getting the bounding boxes from the predictions 
 	bboxes = [[] for _ in range(x.shape[0])] 
-	anchors = ( 
-			torch.tensor(config.ANCHORS) * torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
-			).to(config.device) 
 
 	# Getting bounding boxes for each scale 
 	for i in range(3): 
 		batch_size, A, S, _, _ = output[i].shape 
-		anchor = anchors[i] 
-		boxes_scale_i = decodePrediction(output[i], anchor, s=S) 
+		# anchor = config.scaled_anchors[i] 
+		# anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
+		boxes_scale_i = decodePrediction(output[i], config.scaled_anchors[i], s=S) 
 		for idx, (box) in enumerate(boxes_scale_i): 
 			bboxes[idx] += box 
 model.train() 

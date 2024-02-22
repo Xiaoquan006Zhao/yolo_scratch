@@ -41,12 +41,12 @@ class YOLOLoss(nn.Module):
         # Calculating class loss
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
 
-        loss = 2 * box_loss + object_loss + no_object_loss + class_loss 
+        loss = box_loss + object_loss + no_object_loss + class_loss 
+        print(box_loss)
+        print(object_loss)
+        print(no_object_loss)
+        print(class_loss)
+        print("-----------")
         assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
 
-        return ( 
-            box_loss 
-            + object_loss 
-            + no_object_loss 
-            + class_loss 
-        )
+        return (loss)
