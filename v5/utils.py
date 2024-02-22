@@ -103,20 +103,20 @@ def decodePrediction(predictions, anchors, s):
 	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
 	# Number of anchors 
-	num_anchors = len(anchors) 
+	num_anchors = 3
 
+	anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
 	box_preds = decodePrediction_bbox(predictions, anchors, s)
 		
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
-	
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	converted_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
-		batch_size, num_anchors * s * s, 6) 
+	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
+		batch_size, num_anchors  * s * s, 6) 
 
 	# Returning the reshaped and converted bounding box list 
-	return converted_bboxes.tolist()
+	return decoded_bboxes.tolist()
 
 # Function to plot images with bounding boxes and class labels 
 def plot_image(image, boxes): 
