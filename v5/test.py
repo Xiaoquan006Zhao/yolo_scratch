@@ -57,9 +57,9 @@ with torch.no_grad():
 	# Getting bounding boxes for each scale 
 	for i in range(3): 
 		batch_size, A, S, _, _ = output[i].shape 
-		# anchor = config.scaled_anchors[i] 
-		# anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
-		boxes_scale_i = decodePrediction(output[i], config.scaled_anchors[i], s=S) 
+		anchor = config.scaled_anchors[i] 
+		anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
+		boxes_scale_i = decodePrediction(output[i], anchor, s=S) 
 		for idx, (box) in enumerate(boxes_scale_i): 
 			bboxes[idx] += box 
 model.train() 
