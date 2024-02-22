@@ -91,7 +91,6 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 	if is_predictions: 
 		anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
 		box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
-		# box_predictions[..., 2:4] = (2*torch.sigmoid(box_predictions[..., 2:4]) ** 2) * anchors
 		box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * anchors
 		
 		objectness = torch.sigmoid(predictions[..., 0:1]) 

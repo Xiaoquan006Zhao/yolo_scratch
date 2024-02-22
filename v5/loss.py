@@ -11,7 +11,7 @@ class YOLOLoss(nn.Module):
         self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, pred, target, anchors):
+    def forward(self, pred, target, scaled_anchor, scale):
         # Identifying object and no-object cells in target
         obj = target[..., 0] == 1
         no_obj = target[..., 0] == 0
@@ -22,13 +22,26 @@ class YOLOLoss(nn.Module):
         )
 
         # Reshaping anchors to match predictions
-        anchors = anchors.reshape(1, 3, 1, 1, 2)
+        scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
+
+        box_predictions = pred[..., 1:5] 
+        box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
+        box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * scaled_anchor
+
+        # Calculate cell indices 
+        cell_indices = ( 
+            torch.arange(scale) 
+            .repeat(pred.shape[0], 3, scale, 1) 
+            .unsqueeze(-1) 
+            .to(pred.device) 
+        ) 
+
+        x = (box_predictions[..., 0:1] + cell_indices / scale) 
+        y = (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4) / scale) 
+        width, height = box_predictions[..., 2:3],  box_predictions[..., 3:4]
 
         # Adjusting predictions for box coordinates
-        box_preds = torch.cat([
-            self.sigmoid(pred[..., 1:3]),  # Center x, y with sigmoid activation
-            torch.exp(pred[..., 3:5]) * anchors  # Width and height
-        ], dim=-1)
+        box_preds = torch.cat([x, y, width, height], dim=-1)
         
         cious = ciou(box_preds[obj], target[..., 1:5][obj])
 
@@ -42,8 +55,8 @@ class YOLOLoss(nn.Module):
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
 
         return ( 
-			2 * box_loss 
-			+ object_loss 
-			+ no_object_loss 
-			+ class_loss 
-		)
+            2 * box_loss 
+            + object_loss 
+            + no_object_loss 
+            + class_loss 
+        )
