@@ -26,11 +26,9 @@ class YOLOLoss(nn.Module):
 
         # Reshaping anchors to match predictions
         scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
-
         box_preds = decodePrediction_bbox(pred, scaled_anchor, scale)
-        box_targets = decodePrediction_bbox(target, scaled_anchor, scale)
         
-        cious = ciou(box_preds[obj], box_targets[obj])
+        cious = ciou(box_preds[obj], target[..., 1:5][obj])
 
         # CIoU loss for bounding box regression
         box_loss = torch.mean(1-cious)
