@@ -11,6 +11,7 @@ test_csv_file = f"../data/{dataset}/100examples_test.csv"
 image_dir = f"../data/{dataset}/images/"
 label_dir = f"../data/{dataset}/labels/"  
 
+PAN_channels = [256, 512, 1024]
 augmentation_folder = 'augmentation/'
 
 # Device 
