@@ -89,9 +89,10 @@ def decodePrediction_bbox(predictions, scaled_anchors, s):
 		.to(predictions.device) 
 	) 
 
-	x = (box_predictions[..., 0:1] + cell_indices / s) 
-	y = (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4) / s) 
-	width, height = box_predictions[..., 2:3],  box_predictions[..., 3:4]
+	x = 1/s * (box_predictions[..., 0:1] + cell_indices) 
+	y = 1/s * (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4)) 
+	width = 1/s * box_predictions[..., 2:3]
+	height = 1/s *box_predictions[..., 3:4]
 
 	# Adjusting predictions for box coordinates
 	box_preds = torch.cat([x, y, width, height], dim=-1)
