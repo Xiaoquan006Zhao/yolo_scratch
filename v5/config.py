@@ -4,9 +4,10 @@ from albumentations.pytorch import ToTensorV2
 import cv2 
   
 dataset = "pascal voc"
-#train_csv_file = f"../data/{dataset}/100examples.csv"
-train_csv_file = f"../data/{dataset}/train.csv"
-test_csv_file = f"../data/{dataset}/test.csv"
+train_csv_file = f"../data/{dataset}/100examples.csv"
+test_csv_file = f"../data/{dataset}/100examples_test.csv"
+#train_csv_file = f"../data/{dataset}/train.csv"
+#test_csv_file = f"../data/{dataset}/test.csv"
 image_dir = f"../data/{dataset}/images/"
 label_dir = f"../data/{dataset}/labels/"  
 
