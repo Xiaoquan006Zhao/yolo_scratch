@@ -4,7 +4,7 @@ from IPython.display import Image
 import torchvision
 from torchview import draw_graph
 
-from config import device
+import config
 from .BottleNeck import BottleNeck
 from .BasicBlock import ConvBNMish
 from torchvision.ops import drop_block2d
@@ -14,7 +14,7 @@ class CSPBlock(nn.Module):
         super(CSPBlock, self).__init__()
         self.process_blocks = []
         for _ in range(BottleNeck_repeats):
-            self.process_blocks.append(BottleNeck(in_channels//2, bottleNeck_use_residual))
+            self.process_blocks.append(BottleNeck(in_channels//2, bottleNeck_use_residual).to(config.device) )
 
         self.BottleNeck_repeats = BottleNeck_repeats
         self.use_dropblock = use_dropblock
