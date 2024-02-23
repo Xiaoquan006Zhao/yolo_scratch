@@ -11,7 +11,10 @@ from torchvision.ops import drop_block2d
 class CSPBlock(nn.Module):
     def __init__(self, in_channels, out_channels, bottleNeck_use_residual, BottleNeck_repeats, use_dropblock=False, dropblock_params={'block_size': 5, 'p': 0.1}):
         super(CSPBlock, self).__init__()
-        self.process_block = BottleNeck(in_channels//2, bottleNeck_use_residual)
+        self.process_blocks = []
+        for _ in range(BottleNeck_repeats):
+            self.process_blocks.append(BottleNeck(in_channels//2, bottleNeck_use_residual))
+
         self.BottleNeck_repeats = BottleNeck_repeats
         self.use_dropblock = use_dropblock
         self.dropblock_params = dropblock_params
@@ -33,8 +36,8 @@ class CSPBlock(nn.Module):
         part2 = self.conv_part2(part2)
 
         # Process part1 through transition (if necessary) and part2 through the specified process_block
-        # for _ in range(self.BottleNeck_repeats):
-        #     part2 = self.process_block(part2)
+        for i in range(self.BottleNeck_repeats):
+            part2 = self.process_blocks[i](part2)
         
         # Concatenate the processed parts along dimension 1 (channel dimension)
         # dimension 0 is Batch dimension
