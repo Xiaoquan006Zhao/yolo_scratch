@@ -26,8 +26,9 @@ class YOLOLoss(nn.Module):
 
         # Reshaping anchors to match predictions
         scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
-        # box_preds = decodePrediction_bbox(pred, scaled_anchor, scale)
-
+        
+        # No need to fully decode the prediction, as we don't care about the offset the upper left corner
+        # to the assigned grid when calculating ciou
         box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), 
                                torch.exp(pred[..., 3:5]) * scaled_anchor 
                             ],dim=-1) 
