@@ -36,11 +36,11 @@ ANCHORS = [
 numerical_stability = 1e-6
 
 # Batch size for training 
-batch_size = 8
+batch_size = 4
 # Learning rate for training 
 leanring_rate = 1e-5
 # Number of epochs for training 
-epochs = 60
+epochs = 600
 # Image size 
 image_size = 640
 # Grid cell sizes 

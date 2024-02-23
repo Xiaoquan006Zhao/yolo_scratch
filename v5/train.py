@@ -99,23 +99,11 @@ train_loader = torch.utils.data.DataLoader(
 	pin_memory = True, 
 ) 
 
-# reset augmentation visualization before each training
-delete_all_files_in_augmentation_folder()
-augmentation_folder = config.augmentation_folder
-num_items = len([name for name in os.listdir(augmentation_folder) if os.path.isfile(os.path.join(augmentation_folder, name))])
-
-# Proceed only if there are less than 10 items in the folder
-if num_items < 10:
-	train_dataset.save_augmented_image_with_bboxes(augmentation_folder)
-
-# Scaling the anchors 
-
-
 # Training the model 
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
 	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors, config.s) 
 
 	# Saving the model 
-	if config.save_model: 
+	if config.save_model and e%100 == 0: 
 		save_checkpoint(model, optimizer, filename=config.checkpoint_file)
