@@ -20,7 +20,7 @@ def ciou(box1, box2, is_pred=True):
 		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - inter_area
 		
 		# IoU
-		iou = inter_area / (union_area + 1e-6)
+		iou = inter_area / (union_area + config.numerical_stability)
 
 		# Center distance
 		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
@@ -76,10 +76,10 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
 
     return bboxes_nms
 
-def decodePrediction_bbox(predictions, anchors, s):
+def decodePrediction_bbox(predictions, scaled_anchors, s):
 	box_predictions = predictions[..., 1:5] 
 	box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
-	box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * anchors
+	box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * scaled_anchors
 
 	# Calculate cell indices 
 	cell_indices = ( 
@@ -99,14 +99,14 @@ def decodePrediction_bbox(predictions, anchors, s):
 	return box_preds
 
 # Function to convert cells to bounding boxes 
-def decodePrediction(predictions, anchors, s): 
+def decodePrediction(predictions, scaled_anchors, s): 
 	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
 	# Number of anchors 
 	num_anchors = 3
 
-	anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
-	box_preds = decodePrediction_bbox(predictions, anchors, s)
+	scaled_anchors = scaled_anchors.reshape(1, len(scaled_anchors), 1, 1, 2) 
+	box_preds = decodePrediction_bbox(predictions, scaled_anchors, s)
 		
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 

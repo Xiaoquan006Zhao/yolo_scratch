@@ -79,8 +79,6 @@ class Dataset(torch.utils.data.Dataset):
                 # which anchor which in the scale
                 anchor_on_scale_index = anchor_idx % self.num_anchors_per_scale 
 
-                anchor_width, anchor_height = self.anchors[anchor_idx][0], self.anchors[anchor_idx][1]
-                
                 # Identifying the grid size for the scale
                 s = self.grid_sizes[scale_idx] 
                 
@@ -101,18 +99,13 @@ class Dataset(torch.utils.data.Dataset):
                     targets[scale_idx][anchor_on_scale_index, i, j, 0] = 1
 
                     # Calculating the center of the bounding box relative to the cell 
-                    bx_offsetted, by_offsetted = (x-j/s), (y-i/s)
-
-                    x_ground_truth = np.log((bx_offsetted + numerical_stability) / (1 - bx_offsetted + numerical_stability))
-                    y_ground_truth = np.log((by_offsetted + numerical_stability) / (1 - by_offsetted + numerical_stability))
+                    x_cell, y_cell = s * x - j, s * y - i  
 
                     # Calculating the width and height of the bounding box relative to the cell 
-                    # bw_offseted, bh_offsetted = np.sqrt(width/anchor_width)/2, np.sqrt(height/anchor_height)/2
-                    bw_offseted, bh_offsetted = width/anchor_width, height/anchor_height
-                    width_ground_truth, height_ground_truth = np.log(bw_offseted), np.log(bh_offsetted)
+                    width_cell, height_cell = (width * s, height * s) 
 
                     # Idnetify the box coordinates 
-                    box_coordinates = torch.tensor([x_ground_truth, y_ground_truth, width_ground_truth, height_ground_truth]) 
+                    box_coordinates = torch.tensor([x_cell, y_cell, width_cell, height_cell]) 
 
                     # Assigning the box coordinates to the target 
                     targets[scale_idx][anchor_on_scale_index, i, j, 1:5] = box_coordinates 
