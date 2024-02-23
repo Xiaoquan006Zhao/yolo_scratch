@@ -33,8 +33,8 @@ class CSPBlock(nn.Module):
         part2 = self.conv_part2(part2)
 
         # Process part1 through transition (if necessary) and part2 through the specified process_block
-        for _ in range(self.BottleNeck_repeats):
-            part2 = self.process_block(part2)
+        # for _ in range(self.BottleNeck_repeats):
+        #     part2 = self.process_block(part2)
         
         # Concatenate the processed parts along dimension 1 (channel dimension)
         # dimension 0 is Batch dimension
