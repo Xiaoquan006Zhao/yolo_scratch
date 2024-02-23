@@ -4,6 +4,7 @@ from IPython.display import Image
 import torchvision
 from torchview import draw_graph
 
+import config
 from .BottleNeck import BottleNeck
 from .BasicBlock import ConvBNMish
 from torchvision.ops import drop_block2d
@@ -11,7 +12,11 @@ from torchvision.ops import drop_block2d
 class CSPBlock(nn.Module):
     def __init__(self, in_channels, out_channels, bottleNeck_use_residual, BottleNeck_repeats, use_dropblock=False, dropblock_params={'block_size': 5, 'p': 0.1}):
         super(CSPBlock, self).__init__()
-        self.process_block = BottleNeck(in_channels//2, bottleNeck_use_residual)
+
+        self.process_blocks = nn.Sequential(
+            *[BottleNeck(in_channels//2, bottleNeck_use_residual) for _ in range(BottleNeck_repeats)],
+        )
+
         self.BottleNeck_repeats = BottleNeck_repeats
         self.use_dropblock = use_dropblock
         self.dropblock_params = dropblock_params
@@ -33,8 +38,8 @@ class CSPBlock(nn.Module):
         part2 = self.conv_part2(part2)
 
         # Process part1 through transition (if necessary) and part2 through the specified process_block
-        for _ in range(self.BottleNeck_repeats):
-            part2 = self.process_block(part2)
+        
+        part2 = self.process_blocks(part2)
         
         # Concatenate the processed parts along dimension 1 (channel dimension)
         # dimension 0 is Batch dimension
