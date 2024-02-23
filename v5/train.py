@@ -105,5 +105,5 @@ for e in range(1, config.epochs+1):
 	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors, config.s) 
 
 	# Saving the model 
-	if config.save_model and e%100 == 0: 
+	if config.save_model: 
 		save_checkpoint(model, optimizer, filename=config.checkpoint_file)
