@@ -61,21 +61,21 @@ class YOLOv5(nn.Module):
 		# Because return is done in PAN layer
 		# return outputs
 
-# def test_Yolov5():
-#     x = torch.randn(1, 3, config.image_size, config.image_size)
-#     model = YOLOv5().to(config.device) 
-#     # print(model(x).shape)
-#     # print(model)
-#     # del model
-#     return model
+def test_Yolov5():
+    x = torch.randn(1, 3, config.image_size, config.image_size)
+    model = YOLOv5().to(config.device) 
+    # print(model(x).shape)
+    # print(model)
+    # del model
+    return model
 
-# model = test_Yolov5()
+model = test_Yolov5()
 
-# from IPython.display import Image
-# import torchvision
-# from torchview import draw_graph
+from IPython.display import Image
+import torchvision
+from torchview import draw_graph
 
-# architecture = 'denselayer'
-# model_graph = draw_graph(model, input_size=(1, 3, config.image_size, config.image_size), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
-# model_graph.visual_graph
+architecture = 'denselayer'
+model_graph = draw_graph(model, input_size=(1, 3, config.image_size, config.image_size), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
+model_graph.visual_graph
 
