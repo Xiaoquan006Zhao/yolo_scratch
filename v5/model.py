@@ -63,7 +63,7 @@ class YOLOv5(nn.Module):
 
 def test_DenseLayer():
     x = torch.randn(1, 3, config.image_size, config.image_size)
-    model = YOLOv5()
+    model = YOLOv5().to(config.device) 
     # print(model(x).shape)
     # print(model)
     # del model
