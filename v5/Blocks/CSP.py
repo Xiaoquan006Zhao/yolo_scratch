@@ -13,9 +13,8 @@ class CSPBlock(nn.Module):
     def __init__(self, in_channels, out_channels, bottleNeck_use_residual, BottleNeck_repeats, use_dropblock=False, dropblock_params={'block_size': 5, 'p': 0.1}):
         super(CSPBlock, self).__init__()
         self.process_blocks = []
-        for i in range(BottleNeck_repeats):
+        for _ in range(BottleNeck_repeats):
             self.process_blocks.append(BottleNeck(in_channels//2, bottleNeck_use_residual))
-            self.process_blocks[i].to(device)
 
         self.BottleNeck_repeats = BottleNeck_repeats
         self.use_dropblock = use_dropblock
