@@ -1,15 +1,18 @@
 import torch
 import albumentations as A 
 from albumentations.pytorch import ToTensorV2 
-import cv2 
-  
+import cv2   
+import os
+
+base_dir = os.getcwd()
 dataset = "pascal voc"
-train_csv_file = f"../data/{dataset}/100examples.csv"
-test_csv_file = f"../data/{dataset}/100examples_test.csv"
-#train_csv_file = f"../data/{dataset}/train.csv"
-#test_csv_file = f"../data/{dataset}/test.csv"
-image_dir = f"../data/{dataset}/images/"
-label_dir = f"../data/{dataset}/labels/"  
+#train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
+#test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
+train_csv_file = os.path.join(base_dir, "data", dataset, "train.csv")
+test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
+image_dir = os.path.join(base_dir, "data", dataset, "images")
+label_dir = os.path.join(base_dir, "data", dataset, "labels")
+
 
 PAN_channels = [256, 512, 1024]
 
@@ -17,13 +20,13 @@ augmentation_folder = 'augmentation/'
 
 # Device 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print(device)
+print(f"-{device}-")
 
 # Load and save model variable 
 load_model = True
 save_model = True
 # model checkpoint file name 
-checkpoint_file = f"{dataset}_checkpoint.pth.tar"
+checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
 
 # Anchor boxes for each feature map scaled between 0 and 1 
 # 3 feature maps at 3 different scales based on YOLOv3 paper 
@@ -36,7 +39,7 @@ ANCHORS = [
 numerical_stability = 1e-6
 
 # Batch size for training 
-batch_size = 4
+batch_size = 16
 # Learning rate for training 
 leanring_rate = 1e-5
 # Number of epochs for training 

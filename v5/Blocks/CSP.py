@@ -10,7 +10,7 @@ from .BasicBlock import ConvBNMish
 from torchvision.ops import drop_block2d
 
 class CSPBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, bottleNeck_use_residual, BottleNeck_repeats, use_dropblock=False, dropblock_params={'block_size': 5, 'p': 0.1}):
+    def __init__(self, in_channels, out_channels, bottleNeck_use_residual, BottleNeck_repeats, use_dropblock=True, dropblock_params={'block_size': 3, 'p': 0.1}):
         super(CSPBlock, self).__init__()
 
         self.process_blocks = nn.Sequential(
@@ -45,9 +45,9 @@ class CSPBlock(nn.Module):
         # dimension 0 is Batch dimension
         out = torch.cat((part1, part2), dim=1)
 
-        # if self.use_dropblock:
-        #     # Apply DropBlock on the concatenated output
-        #     out = drop_block2d(out, **self.dropblock_params)
+        if self.use_dropblock:
+            # Apply DropBlock on the concatenated output
+            out = drop_block2d(out, **self.dropblock_params)
 
         out = self.conv_out(out)
 

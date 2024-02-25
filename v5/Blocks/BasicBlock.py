@@ -14,7 +14,7 @@ class ConvBNMish(nn.Module):
         super(ConvBNMish, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False)
         self.bn = nn.BatchNorm2d(out_channels, momentum=0.1)
-        self.mish = Mish()
+        self.mish = nn.LeakyReLU(0.1)
 
     def forward(self, x):
         return self.mish(self.bn(self.conv(x)))

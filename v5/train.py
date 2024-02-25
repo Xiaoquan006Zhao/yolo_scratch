@@ -10,7 +10,6 @@ import os
 from model import YOLOv5
 from loss import YOLOLoss
 from utils import (
-	delete_all_files_in_augmentation_folder,
 	load_checkpoint,
 	save_checkpoint,
 )
@@ -39,9 +38,9 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors, sca
 			# Calculating the loss at each scale 
 			# the weight [4, 1, 0.4] is found in https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#41-compute-losses
 			loss = ( 
-				loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
+				4 * loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
 				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
-				+ loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
+				+ 0.4 * loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
 			) 
 
 		# Add the loss to the list 
@@ -63,47 +62,47 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors, sca
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
+if __name__ == '__main__':
+	# Creating the model from YOLOv3 class 
+	model = YOLOv5().to(config.device) 
 
-# Creating the model from YOLOv3 class 
-model = YOLOv5().to(config.device) 
+	# Defining the optimizer 
+	optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
 
-# Defining the optimizer 
-optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
+	# Defining the loss function 
+	loss_fn = YOLOLoss() 
 
-# Defining the loss function 
-loss_fn = YOLOLoss() 
+	# Defining the scaler for mixed precision training 
+	scaler = torch.cuda.amp.GradScaler() 
 
-# Defining the scaler for mixed precision training 
-scaler = torch.cuda.amp.GradScaler() 
+	if config.load_model: 
+		load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
 
-if config.load_model: 
-	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
+	# Defining the train dataset 
+	train_dataset = Dataset( 
+		csv_file = config.train_csv_file,
+		image_dir = config.image_dir,
+		label_dir = config.label_dir,
+		anchors=config.ANCHORS, 
+		image_size = config.image_size, 
+		grid_sizes = config.s, 
+		transform=config.train_transform 
+	) 
 
-# Defining the train dataset 
-train_dataset = Dataset( 
-	csv_file = config.train_csv_file,
-	image_dir = config.image_dir,
-	label_dir = config.label_dir,
-	anchors=config.ANCHORS, 
-	image_size = config.image_size, 
-	grid_sizes = config.s, 
-	transform=config.train_transform 
-) 
+	# Defining the train data loader 
+	train_loader = torch.utils.data.DataLoader( 
+		train_dataset, 
+		batch_size = config.batch_size, 
+		num_workers = 2, 
+		shuffle = True, 
+		pin_memory = True, 
+	) 
 
-# Defining the train data loader 
-train_loader = torch.utils.data.DataLoader( 
-	train_dataset, 
-	batch_size = config.batch_size, 
-	num_workers = 2, 
-	shuffle = True, 
-	pin_memory = True, 
-) 
+	# Training the model 
+	for e in range(1, config.epochs+1): 
+		print("Epoch:", e) 
+		training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors, config.s) 
 
-# Training the model 
-for e in range(1, config.epochs+1): 
-	print("Epoch:", e) 
-	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors, config.s) 
-
-	# Saving the model 
-	if config.save_model: 
-		save_checkpoint(model, optimizer, filename=config.checkpoint_file)
+		# Saving the model 
+		if config.save_model: 
+			save_checkpoint(model, optimizer, filename=config.checkpoint_file)

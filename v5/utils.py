@@ -197,24 +197,6 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
 
-def delete_all_files_in_augmentation_folder():
-	augmentation_folder = config.augmentation_folder
-	# Check if the directory exists to avoid errors
-	if os.path.exists(augmentation_folder):
-		# List all files and directories in the augmentation folder
-		for filename in os.listdir(augmentation_folder):
-			file_path = os.path.join(augmentation_folder, filename)
-			try:
-				# Check if it is a file and then remove it
-				if os.path.isfile(file_path) or os.path.islink(file_path):
-					os.unlink(file_path)
-				# Optionally, if you want to remove directories as well, uncomment the following lines:
-				# elif os.path.isdir(file_path):
-				#     shutil.rmtree(file_path)
-			except Exception as e:
-				print(f'Failed to delete {file_path}. Reason: {e}')
-	else:
-		print(f"The directory {augmentation_folder} does not exist.")
 
 
 
