@@ -79,40 +79,40 @@ scheduler = CosineAnnealingWarmRestarts(optimizer,
                                         eta_min = config.min_leanring_rate) 
 scheduler.base_lrs[0] = config.max_leanring_rate
 
-	# Defining the loss function 
-	loss_fn = YOLOLoss() 
+# Defining the loss function 
+loss_fn = YOLOLoss() 
 
-	# Defining the scaler for mixed precision training 
-	scaler = torch.cuda.amp.GradScaler() 
+# Defining the scaler for mixed precision training 
+scaler = torch.cuda.amp.GradScaler() 
 
-	if config.load_model: 
-		load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
+if config.load_model: 
+	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
 
-	# Defining the train dataset 
-	train_dataset = Dataset( 
-		csv_file = config.train_csv_file,
-		image_dir = config.image_dir,
-		label_dir = config.label_dir,
-		anchors=config.ANCHORS, 
-		image_size = config.image_size, 
-		grid_sizes = config.s, 
-		transform=config.train_transform 
-	) 
+# Defining the train dataset 
+train_dataset = Dataset( 
+	csv_file = config.train_csv_file,
+	image_dir = config.image_dir,
+	label_dir = config.label_dir,
+	anchors=config.ANCHORS, 
+	image_size = config.image_size, 
+	grid_sizes = config.s, 
+	transform=config.train_transform 
+) 
 
-	# Defining the train data loader 
-	train_loader = torch.utils.data.DataLoader( 
-		train_dataset, 
-		batch_size = config.batch_size, 
-		num_workers = 2, 
-		shuffle = True, 
-		pin_memory = True, 
-	) 
+# Defining the train data loader 
+train_loader = torch.utils.data.DataLoader( 
+	train_dataset, 
+	batch_size = config.batch_size, 
+	num_workers = 2, 
+	shuffle = True, 
+	pin_memory = True, 
+) 
 
 # Training the model 
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
 	training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors, config.s) 
 
-		# Saving the model 
-		if config.save_model: 
-			save_checkpoint(model, optimizer, filename=config.checkpoint_file)
+	# Saving the model 
+	if config.save_model: 
+		save_checkpoint(model, optimizer, filename=config.checkpoint_file)
