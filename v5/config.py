@@ -35,8 +35,8 @@ save_model = True
 
 epochs = 600
 batch_size = 4
-min_leanring_rate = 1e-5
-max_leanring_rate = min_leanring_rate * 100
+min_leanring_rate = 1e-4
+max_leanring_rate = min_leanring_rate * 10
 numerical_stability = 1e-6
 
 image_size = 640

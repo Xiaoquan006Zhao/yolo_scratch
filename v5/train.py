@@ -40,9 +40,9 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 			# Calculating the loss at each scale 
 			# the weight [4, 1, 0.4] is found in https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#41-compute-losses
 			loss = ( 
-				4 * loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
+				loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
 				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
-				+ 0.4 * loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
+				+ loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
 			) 
 
 		# Add the loss to the list 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 	model = YOLOv5().to(config.device) 
 
 # Defining the optimizer 
-optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
+optimizer = optim.Adam(model.parameters(), lr = config.max_leanring_rate) 
 
 scheduler = CosineAnnealingWarmRestarts(optimizer, 
                                         T_0 = 8,
@@ -86,7 +86,7 @@ loss_fn = YOLOLoss()
 scaler = torch.cuda.amp.GradScaler() 
 
 if config.load_model: 
-	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
+	load_checkpoint(config.checkpoint_file, model, optimizer, config.max_leanring_rate) 
 
 # Defining the train dataset 
 train_dataset = Dataset( 
