@@ -7,16 +7,17 @@ import torch.optim as optim
 from tqdm import tqdm
 import config
 import os
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from model import YOLOv5
 from loss import YOLOLoss
 from utils import (
-	delete_all_files_in_augmentation_folder,
 	load_checkpoint,
 	save_checkpoint,
 )
 
 # Define the train function to train the model 
-def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors, scales): 
+def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors, scales):
+	iters = len(loader) 
 	# Creating a progress bar 
 	progress_bar = tqdm(loader, leave=True) 
 
@@ -24,7 +25,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors, sca
 	losses = [] 
 
 	# Iterating over the training data 
-	for _, (x, y) in enumerate(progress_bar): 
+	for i, (x, y) in enumerate(progress_bar): 
 		x = x.to(config.device) 
 		y0, y1, y2 = ( 
 			y[0].to(config.device), 
@@ -56,6 +57,8 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors, sca
 		# Optimization step 
 		scaler.step(optimizer) 
 
+		scheduler.step(e + i / iters)
+
 		# Update the scaler for next iteration 
 		scaler.update() 
 
@@ -69,6 +72,12 @@ model = YOLOv5().to(config.device)
 
 # Defining the optimizer 
 optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
+
+scheduler = CosineAnnealingWarmRestarts(optimizer, 
+                                        T_0 = 8,
+                                        T_mult = 1, # A factor increases TiTi​ after a restart
+                                        eta_min = config.min_leanring_rate) 
+scheduler.base_lrs[0] = config.max_leanring_rate
 
 # Defining the loss function 
 loss_fn = YOLOLoss() 
@@ -102,7 +111,7 @@ train_loader = torch.utils.data.DataLoader(
 # Training the model 
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
-	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors, config.s) 
+	training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors, config.s) 
 
 	# Saving the model 
 	if config.save_model: 

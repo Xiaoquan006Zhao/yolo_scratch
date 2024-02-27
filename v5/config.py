@@ -10,21 +10,26 @@ test_csv_file = f"../data/{dataset}/100examples_test.csv"
 #test_csv_file = f"../data/{dataset}/test.csv"
 image_dir = f"../data/{dataset}/images/"
 label_dir = f"../data/{dataset}/labels/"  
+checkpoint_file = f"{dataset}_checkpoint.pth.tar"
 
 PAN_channels = [256, 512, 1024]
-
-augmentation_folder = 'augmentation/'
 
 # Device 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(device)
 
-# Load and save model variable 
 load_model = True
 save_model = True
-# model checkpoint file name 
-checkpoint_file = f"{dataset}_checkpoint.pth.tar"
 
+epochs = 600
+batch_size = 4
+min_leanring_rate = 1e-5
+max_leanring_rate = min_leanring_rate * 100
+numerical_stability = 1e-6
+
+image_size = 640
+# Grid cell sizes 
+s = [image_size // 32, image_size // 16, image_size // 8] 
 # Anchor boxes for each feature map scaled between 0 and 1 
 # 3 feature maps at 3 different scales based on YOLOv3 paper 
 ANCHORS = [ 
@@ -32,20 +37,6 @@ ANCHORS = [
 	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
 ] 
-
-numerical_stability = 1e-6
-
-# Batch size for training 
-batch_size = 4
-# Learning rate for training 
-leanring_rate = 1e-5
-# Number of epochs for training 
-epochs = 600
-# Image size 
-image_size = 640
-# Grid cell sizes 
-s = [image_size // 32, image_size // 16, image_size // 8] 
-
 scaled_anchors = ( 
 	torch.tensor(ANCHORS) *
 	torch.tensor(s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
