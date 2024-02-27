@@ -74,7 +74,7 @@ if __name__ == '__main__':
 optimizer = optim.Adam(model.parameters(), lr = config.max_leanring_rate) 
 
 scheduler = CosineAnnealingWarmRestarts(optimizer, 
-                                        T_0 = 8,
+                                        T_0 = 16,
                                         T_mult = 1, # A factor increases TiTi​ after a restart
                                         eta_min = config.min_leanring_rate) 
 scheduler.base_lrs[0] = config.max_leanring_rate
