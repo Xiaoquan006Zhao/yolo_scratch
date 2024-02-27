@@ -54,10 +54,10 @@ def ciou(box1, box2, is_pred=True):
 		return iou_score
 
 # Non-maximum suppression function to remove overlapping bounding boxes 
-def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
+def nms(bboxes):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
 	# Check decodePrediction method for why objectness is stored at index 1
-    bboxes = [box for box in bboxes if box[1] > valid_prediction_threshold]
+    bboxes = [box for box in bboxes if box[1] > config.valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
     bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
@@ -72,7 +72,7 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < config.enough_overlap_threshold]
 
     return bboxes_nms
 

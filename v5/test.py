@@ -10,6 +10,7 @@ from utils import (
 	nms,
 )
 from dataset import Dataset
+from utils_metric import calculate_precision_recall
 
 
 if __name__ == '__main__':
@@ -33,9 +34,10 @@ if __name__ == '__main__':
 		grid_sizes = config.s, 
 		transform=config.test_transform 
 	) 
+
 	test_loader = torch.utils.data.DataLoader( 
 		test_dataset, 
-		batch_size = 1, 
+		batch_size = config.batch_size, 
 		num_workers = 2, 
 		shuffle = True, 
 	) 
@@ -63,7 +65,24 @@ if __name__ == '__main__':
 	# Plotting the image with bounding boxes for each image in the batch 
 	for i in range(batch_size): 
 		# Applying non-max suppression to remove overlapping bounding boxes 
-		nms_boxes = nms(bboxes[i], enough_overlap_threshold=0.5, valid_prediction_threshold=0.6) 
+		nms_boxes = nms(bboxes[i]) 
 
 		# Plotting the image with bounding boxes 
 		plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
+
+	all_predictions = [[] for _ in range(config.num_anchors)]
+	all_targets = [[] for _ in range(config.num_anchors)]
+
+	model.eval() 
+	for x, y in test_loader: 
+		x = x.to(config.device) 
+		outputs = model(x) 
+
+		for i in range(len(all_predictions)):
+			all_predictions[i].extend(outputs[i])
+			all_targets[i].extend(y[i].to(config.device))
+
+	# for each scales
+	for i in range(len(all_predictions)):
+		pr = calculate_precision_recall(all_predictions[i], all_targets[i], config.scaled_anchors[i])
+		print(f"Precision:{pr[0]}, Recall:{pr[1]}")	

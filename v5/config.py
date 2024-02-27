@@ -44,6 +44,8 @@ image_size = 640
 s = [image_size // 32, image_size // 16, image_size // 8] 
 # Anchor boxes for each feature map scaled between 0 and 1 
 # 3 feature maps at 3 different scales based on YOLOv3 paper 
+
+num_anchors = 3
 ANCHORS = [ 
 	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
 	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
@@ -61,6 +63,9 @@ class_labels = [
 	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
 ]
 num_classes = len(class_labels)
+
+valid_prediction_threshold = 0.6
+enough_overlap_threshold = 0.6
 
 # Transform for training 
 train_transform = A.Compose( 
