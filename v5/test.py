@@ -2,7 +2,9 @@ import torch
 import config
 from model import YOLOv5
 from loss import YOLOLoss
+import numpy as np
 import torch.optim as optim 
+from tqdm import tqdm
 from utils import (
 	load_checkpoint,	
 	decodePrediction,
@@ -16,13 +18,13 @@ from utils_metric import calculate_precision_recall
 if __name__ == '__main__':
 	# Defining the model, optimizer, loss function and scaler 
 	model = YOLOv5().to(config.device) 
-	optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
+	optimizer = optim.Adam(model.parameters(), lr = config.max_leanring_rate) 
 	loss_fn = YOLOLoss() 
 	scaler = torch.cuda.amp.GradScaler() 
 
 	# Loading the checkpoint 
 	if config.load_model: 
-		load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
+		load_checkpoint(config.checkpoint_file, model, optimizer, config.max_leanring_rate) 
 
 	# Defining the test dataset and data loader 
 	test_dataset = Dataset( 
@@ -37,7 +39,7 @@ if __name__ == '__main__':
 
 	test_loader = torch.utils.data.DataLoader( 
 		test_dataset, 
-		batch_size = config.batch_size, 
+		batch_size = config.batch_size//2, 
 		num_workers = 2, 
 		shuffle = True, 
 	) 
@@ -70,19 +72,25 @@ if __name__ == '__main__':
 		# Plotting the image with bounding boxes 
 		plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
-	all_predictions = [[] for _ in range(config.num_anchors)]
-	all_targets = [[] for _ in range(config.num_anchors)]
+	precisions = [[] for _ in range(config.num_anchors)]
+	recalls = [[] for _ in range(config.num_anchors)]
+
 
 	model.eval() 
-	for x, y in test_loader: 
+	progress_bar = tqdm(test_loader, leave=True) 
+	for _, (x, y) in enumerate(progress_bar): 
 		x = x.to(config.device) 
 		outputs = model(x) 
 
-		for i in range(len(all_predictions)):
-			all_predictions[i].extend(outputs[i])
-			all_targets[i].extend(y[i].to(config.device))
+		for i in range(len(config.num_anchors)):
+			predictions = outputs[i]
+			targets = y[i].to(config.device)
+			precision_batch, recall_batch = calculate_precision_recall(predictions, targets)
+    
+			precisions[i].append(precision_batch)
+			recalls[i].append(recall_batch)
+	model.train() 
 
 	# for each scales
-	for i in range(len(all_predictions)):
-		pr = calculate_precision_recall(all_predictions[i], all_targets[i], config.scaled_anchors[i])
-		print(f"Precision:{pr[0]}, Recall:{pr[1]}")	
+	for i in range(len(config.num_anchors)):
+		print(f"Precision:{sum(precisions[i])/len(precisions[i])}, Recall:{sum(recalls[i])/len(recalls[i])}")	
