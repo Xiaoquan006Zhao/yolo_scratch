@@ -82,15 +82,15 @@ if __name__ == '__main__':
 		x = x.to(config.device) 
 		outputs = model(x) 
 
-		for i in range(len(config.num_anchors)):
+		for i in range(config.num_anchors):
 			predictions = outputs[i]
 			targets = y[i].to(config.device)
-			precision_batch, recall_batch = calculate_precision_recall(predictions, targets)
+			precision_batch, recall_batch = calculate_precision_recall(predictions, targets, config.scaled_anchors[i])
     
 			precisions[i].append(precision_batch)
 			recalls[i].append(recall_batch)
 	model.train() 
 
 	# for each scales
-	for i in range(len(config.num_anchors)):
+	for i in range(config.num_anchors):
 		print(f"Precision:{sum(precisions[i])/len(precisions[i])}, Recall:{sum(recalls[i])/len(recalls[i])}")	
