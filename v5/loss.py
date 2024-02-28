@@ -13,6 +13,7 @@ class YOLOLoss(nn.Module):
         super().__init__()
         self.bce = nn.BCEWithLogitsLoss()
         self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, pred, target, scaled_anchor, scale):
         # Identifying object and no-object cells in target
