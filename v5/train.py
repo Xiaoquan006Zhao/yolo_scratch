@@ -107,7 +107,6 @@ if __name__ == '__main__':
 		shuffle = True, 
 		pin_memory = True, 
 	) 
-
 	# Training the model 
 	for e in range(1, config.epochs+1): 
 		print("Epoch:", e) 

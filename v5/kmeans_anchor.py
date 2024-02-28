@@ -18,13 +18,24 @@ def read_labels(folder_path):
     return np.array(labels)
 
 def perform_kmeans(data, num_clusters):
-    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    kmeans = KMeans(n_clusters=num_clusters, n_init=10)
     kmeans.fit(data)
     return kmeans.cluster_centers_
 
-num_clusters = config.num_anchors
-label_data = read_labels(config.label_dir)
-anchor_boxes = perform_kmeans(label_data, num_clusters)
+def auto_anchor(num_anchors, label_dir, scales):
+    num_clusters = num_anchors
+    label_data = read_labels(label_dir)
+    anchor_boxes = np.sort(perform_kmeans(label_data, num_clusters), axis=0)
 
-print("Resulting Anchor Box Sizes:")
-print(anchor_boxes)
+    print("Resulting Anchor Box Sizes:")
+    print(anchor_boxes)
+
+    ANCHORS = [[] for _ in range(len(scales))]
+    ANCHORS[0] = anchor_boxes
+    for i in range(1, len(scales)):
+        scaled_anchor_boxes = [anchor_box / float(2*i) for anchor_box in anchor_boxes]
+        ANCHORS[i].extend(scaled_anchor_boxes)
+    
+    ANCHORS = [[tuple(subarray) for subarray in outer] for outer in ANCHORS]
+    
+    return ANCHORS
