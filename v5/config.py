@@ -8,22 +8,6 @@ import os
 
 class Config:
     _initialized = False
-    # train_csv_file = None
-    # test_csv_file = None    
-    # image_dir = None
-    # label_dir = None
-    # checkpoint_file = None
-    # PAN_channels = None
-    # load_model = None
-    # save_model = None
-    # epochs = None
-    # batch_size = None
-    # min_leanring_rate = None
-    # max_leanring_rate = None
-    # numerical_stability = None
-    # image_size = None
-    # s = None
-    # num_anchors = None
 
     @classmethod
     def initialize(self):
@@ -34,18 +18,18 @@ class Config:
             dataset = "pascal voc"
             if os.name == 'nt':
                 base_dir = os.getcwd()
-                #train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
-                #test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
-                train_csv_file = os.path.join(base_dir, "data", dataset, "train.csv")
-                test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
-                image_dir = os.path.join(base_dir, "data", dataset, "images")
-                label_dir = os.path.join(base_dir, "data", dataset, "labels")
-                checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
+                #self.train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
+                #self.test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
+                self.train_csv_file = os.path.join(base_dir, "data", dataset, "train.csv")
+                self.test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
+                self.image_dir = os.path.join(base_dir, "data", dataset, "images")
+                self.label_dir = os.path.join(base_dir, "data", dataset, "labels")
+                self.checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
             else:
                 #self.train_csv_file = f"../data/{dataset}/100examples.csv"
                 #self.test_csv_file = f"../data/{dataset}/100examples_test.csv"
-                train_csv_file = f"../data/{dataset}/train.csv"
-                test_csv_file = f"../data/{dataset}/test.csv"
+                self.train_csv_file = f"../data/{dataset}/train.csv"
+                self.test_csv_file = f"../data/{dataset}/test.csv"
                 self.image_dir = f"../data/{dataset}/images/"
                 self.label_dir = f"../data/{dataset}/labels/"  
                 self.checkpoint_file = f"{dataset}_checkpoint.pth.tar"
