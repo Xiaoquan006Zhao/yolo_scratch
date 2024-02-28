@@ -1,4 +1,5 @@
 import torch 
+import torch.nn as nn
 import os
 import numpy as np
 import matplotlib.pyplot as plt 
@@ -76,23 +77,40 @@ def nms(bboxes):
 
     return bboxes_nms
 
-def decodePrediction_bbox(predictions, scaled_anchors, s):
+def decodePrediction_bbox_no_offset(pred, scaled_anchor, start_index=1):
+	sigmoid = nn.Sigmoid()
+
+	# No need to fully decode the prediction, as we don't care about the offset the upper left corner
+    # to the assigned grid when calculating ciou
+    # https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#43-eliminate-grid-sensitivity
+        # new decode function
+	box_preds = torch.cat([2 * sigmoid(pred[..., start_index:start_index+2] - 0.5), 
+                               ((2*sigmoid(pred[..., start_index+2:start_index+4])) ** 2) * scaled_anchor 
+                            ],dim=-1) 
+	return box_preds
+
+def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 	box_predictions = predictions[..., 1:5] 
-	box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
-	box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * scaled_anchors
+
+	# box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
+	# box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * scaled_anchors
+
+	box_predictions[..., 0:4] = decodePrediction_bbox_no_offset(box_predictions, scaled_anchor, start_index=0)
 
 	# Calculate cell indices 
 	cell_indices = ( 
-		torch.arange(s) 
-		.repeat(predictions.shape[0], 3, s, 1) 
+		torch.arange(grid_size) 
+		.repeat(predictions.shape[0], 3, grid_size, 1) 
 		.unsqueeze(-1) 
 		.to(predictions.device) 
 	) 
 
-	x = 1/s * (box_predictions[..., 0:1] + cell_indices) 
-	y = 1/s * (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4)) 
-	width = 1/s * box_predictions[..., 2:3]
-	height = 1/s *box_predictions[..., 3:4]
+	scale = 1/float(grid_size)
+
+	x = scale * (box_predictions[..., 0:1] + cell_indices) 
+	y = scale * (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4)) 
+	width = scale * box_predictions[..., 2:3]
+	height = scale *box_predictions[..., 3:4]
 
 	# Adjusting predictions for box coordinates
 	box_preds = torch.cat([x, y, width, height], dim=-1)
@@ -100,21 +118,21 @@ def decodePrediction_bbox(predictions, scaled_anchors, s):
 	return box_preds
 
 # Function to convert cells to bounding boxes 
-def decodePrediction(predictions, scaled_anchors, s): 
+def decodePrediction(predictions, scaled_anchor, grid_size): 
 	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
 	# Number of anchors 
 	num_anchors = 3
 
-	scaled_anchors = scaled_anchors.reshape(1, len(scaled_anchors), 1, 1, 2) 
-	box_preds = decodePrediction_bbox(predictions, scaled_anchors, s)
+	scaled_anchor = scaled_anchor.reshape(1, len(scaled_anchor), 1, 1, 2) 
+	box_preds = decodePrediction_bbox(predictions, scaled_anchor, grid_size)
 		
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
 	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
-		batch_size, num_anchors  * s * s, 6) 
+		batch_size, num_anchors  * grid_size * grid_size, 6) 
 
 	# Returning the reshaped and converted bounding box list 
 	return decoded_bboxes.tolist()

@@ -5,6 +5,7 @@ import numpy as np
 from utils import (
     ciou,  
     decodePrediction_bbox,
+    decodePrediction_bbox_no_offset,
 )
 
 class YOLOLoss(nn.Module):
@@ -12,7 +13,6 @@ class YOLOLoss(nn.Module):
         super().__init__()
         self.bce = nn.BCEWithLogitsLoss()
         self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
-        self.sigmoid = nn.Sigmoid()
 
     def forward(self, pred, target, scaled_anchor, scale):
         # Identifying object and no-object cells in target
@@ -27,11 +27,7 @@ class YOLOLoss(nn.Module):
         # Reshaping anchors to match predictions
         scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
         
-        # No need to fully decode the prediction, as we don't care about the offset the upper left corner
-        # to the assigned grid when calculating ciou
-        box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), 
-                               torch.exp(pred[..., 3:5]) * scaled_anchor 
-                            ],dim=-1) 
+        box_preds = decodePrediction_bbox_no_offset(pred, scaled_anchor)
         
         cious = ciou(box_preds[obj], target[..., 1:5][obj])
 

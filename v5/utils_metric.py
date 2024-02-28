@@ -3,20 +3,15 @@ import torch.nn as nn
 import config
 from utils import (
     ciou,
+    decodePrediction_bbox_no_offset,
 )
 
-
 def calculate_precision_recall(predictions, targets, scaled_anchor):
-    sigmoid = nn.Sigmoid()
     obj = targets[..., 0] == 1
      # Reshaping anchors to match predictions
     scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
     
-    # No need to fully decode the prediction, as we don't care about the offset the upper left corner
-    # to the assigned grid when calculating ciou
-    box_preds = torch.cat([sigmoid(predictions[..., 1:3]), 
-                            torch.exp(predictions[..., 3:5]) * scaled_anchor 
-                        ],dim=-1) 
+    box_preds = decodePrediction_bbox_no_offset(predictions, scaled_anchor)
     
     cious = ciou(box_preds[obj], targets[..., 1:5][obj])
 

@@ -58,8 +58,8 @@ if __name__ == '__main__':
 
 		# Getting bounding boxes for each scale 
 		for i in range(3): 
-			batch_size, A, S, _, _ = output[i].shape 
-			boxes_scale_i = decodePrediction(output[i], config.scaled_anchors[i], s=S) 
+			batch_size, A, grid_size, _, _ = output[i].shape 
+			boxes_scale_i = decodePrediction(output[i], config.scaled_anchors[i], grid_size=grid_size) 
 			for idx, (box) in enumerate(boxes_scale_i): 
 				bboxes[idx] += box 
 	model.train() 
