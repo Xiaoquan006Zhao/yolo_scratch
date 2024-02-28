@@ -1,10 +1,5 @@
-import torch 
 import torch.nn as nn 
-import numpy as np 
-import pandas as pd 
-import matplotlib.pyplot as plt 
-import matplotlib.patches as patches 
-import config
+from config import Config
 
 from Blocks.BasicBlock import ConvBNMish
 from Blocks.CSP import CSPBlock
@@ -17,7 +12,7 @@ from Blocks.SPPF import SPPFBlock
 
 # Class for defining YOLOv3 model 
 class YOLOv5(nn.Module): 
-	def __init__(self, in_channels=3, num_classes=config.num_classes): 
+	def __init__(self, in_channels=3, num_classes=Config.num_classes): 
 		super().__init__() 
 		self.num_classes = num_classes 
 		self.in_channels = in_channels 
@@ -38,7 +33,7 @@ class YOLOv5(nn.Module):
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=3),
 
 			SPPFBlock(1024, pool_size=5, pool_repeats=3),
-			PAN(config.PAN_channels, num_classes=config.num_classes),
+			PAN(Config.PAN_channels, num_classes=Config.num_classes),
 		]) 
 	
 	# Forward pass for YOLOv3 with route connections and scale predictions 

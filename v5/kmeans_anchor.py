@@ -1,6 +1,5 @@
 import os
 import numpy as np
-import config
 from sklearn.cluster import KMeans
 
 def read_labels(folder_path):

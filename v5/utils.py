@@ -4,8 +4,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches 
-import config
-
+from config import Config
 
 # Defining a function to calculate Intersection over Union (IoU) 
 def ciou(box1, box2, is_pred=True): 
@@ -21,7 +20,7 @@ def ciou(box1, box2, is_pred=True):
 		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - inter_area
 		
 		# IoU
-		iou = inter_area / (union_area + config.numerical_stability)
+		iou = inter_area / (union_area + Config.numerical_stability)
 
 		# Center distance
 		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
@@ -58,7 +57,7 @@ def ciou(box1, box2, is_pred=True):
 def nms(bboxes):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
 	# Check decodePrediction method for why objectness is stored at index 1
-    bboxes = [box for box in bboxes if box[1] > config.valid_prediction_threshold]
+    bboxes = [box for box in bboxes if box[1] > Config.valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
     bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
@@ -73,7 +72,7 @@ def nms(bboxes):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:]), is_pred=False) < config.enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:]), is_pred=False) < Config.enough_overlap_threshold]
 
     return bboxes_nms
 
@@ -142,7 +141,7 @@ def plot_image(image, boxes):
 	# Getting the color map from matplotlib 
 	colour_map = plt.get_cmap("tab20b") 
 	# Getting 20 different colors from the color map for 20 different classes 
-	colors = [colour_map(i) for i in np.linspace(0, 1, len(config.class_labels))] 
+	colors = [colour_map(i) for i in np.linspace(0, 1, len(Config.class_labels))] 
 
 	# Reading the image with OpenCV 
 	img = np.array(image) 
@@ -182,7 +181,7 @@ def plot_image(image, boxes):
 		plt.text( 
 			upper_left_x * w, 
 			upper_left_y * h, 
-			s=config.class_labels[int(class_pred)], 
+			s=Config.class_labels[int(class_pred)], 
 			color="white", 
 			verticalalignment="top", 
 			bbox={"color": colors[int(class_pred)], "pad": 0}, 

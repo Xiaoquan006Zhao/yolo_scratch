@@ -1,12 +1,10 @@
-import config
+from config import Config
 import torch
 from dataset import Dataset
-from PIL import Image, ImageFile 
+from PIL import ImageFile 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 import torch.optim as optim 
 from tqdm import tqdm
-import config
-import os
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from model import YOLOv5
 from loss import YOLOLoss
@@ -26,11 +24,11 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 
 	# Iterating over the training data 
 	for i, (x, y) in enumerate(progress_bar): 
-		x = x.to(config.device) 
+		x = x.to(Config.device) 
 		y0, y1, y2 = ( 
-			y[0].to(config.device), 
-			y[1].to(config.device), 
-			y[2].to(config.device), 
+			y[0].to(Config.device), 
+			y[1].to(Config.device), 
+			y[2].to(Config.device), 
 		) 
 
 		with torch.cuda.amp.autocast(): 
@@ -68,16 +66,16 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 
 if __name__ == '__main__':
 	# Creating the model from YOLOv3 class 
-	model = YOLOv5().to(config.device) 
+	model = YOLOv5().to(Config.device) 
 
 	# Defining the optimizer 
-	optimizer = optim.Adam(model.parameters(), lr = config.max_leanring_rate) 
+	optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
 
 	scheduler = CosineAnnealingWarmRestarts(optimizer, 
 											T_0 = 32,
 											T_mult = 1, # A factor increases TiTi​ after a restart
-											eta_min = config.min_leanring_rate) 
-	scheduler.base_lrs[0] = config.max_leanring_rate
+											eta_min = Config.min_leanring_rate) 
+	scheduler.base_lrs[0] = Config.max_leanring_rate
 
 	# Defining the loss function 
 	loss_fn = YOLOLoss() 
@@ -85,33 +83,33 @@ if __name__ == '__main__':
 	# Defining the scaler for mixed precision training 
 	scaler = torch.cuda.amp.GradScaler() 
 
-	if config.load_model: 
-		load_checkpoint(config.checkpoint_file, model, optimizer, config.max_leanring_rate) 
+	if Config.load_model: 
+		load_checkpoint(Config.checkpoint_file, model, optimizer, Config.max_leanring_rate) 
 
 	# Defining the train dataset 
 	train_dataset = Dataset( 
-		csv_file = config.train_csv_file,
-		image_dir = config.image_dir,
-		label_dir = config.label_dir,
-		anchors=config.ANCHORS, 
-		image_size = config.image_size, 
-		grid_sizes = config.s, 
-		transform=config.train_transform 
+		csv_file = Config.train_csv_file,
+		image_dir = Config.image_dir,
+		label_dir = Config.label_dir,
+		anchors=Config.ANCHORS, 
+		image_size = Config.image_size, 
+		grid_sizes = Config.s, 
+		transform=Config.train_transform 
 	) 
 
 	# Defining the train data loader 
 	train_loader = torch.utils.data.DataLoader( 
 		train_dataset, 
-		batch_size = config.batch_size, 
+		batch_size = Config.batch_size, 
 		num_workers = 2, 
 		shuffle = True, 
 		pin_memory = True, 
 	) 
 	# Training the model 
-	for e in range(1, config.epochs+1): 
+	for e in range(1, Config.epochs+1): 
 		print("Epoch:", e) 
-		training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors, config.s) 
+		training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, Config.scaled_anchors, Config.s) 
 
 		# Saving the model 
-		if config.save_model: 
-			save_checkpoint(model, optimizer, filename=config.checkpoint_file)
+		if Config.save_model: 
+			save_checkpoint(model, optimizer, filename=Config.checkpoint_file)

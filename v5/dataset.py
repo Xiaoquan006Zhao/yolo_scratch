@@ -2,10 +2,7 @@ import torch
 import pandas as pd 
 import os 
 import numpy as np
-from PIL import Image, ImageFile, ImageDraw
-import config
-from config import numerical_stability
-import random
+from PIL import Image
 from utils import (
     ciou,
 )

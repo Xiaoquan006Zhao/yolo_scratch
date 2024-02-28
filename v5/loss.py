@@ -1,10 +1,8 @@
 import torch
 import torch.nn as nn
 import math
-import numpy as np
 from utils import (
     ciou,  
-    decodePrediction_bbox,
     decodePrediction_bbox_no_offset,
 )
 
