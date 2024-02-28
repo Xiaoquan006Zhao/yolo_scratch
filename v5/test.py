@@ -28,13 +28,13 @@ if __name__ == '__main__':
 
 	# Defining the test dataset and data loader 
 	test_dataset = Dataset( 
-		csv_file=config.test_csv_file,
-		image_dir=config.image_dir,
-		label_dir=config.label_dir,
-		anchors=config.ANCHORS, 
-		image_size = config.image_size, 
-		grid_sizes = config.s, 
-		transform=config.test_transform 
+		csv_file=Config.test_csv_file,
+		image_dir=Config.image_dir,
+		label_dir=Config.label_dir,
+		anchors=Config.ANCHORS, 
+		image_size = Config.image_size, 
+		grid_sizes = Config.s, 
+		transform=Config.test_transform 
 	) 
 
 	test_loader = torch.utils.data.DataLoader( 
