@@ -70,7 +70,7 @@ class Config:
             self.num_anchors = 3
 
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
-            print(f"-{device}-")
+            print(f"-{self.device}-")
 
             self.ANCHORS = auto_anchor(self.num_anchors, self.label_dir, self.s)
 
