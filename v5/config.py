@@ -11,6 +11,7 @@ class Config:
 
     @classmethod
     def initialize(self):
+        print(f"Initialized: {self._initialized}")
         if not self._initialized:
             print("Initializing config...")
             self._initialized = True
