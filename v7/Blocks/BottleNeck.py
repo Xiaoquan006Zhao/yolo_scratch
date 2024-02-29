@@ -7,29 +7,18 @@ from torchview import draw_graph
 from .BasicBlock import ConvBNMish
 
 class BottleNeck(nn.Module):
-    def __init__(self, in_channels, use_residual = True):
+    def __init__(self, in_channels):
         super(BottleNeck,self).__init__()
-        self.conv1 = ConvBNMish(in_channels, out_channels=in_channels, kernel_size=1, stride=1, padding=0)
-        self.conv2 = ConvBNMish(in_channels, out_channels=in_channels, kernel_size=3, stride=1, padding=1)
-        self.use_residual = use_residual
+
+        self.conv1 = ConvBNMish(2*in_channels, 2*in_channels, kernel_size=3, stride=1, padding=1)
+        self.conv2 = ConvBNMish(2*in_channels, 2*in_channels, kernel_size=3, stride=1, padding=1)
+        self.conv3 = ConvBNMish(2*in_channels, 2*in_channels, kernel_size=3, stride=1, padding=1)
+        self.conv4 = ConvBNMish(2*in_channels, 2*in_channels, kernel_size=3, stride=1, padding=1)
+        self.conv5 = ConvBNMish(2*in_channels, in_channels, kernel_size=3, stride=1, padding=1)
 
     def forward(self,x):
-        x_residual = x
-        output = self.conv2(self.conv1(x))
+        output1 = self.conv2(self.conv1(x))
+        output2 = self.conv4(self.conv3(output1))
 
-        return output if not self.use_residual else x_residual+output
+        return self.conv5(torch.cat((output1, output2), dim=1))
 
-# def test_DenseLayer():
-#     x = torch.randn(1,64,224,224)
-#     model = DenseLayer(64)
-#     # print(model(x).shape)
-#     # print(model)
-#     # del model
-#     return model
-
-# model = test_DenseLayer()
-
-# architecture = 'denselayer'
-# model_graph = draw_graph(model, input_size=(1,64,224,224), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
-# model_graph.visual_graph
-    
