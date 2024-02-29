@@ -1,6 +1,6 @@
 import torch
 from config import Config
-from model import YOLOv5
+from model import YOLOv7
 from loss import YOLOLoss
 import numpy as np
 import torch.optim as optim 

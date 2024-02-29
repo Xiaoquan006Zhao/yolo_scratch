@@ -6,7 +6,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 import torch.optim as optim 
 from tqdm import tqdm
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
-from model import YOLOv5
+from model import YOLOv8
 from loss import YOLOLoss
 from utils import (
 	load_checkpoint,
