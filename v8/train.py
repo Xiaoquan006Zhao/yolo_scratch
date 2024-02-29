@@ -65,7 +65,7 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 		progress_bar.set_postfix(loss=mean_loss)
 
 # Creating the model from YOLOv3 class 
-model = YOLOv5().to(Config.device) 
+model = YOLOv8().to(Config.device) 
 
 # Defining the optimizer 
 optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 

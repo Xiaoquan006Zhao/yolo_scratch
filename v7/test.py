@@ -16,7 +16,7 @@ from utils_metric import calculate_precision_recall
 
 
 # Defining the model, optimizer, loss function and scaler 
-model = YOLOv5().to(Config.device) 
+model = YOLOv7().to(Config.device) 
 optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
