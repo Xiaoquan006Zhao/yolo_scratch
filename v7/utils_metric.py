@@ -17,8 +17,8 @@ def calculate_precision_recall(predictions, targets, scaled_anchor):
 
      # Filter predictions based on CIoU threshold
     true_positives = torch.sum(cious > Config.enough_overlap_threshold*1.1).item()
+    false_positives = torch.sum(cious <= Config.enough_overlap_threshold*1.1).item()
     # targets[..., 1:5][obj].shape[0] is number of bounding boxes
-    false_positives = targets[..., 1:5][obj].shape[0] - true_positives
     false_negatives = targets[..., 1:5][obj].shape[0] - true_positives
 
     precision = true_positives / (true_positives + false_positives + Config.numerical_stability)
