@@ -10,8 +10,10 @@ from utils import (
 def calculate_precision_recall(predictions, targets, scaled_anchor):
     obj = targets[..., 0] == 1
 
-    num_obj = len(targets[-1] == 1)
-    num_pred_obj = len(predictions[-1] == 1)
+    num_obj = np.sum(obj, axis=(2))
+
+    pred_obj = predictions[..., 0] = 1
+    num_pred_obj = np.sum(pred_obj, axis=(2))
 
     # Reshaping anchors to match predictions
     scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
