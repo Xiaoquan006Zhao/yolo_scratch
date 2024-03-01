@@ -91,7 +91,7 @@ class Dataset(torch.utils.data.Dataset):
                 if not anchor_taken and not has_anchor[scale_idx]: 
 
                     # Set the probability to 1 
-                    targets[scale_idx][anchor_on_scale, i, j, 0] = 1
+                    targets[scale_idx][anchor_on_scale, i, j, 1] = 1
 
                     # Calculating the center of the bounding box relative 
                     # to the cell 
@@ -108,10 +108,10 @@ class Dataset(torch.utils.data.Dataset):
                                     ) 
 
                     # Assigning the box coordinates to the target 
-                    targets[scale_idx][anchor_on_scale, i, j, 1:5] = box_coordinates 
+                    targets[scale_idx][anchor_on_scale, i, j, 2:6] = box_coordinates 
 
                     # Assigning the class label to the target 
-                    targets[scale_idx][anchor_on_scale, i, j, 5] = int(class_label) 
+                    targets[scale_idx][anchor_on_scale, i, j, 0] = int(class_label) 
 
                     # Set the anchor box as assigned for the scale 
                     has_anchor[scale_idx] = True

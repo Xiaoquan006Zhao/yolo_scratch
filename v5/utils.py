@@ -89,7 +89,7 @@ def decodePrediction_bbox_no_offset(pred, scaled_anchor, start_index=1):
 	return box_preds
 
 def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
-	box_predictions = predictions[..., 1:5] 
+	box_predictions = predictions[..., 2:6] 
 
 	# box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
 	# box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * scaled_anchors

@@ -20,7 +20,7 @@ class YOLOLoss(nn.Module):
 
         # Calculating No object loss
         no_object_loss = self.bce(
-            pred[..., 0:1][no_obj], target[..., 0:1][no_obj],
+            pred[..., 1:2][no_obj], target[..., 1:2][no_obj],
         )
 
         # Reshaping anchors to match predictions
@@ -28,18 +28,18 @@ class YOLOLoss(nn.Module):
         
         box_preds = decodePrediction_bbox_no_offset(pred, scaled_anchor)
         
-        cious = ciou(box_preds[obj], target[..., 1:5][obj])
+        cious = ciou(box_preds[obj], target[..., 2:6][obj])
 
         # CIoU loss for bounding box regression
         box_loss = torch.mean(1-cious)
 
         # Objectness loss for predicting the presence of an object
-        object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
+        object_loss = self.bce(self.sigmoid(pred[..., 1:2][obj]), target[..., 1:2][obj])
 
         # Calculating class loss
-        class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
+        class_loss = self.cross_entropy(pred[..., 0:1][obj], target[..., 0:1][obj].long())
 
         loss = box_loss + object_loss + no_object_loss + class_loss 
-        assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
+        assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 2:6][obj]}"
 
         return (loss)
