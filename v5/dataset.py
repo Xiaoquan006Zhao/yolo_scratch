@@ -7,52 +7,38 @@ from utils import (
     ciou,
 )
 
-# Create a dataset class to load the images and labels from the folder 
 class Dataset(torch.utils.data.Dataset): 
     def __init__( 
         self, csv_file, image_dir, label_dir, anchors, 
         image_size, grid_sizes, 
         num_classes=20, transform=None
     ): 
-        # Read the csv file with image names and labels 
         self.label_list = pd.read_csv(csv_file) 
-        # Image and label directories 
         self.image_dir = image_dir 
         self.label_dir = label_dir 
-        # Image size 
         self.image_size = image_size 
-        # Transformations 
         self.transform = transform 
-        # Grid sizes for each scale 
         self.grid_sizes = grid_sizes 
-        # Anchor boxes 
         self.anchors = torch.tensor( 
             anchors[0] + anchors[1] + anchors[2]) 
-        # Number of anchor boxes 
         self.num_anchors = self.anchors.shape[0] 
-        # Number of anchor boxes per scale 
         self.num_anchors_per_scale = self.num_anchors // 3
-        # Number of classes 
         self.num_classes = num_classes 
-        # Ignore IoU threshold 
         self.ignore_iou_thresh = 0.5
 
     def __len__(self): 
         return len(self.label_list) 
     
     def __getitem__(self, idx): 
-        # Getting the label path 
         label_path = os.path.join(self.label_dir, self.label_list.iloc[idx, 1]) 
         # We are applying roll to move class label to the last column 
         # 5 columns: x, y, width, height, class_label 
         bboxes = np.roll(np.loadtxt(fname=label_path, 
                         delimiter=" ", ndmin=2), 4, axis=1).tolist() 
         
-        # Getting the image path 
         img_path = os.path.join(self.image_dir, self.label_list.iloc[idx, 0]) 
         image = np.array(Image.open(img_path).convert("RGB")) 
 
-        # Albumentations augmentations 
         if self.transform: 
             augs = self.transform(image=image, bboxes=bboxes) 
             image = augs["image"] 
@@ -73,8 +59,7 @@ class Dataset(torch.utils.data.Dataset):
             anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
             x, y, width, height, class_label = box 
 
-            # At each scale, assigning the bounding box to the 
-            # best matching anchor box 
+            # At each scale, assigning the bounding box to the best matching anchor box 
             has_anchor = [False] * 3
             for anchor_idx in anchor_indices: 
                 scale_idx = anchor_idx // self.num_anchors_per_scale 
@@ -90,15 +75,12 @@ class Dataset(torch.utils.data.Dataset):
                 # Check if the anchor box is already assigned 
                 if not anchor_taken and not has_anchor[scale_idx]: 
 
-                    # Set the probability to 1 
                     targets[scale_idx][anchor_on_scale, i, j, 1] = 1
 
-                    # Calculating the center of the bounding box relative 
-                    # to the cell 
+                    # Calculating the center of the bounding box relative to the cell 
                     x_cell, y_cell = s * x - j, s * y - i 
 
-                    # Calculating the width and height of the bounding box 
-                    # relative to the cell 
+                    # Calculating the width and height of the bounding box relative to the cell 
                     width_cell, height_cell = (width * s, height * s) 
 
                     # Idnetify the box coordinates 
@@ -107,13 +89,10 @@ class Dataset(torch.utils.data.Dataset):
                                         height_cell] 
                                     ) 
 
-                    # Assigning the box coordinates to the target 
                     targets[scale_idx][anchor_on_scale, i, j, 2:6] = box_coordinates 
 
-                    # Assigning the class label to the target 
                     targets[scale_idx][anchor_on_scale, i, j, 0] = int(class_label) 
 
-                    # Set the anchor box as assigned for the scale 
                     has_anchor[scale_idx] = True
 
                 # If the anchor box is already assigned, check if the 
@@ -122,6 +101,5 @@ class Dataset(torch.utils.data.Dataset):
                     # Set the probability to -1 to ignore the anchor box 
                     targets[scale_idx][anchor_on_scale, i, j, 0] = -1
 
-        # Return the image and the target 
         return image, tuple(targets)
 

@@ -15,8 +15,8 @@ class YOLOLoss(nn.Module):
 
     def forward(self, pred, target, scaled_anchor, scale):
         # Identifying object and no-object cells in target
-        obj = target[..., 0] == 1
-        no_obj = target[..., 0] == 0
+        obj = target[..., 1] == 1
+        no_obj = target[..., 1] == 0
 
         # Calculating No object loss
         no_object_loss = self.bce(
