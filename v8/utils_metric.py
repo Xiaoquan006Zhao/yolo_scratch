@@ -37,7 +37,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
                         false_negatives += 1
     
     # Calculate precision and recall
-    precision = true_positives / (true_positives + false_positives)
-    recall = true_positives / (true_positives + false_negatives)
+    precision = true_positives / (true_positives + false_positives + Config.numerical_stability)
+    recall = true_positives / (true_positives + false_negatives + Config.numerical_stability)
     
     return precision, recall
