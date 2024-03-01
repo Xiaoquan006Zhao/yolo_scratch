@@ -134,7 +134,7 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 		batch_size, num_anchors  * grid_size * grid_size, 6) 
 
 	# Returning the reshaped and converted bounding box list 
-	return decoded_bboxes.tolist() if to_list else decoded_bboxes
+	return decoded_bboxes if not to_list else decoded_bboxes.tolist()
 
 # Function to plot images with bounding boxes and class labels 
 def plot_image(image, boxes): 
