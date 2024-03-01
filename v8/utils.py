@@ -133,7 +133,7 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
 		batch_size, num_anchors  * grid_size * grid_size, 6) 
 
-	# Returning the reshaped and converted bounding box list 
+	print(decoded_bboxes.shape)
 	return decoded_bboxes if not to_list else decoded_bboxes.tolist()
 
 # Function to plot images with bounding boxes and class labels 
