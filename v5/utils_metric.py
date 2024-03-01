@@ -5,6 +5,7 @@ import numpy as np
 from utils import (
     ciou,
     decodePrediction,
+    stable_divide
 )
 
 def calculate_precision_recall(predictions, targets, scaled_anchor, s):
@@ -22,7 +23,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     false_positives = num_predictions - true_positives
     false_negatives = num_targets - true_positives
 
-    precision = true_positives / (true_positives + false_positives + Config.numerical_stability)
-    recall = true_positives / (true_positives + false_negatives + Config.numerical_stability)
+    precision = stable_divide(true_positives, true_positives + false_positives)
+    recall = stable_divide(true_positives, true_positives + false_negatives)
     
     return precision, recall

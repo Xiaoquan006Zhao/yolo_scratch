@@ -8,20 +8,13 @@ from config import Config
 
 def ciou(box1, box2, is_pred=True): 
 	if is_pred: 
-		# Convert from center to corner format
 		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0] - box1[..., 2] / 2, box1[..., 1] - box1[..., 3] / 2, box1[..., 0] + box1[..., 2] / 2, box1[..., 1] + box1[..., 3] / 2
 		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0] - box2[..., 2] / 2, box2[..., 1] - box2[..., 3] / 2, box2[..., 0] + box2[..., 2] / 2, box2[..., 1] + box2[..., 3] / 2
 		
-		# Intersection area
 		inter_area = torch.clamp(torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1), min=0) * torch.clamp(torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1), min=0)
-		
-		# Union area
 		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - inter_area
-		
-		# IoU
-		iou = inter_area / (union_area + Config.numerical_stability)
+		iou = stable_divide(inter_area, union_area)
 
-		# Center distance
 		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
 		
 		# Enclosing box
@@ -32,24 +25,17 @@ def ciou(box1, box2, is_pred=True):
 		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
 		alpha = v / (1 - iou + v + 1e-6)
 		
-		ciou_score = iou - (center_distance / (c_diag + Config.numerical_stability)) - alpha * v
+		ciou_score = iou - stable_divide(center_distance, c_diag ) - alpha * v
 
 		return ciou_score
 	else: 
-		# IoU score based on width and height of bounding boxes 
-		
-		# Calculate intersection area 
-		intersection_area = torch.min(box1[..., 0], box2[..., 0]) * torch.min(box1[..., 1], box2[..., 1]) 
+		inter_area = torch.min(box1[..., 0], box2[..., 0]) * torch.min(box1[..., 1], box2[..., 1]) 
 
-		# Calculate union area 
 		box1_area = box1[..., 0] * box1[..., 1] 
 		box2_area = box2[..., 0] * box2[..., 1] 
-		union_area = box1_area + box2_area - intersection_area 
+		union_area = box1_area + box2_area - inter_area 
+		iou_score = stable_divide(inter_area, union_area)
 
-		# Calculate IoU score 
-		iou_score = intersection_area / union_area + Config.numerical_stability
-
-		# Return IoU score 
 		return iou_score
 
 def nms(bboxes):
@@ -60,7 +46,6 @@ def nms(bboxes):
     # Sort the bounding boxes by confidence in descending order
     bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
 
-	# Initialize the list of bounding boxes after non-maximum suppression. 
     bboxes_nms = []
     while bboxes:
         # Get the bounding box with the highest confidence
@@ -121,7 +106,6 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	objectness = torch.sigmoid(predictions[..., 1:2]) 
 	best_class = torch.argmax(predictions[..., 0:1], dim=-1).unsqueeze(-1) 
 
-	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
 	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
 
 	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
@@ -133,28 +117,17 @@ def plot_image(image, boxes):
 	# Getting 20 different colors from the color map for 20 different classes 
 	colors = [colour_map(i) for i in np.linspace(0, 1, len(Config.class_labels))] 
 
-	# Reading the image with OpenCV 
 	img = np.array(image) 
-	# Getting the height and width of the image 
 	h, w, _ = img.shape 
-
-	# Create figure and axes 
 	fig, ax = plt.subplots(1) 
-
-	# Add image to plot 
 	ax.imshow(img) 
 
-	# Plotting the bounding boxes and labels over the image 
 	for box in boxes: 
-		# Get the class from the box 
 		class_pred = box[0] 
-		# Get the center x and y coordinates 
 		box = box[2:] 
-		# Get the upper left corner coordinates 
 		upper_left_x = box[0] - box[2] / 2
 		upper_left_y = box[1] - box[3] / 2
 
-		# Create a Rectangle patch with the bounding box 
 		rect = patches.Rectangle( 
 			(upper_left_x * w, upper_left_y * h), 
 			box[2] * w, 
@@ -163,11 +136,7 @@ def plot_image(image, boxes):
 			edgecolor=colors[int(class_pred)], 
 			facecolor="none", 
 		) 
-		
-		# Add the patch to the Axes 
 		ax.add_patch(rect) 
-		
-		# Add class name to the patch 
 		plt.text( 
 			upper_left_x * w, 
 			upper_left_y * h, 
@@ -177,31 +146,28 @@ def plot_image(image, boxes):
 			bbox={"color": colors[int(class_pred)], "pad": 0}, 
 		) 
 
-	# Display the plot 
 	plt.show()
 
-# Function to save checkpoint 
-def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"): 
+def save_checkpoint(model, optimizer, checkpoint_file): 
 	print("==> Saving checkpoint") 
 	checkpoint = { 
 		"state_dict": model.state_dict(), 
 		"optimizer": optimizer.state_dict(), 
 	} 
-	torch.save(checkpoint, filename)
+	torch.save(checkpoint, checkpoint_file)
 
-# Function to load checkpoint 
 def load_checkpoint(checkpoint_file, model, optimizer, lr): 
     if not os.path.exists(checkpoint_file):
-        # If the checkpoint file does not exist, print a message and return early.
         print(f"==> Checkpoint file {checkpoint_file} does not exist. Skipping load.")
         return
     
     print("==> Loading checkpoint")
-    checkpoint = torch.load(checkpoint_file, map_location=torch.device('cuda')) # Assuming you are using a CUDA device, adjust accordingly.
+    checkpoint = torch.load(checkpoint_file, map_location=torch.device('cuda')) 
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
 
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
 
-
+def stable_divide(a, b):
+	return float(a) / (float(b) + Config.numerical_stability)
