@@ -93,12 +93,13 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
-	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
-		batch_size, num_anchors  * grid_size * grid_size, 6)
-	return decoded_bboxes.tolist()
-
-	return decoded_bboxes if to_list else decoded_bboxes.tolist()
-
+	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
+	
+	if to_list:
+		return decoded_bboxes.reshape(batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
+	else:
+		return decoded_bboxes 
+	
 def plot_image(image, boxes): 
 	colour_map = plt.get_cmap("tab20b") 
 	colors = [colour_map(i) for i in np.linspace(0, 1, len(Config.class_labels))] 
