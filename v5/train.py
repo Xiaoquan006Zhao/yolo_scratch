@@ -92,4 +92,4 @@ for e in range(1, Config.epochs+1):
 	training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, Config.scaled_anchors, Config.s) 
 
 	if Config.save_model: 
-		save_checkpoint(model, optimizer, filename=Config.checkpoint_file)
+		save_checkpoint(model, optimizer, Config.checkpoint_file)
