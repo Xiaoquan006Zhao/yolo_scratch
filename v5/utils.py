@@ -67,9 +67,7 @@ def decodePrediction_bbox_no_offset(pred, scaled_anchor, start_index=1):
 	return box_preds
 
 def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
-	box_predictions = predictions[..., 1:5] 
-
-	box_predictions[..., 0:4] = decodePrediction_bbox_no_offset(box_predictions, scaled_anchor, start_index=0)
+	box_predictions = decodePrediction_bbox_no_offset(predictions, scaled_anchor)
 
 	cell_indices = ( 
 		torch.arange(grid_size) 
