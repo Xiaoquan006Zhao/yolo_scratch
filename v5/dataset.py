@@ -19,8 +19,7 @@ class Dataset(torch.utils.data.Dataset):
         self.image_size = image_size 
         self.transform = transform 
         self.grid_sizes = grid_sizes 
-        self.anchors = torch.tensor( 
-            anchors[0] + anchors[1] + anchors[2]) 
+        self.anchors = torch.tensor(anchors[0] + anchors[1] + anchors[2]) 
         self.num_anchors = self.anchors.shape[0] 
         self.num_anchors_per_scale = self.num_anchors // 3
         self.num_classes = num_classes 
@@ -49,13 +48,8 @@ class Dataset(torch.utils.data.Dataset):
         targets = [torch.zeros((self.num_anchors_per_scale, s, s, 6)) 
                 for s in self.grid_sizes] 
         
-        # Identify anchor box and cell for each bounding box 
         for box in bboxes: 
-            # Calculate iou of bounding box with anchor boxes 
-            iou_anchors = ciou(torch.tensor(box[2:4]), 
-                            self.anchors, 
-                            is_pred=False) 
-            # Selecting the best anchor box 
+            iou_anchors = ciou(torch.tensor(box[2:4]), self.anchors, is_pred=False) 
             anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
             x, y, width, height, class_label = box 
 
@@ -65,25 +59,14 @@ class Dataset(torch.utils.data.Dataset):
                 scale_idx = anchor_idx // self.num_anchors_per_scale 
                 anchor_on_scale = anchor_idx % self.num_anchors_per_scale 
                 
-                # Identifying the grid size for the scale 
                 s = self.grid_sizes[scale_idx] 
-                
-                # Identifying the cell to which the bounding box belongs 
                 i, j = int(s * y), int(s * x) 
-                anchor_taken = targets[scale_idx][anchor_on_scale, i, j, 0] 
-                
-                # Check if the anchor box is already assigned 
+                anchor_taken = targets[scale_idx][anchor_on_scale, i, j, 0]
+
                 if not anchor_taken and not has_anchor[scale_idx]: 
-
                     targets[scale_idx][anchor_on_scale, i, j, 0] = 1
-
-                    # Calculating the center of the bounding box relative to the cell 
                     x_cell, y_cell = s * x - j, s * y - i 
-
-                    # Calculating the width and height of the bounding box relative to the cell 
                     width_cell, height_cell = (width * s, height * s) 
-
-                    # Idnetify the box coordinates 
                     box_coordinates = torch.tensor( 
                                         [x_cell, y_cell, width_cell, 
                                         height_cell] 
@@ -95,11 +78,7 @@ class Dataset(torch.utils.data.Dataset):
 
                     has_anchor[scale_idx] = True
 
-                # If the anchor box is already assigned, check if the 
-                # IoU is greater than the threshold 
                 elif not anchor_taken and iou_anchors[anchor_idx] > self.ignore_iou_thresh: 
-                    # Set the probability to -1 to ignore the anchor box 
                     targets[scale_idx][anchor_on_scale, i, j, 0] = -1
 
         return image, tuple(targets)
-

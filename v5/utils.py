@@ -10,51 +10,47 @@ def ciou(box1, box2, is_pred=True):
 	if is_pred: 
 		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0] - box1[..., 2] / 2, box1[..., 1] - box1[..., 3] / 2, box1[..., 0] + box1[..., 2] / 2, box1[..., 1] + box1[..., 3] / 2
 		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0] - box2[..., 2] / 2, box2[..., 1] - box2[..., 3] / 2, box2[..., 0] + box2[..., 2] / 2, box2[..., 1] + box2[..., 3] / 2
-		
 		inter_area = torch.clamp(torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1), min=0) * torch.clamp(torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1), min=0)
 		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - inter_area
 		iou = stable_divide(inter_area, union_area)
-
 		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
 		
-		# Enclosing box
 		c_x1, c_y1, c_x2, c_y2 = torch.min(b1_x1, b2_x1), torch.min(b1_y1, b2_y1), torch.max(b1_x2, b2_x2), torch.max(b1_y2, b2_y2)
 		c_diag = (c_x2 - c_x1)**2 + (c_y2 - c_y1)**2
 		
-		# Aspect ratio
 		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
 		alpha = v / (1 - iou + v + 1e-6)
 		
-		ciou_score = iou - stable_divide(center_distance, c_diag ) - alpha * v
+		ciou_score = iou - stable_divide(center_distance ,c_diag) - alpha * v
 
 		return ciou_score
 	else: 
-		inter_area = torch.min(box1[..., 0], box2[..., 0]) * torch.min(box1[..., 1], box2[..., 1]) 
-
+		intersection_area = torch.min(box1[..., 0], box2[..., 0]) * torch.min(box1[..., 1], box2[..., 1]) 
 		box1_area = box1[..., 0] * box1[..., 1] 
 		box2_area = box2[..., 0] * box2[..., 1] 
-		union_area = box1_area + box2_area - inter_area 
-		iou_score = stable_divide(inter_area, union_area)
+		union_area = box1_area + box2_area - intersection_area 
+		iou_score = stable_divide(intersection_area, union_area)
 
 		return iou_score
 
 def nms(bboxes):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
-	# Check decodePrediction method for why objectness is stored at index 0
-    bboxes = [box for box in bboxes if box[0] > Config.valid_prediction_threshold]
+	# Check decodePrediction method for why objectness is stored at index 1
+    bboxes = [box for box in bboxes if box[1] > Config.valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
-    bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
+    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
 
     bboxes_nms = []
     while bboxes:
+        # Get the bounding box with the highest confidence
         first_box = bboxes.pop(0)
         bboxes_nms.append(first_box)
 
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
-		# Check decodePrediction for why class_prediction is stored at index 5 and why bbox parameter is stored at index [1:5]
-        bboxes = [box for box in bboxes if box[5] != first_box[5] or ciou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < Config.enough_overlap_threshold]
+		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
+        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:]), is_pred=False) < Config.enough_overlap_threshold]
 
     return bboxes_nms
 
@@ -67,7 +63,8 @@ def decodePrediction_bbox_no_offset(pred, scaled_anchor, start_index=1):
 	return box_preds
 
 def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
-	box_predictions = decodePrediction_bbox_no_offset(predictions, scaled_anchor)
+	box_predictions = predictions[..., 1:5] 
+	box_predictions[..., 0:4] = decodePrediction_bbox_no_offset(box_predictions, scaled_anchor, start_index=0)
 
 	cell_indices = ( 
 		torch.arange(grid_size) 
@@ -83,7 +80,6 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 	width = scale * box_predictions[..., 2:3]
 	height = scale *box_predictions[..., 3:4]
 
-	# Adjusting predictions for box coordinates
 	box_preds = torch.cat([x, y, width, height], dim=-1)
 
 	return box_preds
@@ -98,20 +94,20 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
-	decoded_bboxes = torch.cat((objectness, box_preds, best_class), dim=-1)
+	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
 
-	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
+	return decoded_bboxes if to_list else decoded_bboxes.reshape(
 		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
 
 def plot_image(image, boxes): 
-	# Getting the color map from matplotlib 
 	colour_map = plt.get_cmap("tab20b") 
-	# Getting 20 different colors from the color map for 20 different classes 
 	colors = [colour_map(i) for i in np.linspace(0, 1, len(Config.class_labels))] 
 
 	img = np.array(image) 
 	h, w, _ = img.shape 
+
 	fig, ax = plt.subplots(1) 
+
 	ax.imshow(img) 
 
 	for box in boxes: 
@@ -128,7 +124,9 @@ def plot_image(image, boxes):
 			edgecolor=colors[int(class_pred)], 
 			facecolor="none", 
 		) 
+		
 		ax.add_patch(rect) 
+		
 		plt.text( 
 			upper_left_x * w, 
 			upper_left_y * h, 
@@ -138,15 +136,16 @@ def plot_image(image, boxes):
 			bbox={"color": colors[int(class_pred)], "pad": 0}, 
 		) 
 
+	# Display the plot 
 	plt.show()
 
-def save_checkpoint(model, optimizer, checkpoint_file): 
+def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"): 
 	print("==> Saving checkpoint") 
 	checkpoint = { 
 		"state_dict": model.state_dict(), 
 		"optimizer": optimizer.state_dict(), 
 	} 
-	torch.save(checkpoint, checkpoint_file)
+	torch.save(checkpoint, filename)
 
 def load_checkpoint(checkpoint_file, model, optimizer, lr): 
     if not os.path.exists(checkpoint_file):
@@ -154,7 +153,7 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
         return
     
     print("==> Loading checkpoint")
-    checkpoint = torch.load(checkpoint_file, map_location=torch.device('cuda')) 
+    checkpoint = torch.load(checkpoint_file, map_location=torch.device('cuda')) # Assuming you are using a CUDA device, adjust accordingly.
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
 

@@ -35,11 +35,12 @@ if __name__ == "__main__":
 
 	test_loader = torch.utils.data.DataLoader( 
 		test_dataset, 
-		batch_size = 1, 
+		batch_size = 2, 
 		num_workers = 2, 
 		shuffle = True, 
 	) 
 
+	# Getting a sample image from the test data loader 
 	x, y = next(iter(test_loader)) 
 	x = x.to(Config.device) 
 
@@ -56,15 +57,12 @@ if __name__ == "__main__":
 				bboxes[idx] += box 
 	model.train() 
 
-	# Plotting the image with bounding boxes for each image in the batch 
 	for i in range(batch_size): 
 		nms_boxes = nms(bboxes[i]) 
-
 		plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
 	precisions = [[] for _ in range(Config.num_anchors)]
 	recalls = [[] for _ in range(Config.num_anchors)]
-
 
 	model.eval() 
 	progress_bar = tqdm(test_loader, leave=True) 
@@ -81,6 +79,5 @@ if __name__ == "__main__":
 			recalls[i].append(recall_batch)
 	model.train() 
 
-	# for each scales
 	for i in range(Config.num_anchors):
 		print(f"Precision:{sum(precisions[i])/len(precisions[i])}, Recall:{sum(recalls[i])/len(recalls[i])}")	

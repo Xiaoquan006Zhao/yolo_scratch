@@ -30,7 +30,6 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 		with torch.cuda.amp.autocast(): 
 			outputs = model(x) 
 
-			# the weight [4, 1, 0.4] is found in https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#41-compute-losses
 			loss = ( 
 				loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
 				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
