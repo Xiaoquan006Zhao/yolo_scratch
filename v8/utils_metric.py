@@ -10,7 +10,7 @@ from utils import (
 def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     predictions = decodePrediction(predictions, scaled_anchor, s, to_list=False)
 
-    potential_TP = (targets[..., 5] == predictions[..., 5] and targets[..., 0] == 1)
+    potential_TP = (targets[..., 5] == predictions[..., 5]) & (targets[..., 0] == 1)
 
     num_predictions = len(predictions[-1] > 0.8)
     num_targets = len(targets[-1] > 0.8)
