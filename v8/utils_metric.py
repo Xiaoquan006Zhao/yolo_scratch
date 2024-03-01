@@ -14,7 +14,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor):
     num_obj = torch.sum(targets_objectness_values == 1).item()
 
     predications_objectness_values = predictions[:, :, :, :, 0]
-    num_pred_obj = torch.sum(predications_objectness_values == 1).item()
+    num_pred_obj = torch.sum(predications_objectness_values >= 0.9).item()
 
     # Reshaping anchors to match predictions
     scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
