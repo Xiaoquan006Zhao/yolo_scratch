@@ -13,7 +13,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor):
     targets_objectness_values = targets[:, :, :, :, 0]
     num_obj = torch.sum(targets_objectness_values == 1).item()
 
-    predications_objectness_values = predictions[:, :, :, :, 0]
+    predications_objectness_values = torch.sigmoid(predictions[:, :, :, :, 0])
     num_pred_obj = torch.sum(predications_objectness_values >= Config.valid_prediction_threshold).item()
     print(num_pred_obj)
     print(num_obj)
