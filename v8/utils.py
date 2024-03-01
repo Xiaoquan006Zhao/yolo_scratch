@@ -117,7 +117,7 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 	return box_preds
 
 # Function to convert cells to bounding boxes 
-def decodePrediction(predictions, scaled_anchor, grid_size): 
+def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True): 
 	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
 	# Number of anchors 
@@ -134,7 +134,7 @@ def decodePrediction(predictions, scaled_anchor, grid_size):
 		batch_size, num_anchors  * grid_size * grid_size, 6) 
 
 	# Returning the reshaped and converted bounding box list 
-	return decoded_bboxes.tolist()
+	return decoded_bboxes.tolist() if to_list else decoded_bboxes
 
 # Function to plot images with bounding boxes and class labels 
 def plot_image(image, boxes): 
