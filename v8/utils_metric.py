@@ -7,9 +7,9 @@ from utils import (
     decodePrediction,
 )
 
-def calculate_precision_recall(predictions, targets, scaled_anchor):
+def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     # Decode predictions
-    predictions = decodePrediction(predictions, scaled_anchor, Config.s, to_list=False)
+    predictions = decodePrediction(predictions, scaled_anchor, s, to_list=False)
     
     # Initialize counters
     true_positives = 0
