@@ -25,11 +25,11 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
                     pred_obj, target_obj = predictions[batch, anchor, row, col, 0], targets[batch, anchor, row, col, 0]
                     pred_class, target_class = predictions[batch, anchor, row, col, 5], targets[batch, anchor, row, col, 5]
 
-                    ciou = ciou(pred_bbox, target_bbox, is_pred=False)
+                    cious = ciou(pred_bbox, target_bbox, is_pred=False)
                     
                     # Check confidence and class alignment
                     if pred_obj > 0.8:
-                        if pred_class == target_class and ciou > Config.enough_overlap_threshold:
+                        if pred_class == target_class and cious > Config.enough_overlap_threshold:
                             true_positives += 1
                         else:
                             false_positives += 1
