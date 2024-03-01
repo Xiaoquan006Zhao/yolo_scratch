@@ -8,35 +8,20 @@ from utils import (
 )
 
 def calculate_precision_recall(predictions, targets, scaled_anchor, s):
-    # Decode predictions
     predictions = decodePrediction(predictions, scaled_anchor, s, to_list=False)
-    
-    # Initialize counters
-    true_positives = 0
-    false_positives = 0
-    false_negatives = 0
-    
-    for batch in range(predictions.shape[0]):
-        for anchor in range(predictions.shape[1]):
-            for row in range(predictions.shape[2]):
-                for col in range(predictions.shape[3]):
-                    pred_bbox = predictions[batch, anchor, row, col, 1:5]
-                    target_bbox = targets[batch, anchor, row, col, 1:5]  
-                    pred_obj, target_obj = predictions[batch, anchor, row, col, 0], targets[batch, anchor, row, col, 0]
-                    pred_class, target_class = predictions[batch, anchor, row, col, 5], targets[batch, anchor, row, col, 5]
 
-                    cious = ciou(pred_bbox, target_bbox, is_pred=False)
-                    
-                    # Check confidence and class alignment
-                    if pred_obj > 0.8:
-                        if pred_class == target_class and cious > Config.enough_overlap_threshold:
-                            true_positives += 1
-                        else:
-                            false_positives += 1
-                    elif target_obj > 0.8:
-                        false_negatives += 1
-    
-    # Calculate precision and recall
+    potential_TP = (targets[..., 5] == predictions[..., 5] and targets[..., 0] == 1)
+
+    num_predictions = len(predictions[-1] > 0.8)
+    num_targets = len(targets[-1] > 0.8)
+
+    cious = ciou(predictions[..., 1:5][potential_TP], targets[..., 1:5][potential_TP])
+
+    true_positives = torch.sum(cious > Config.enough_overlap_threshold).item()
+    false_positives = num_predictions - true_positives
+    false_negatives = num_targets - true_positives
+
+
     precision = true_positives / (true_positives + false_positives + Config.numerical_stability)
     recall = true_positives / (true_positives + false_negatives + Config.numerical_stability)
     
