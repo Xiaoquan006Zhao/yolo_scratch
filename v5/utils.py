@@ -118,8 +118,8 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	scaled_anchor = scaled_anchor.reshape(1, len(scaled_anchor), 1, 1, 2) 
 	box_preds = decodePrediction_bbox(predictions, scaled_anchor, grid_size)
 		
-	objectness = torch.sigmoid(predictions[..., 0:1]) 
-	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
+	objectness = torch.sigmoid(predictions[..., 1:2]) 
+	best_class = torch.argmax(predictions[..., 0:1], dim=-1).unsqueeze(-1) 
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
 	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)

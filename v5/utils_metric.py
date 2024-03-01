@@ -10,6 +10,7 @@ from utils import (
 def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     predictions = decodePrediction(predictions, scaled_anchor, s, to_list=False)
 
+    # 0-index class-label, 1-index objectiveness
     potential_TP =  (targets[..., 0] == predictions[..., 0]) & (targets[..., 1] > Config.valid_prediction_threshold)
 
     num_predictions = len(predictions[-1][1] > Config.valid_prediction_threshold)
