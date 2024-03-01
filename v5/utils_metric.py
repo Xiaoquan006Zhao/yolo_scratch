@@ -11,6 +11,8 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     predictions = decodePrediction(predictions, scaled_anchor, s, to_list=False)
 
     # objectiveness stored at 1
+    obj = targets[..., 0] == 1
+    print(targets[...,:][obj][0])
     potential_TP =  (targets[..., 1] > Config.valid_prediction_threshold)
 
     num_predictions = len(predictions[-1][1] > Config.valid_prediction_threshold)
