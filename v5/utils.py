@@ -40,11 +40,11 @@ def ciou(box1, box2, is_pred=True):
 
 def nms(bboxes):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
-	# Check decodePrediction method for why objectness is stored at index 1
-    bboxes = [box for box in bboxes if box[1] > Config.valid_prediction_threshold]
+	# Check decodePrediction method for why objectness is stored at index 0
+    bboxes = [box for box in bboxes if box[0] > Config.valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
-    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
+    bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
 
     bboxes_nms = []
     while bboxes:
@@ -53,18 +53,14 @@ def nms(bboxes):
 
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
-		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:]), is_pred=False) < Config.enough_overlap_threshold]
+		# Check decodePrediction for why class_prediction is stored at index 5 and why bbox parameter is stored at index [1:5]
+        bboxes = [box for box in bboxes if box[5] != first_box[5] or ciou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < Config.enough_overlap_threshold]
 
     return bboxes_nms
 
 def decodePrediction_bbox_no_offset(pred, scaled_anchor, start_index=1):
 	sigmoid = nn.Sigmoid()
 
-	# No need to fully decode the prediction, as we don't care about the offset the upper left corner
-    # to the assigned grid when calculating ciou
-    # https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#43-eliminate-grid-sensitivity
-        # new decode function
 	box_preds = torch.cat([2 * sigmoid(pred[..., start_index:start_index+2] - 0.5), 
                                ((2*sigmoid(pred[..., start_index+2:start_index+4])) ** 2) * scaled_anchor 
                             ],dim=-1) 
@@ -75,7 +71,6 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 
 	box_predictions[..., 0:4] = decodePrediction_bbox_no_offset(box_predictions, scaled_anchor, start_index=0)
 
-	# Calculate cell indices 
 	cell_indices = ( 
 		torch.arange(grid_size) 
 		.repeat(predictions.shape[0], 3, grid_size, 1) 
@@ -105,7 +100,7 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
-	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
+	decoded_bboxes = torch.cat((objectness, box_preds, best_class), dim=-1)
 
 	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
 		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
