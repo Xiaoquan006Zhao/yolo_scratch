@@ -170,4 +170,4 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
         param_group["lr"] = lr
 
 def stable_divide(a, b):
-	return float(a) / (float(b) + Config.numerical_stability)
+	return a / (b + Config.numerical_stability)
