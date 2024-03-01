@@ -105,7 +105,7 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
-	decoded_bboxes = torch.cat((objectness, box_preds, best_class), dim=-1)
+	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
 
 	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
 		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
