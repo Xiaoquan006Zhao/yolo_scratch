@@ -10,10 +10,11 @@ from utils import (
 def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     predictions = decodePrediction(predictions, scaled_anchor, s, to_list=False)
 
-    potential_TP =  (targets[..., 0] > Config.valid_prediction_threshold)
+    # objectiveness stored at 1
+    potential_TP =  (targets[..., 1] > Config.valid_prediction_threshold)
 
-    num_predictions = len(predictions[-1] > Config.valid_prediction_threshold)
-    num_targets = len(targets[-1] > Config.valid_prediction_threshold)
+    num_predictions = len(predictions[-1][1] > Config.valid_prediction_threshold)
+    num_targets = len(targets[-1][1] > Config.valid_prediction_threshold)
 
     ious = ciou(predictions[..., 1:5][potential_TP], targets[..., 1:5][potential_TP], is_pred=False)
 
