@@ -70,12 +70,12 @@ class Dataset(torch.utils.data.Dataset):
                 
                 # Identifying the cell to which the bounding box belongs 
                 i, j = int(s * y), int(s * x) 
-                anchor_taken = targets[scale_idx][anchor_on_scale, i, j, 1] 
+                anchor_taken = targets[scale_idx][anchor_on_scale, i, j, 0] 
                 
                 # Check if the anchor box is already assigned 
                 if not anchor_taken and not has_anchor[scale_idx]: 
 
-                    targets[scale_idx][anchor_on_scale, i, j, 1] = 1
+                    targets[scale_idx][anchor_on_scale, i, j, 0] = 1
 
                     # Calculating the center of the bounding box relative to the cell 
                     x_cell, y_cell = s * x - j, s * y - i 
@@ -89,9 +89,9 @@ class Dataset(torch.utils.data.Dataset):
                                         height_cell] 
                                     ) 
 
-                    targets[scale_idx][anchor_on_scale, i, j, 2:6] = box_coordinates 
+                    targets[scale_idx][anchor_on_scale, i, j, 1:5] = box_coordinates 
 
-                    targets[scale_idx][anchor_on_scale, i, j, 0] = int(class_label) 
+                    targets[scale_idx][anchor_on_scale, i, j, 5] = int(class_label) 
 
                     has_anchor[scale_idx] = True
 
@@ -99,7 +99,7 @@ class Dataset(torch.utils.data.Dataset):
                 # IoU is greater than the threshold 
                 elif not anchor_taken and iou_anchors[anchor_idx] > self.ignore_iou_thresh: 
                     # Set the probability to -1 to ignore the anchor box 
-                    targets[scale_idx][anchor_on_scale, i, j, 1] = -1
+                    targets[scale_idx][anchor_on_scale, i, j, 0] = -1
 
         return image, tuple(targets)
 

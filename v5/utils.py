@@ -48,7 +48,6 @@ def nms(bboxes):
 
     bboxes_nms = []
     while bboxes:
-        # Get the bounding box with the highest confidence
         first_box = bboxes.pop(0)
         bboxes_nms.append(first_box)
 
@@ -72,7 +71,7 @@ def decodePrediction_bbox_no_offset(pred, scaled_anchor, start_index=1):
 	return box_preds
 
 def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
-	box_predictions = predictions[..., 2:6] 
+	box_predictions = predictions[..., 1:5] 
 
 	box_predictions[..., 0:4] = decodePrediction_bbox_no_offset(box_predictions, scaled_anchor, start_index=0)
 
@@ -103,10 +102,10 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	scaled_anchor = scaled_anchor.reshape(1, len(scaled_anchor), 1, 1, 2) 
 	box_preds = decodePrediction_bbox(predictions, scaled_anchor, grid_size)
 		
-	objectness = torch.sigmoid(predictions[..., 1:2]) 
-	best_class = torch.argmax(predictions[..., 0:1], dim=-1).unsqueeze(-1) 
+	objectness = torch.sigmoid(predictions[..., 0:1]) 
+	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
-	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
+	decoded_bboxes = torch.cat((objectness, box_preds, best_class), dim=-1)
 
 	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
 		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()

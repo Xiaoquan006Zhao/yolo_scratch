@@ -14,11 +14,11 @@ class YOLOLoss(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, pred, target, scaled_anchor, scale):
-        obj = target[..., 1] == 1
-        no_obj = target[..., 1] == 0
+        obj = target[..., 0] == 1
+        no_obj = target[..., 0] == 0
 
         no_object_loss = self.bce(
-            pred[..., 1:2][no_obj], target[..., 1:2][no_obj],
+            pred[..., 0:1][no_obj], target[..., 0:1][no_obj],
         )
 
         # Reshaping anchors to match predictions
@@ -26,13 +26,13 @@ class YOLOLoss(nn.Module):
         
         box_preds = decodePrediction_bbox_no_offset(pred, scaled_anchor)
         
-        cious = ciou(box_preds[obj], target[..., 2:6][obj])
+        cious = ciou(box_preds[obj], target[..., 1:5][obj])
 
         box_loss = torch.mean(1-cious)
 
-        object_loss = self.bce(self.sigmoid(pred[..., 1:2][obj]), target[..., 1:2][obj])
+        object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
 
-        class_loss = self.cross_entropy(pred[..., 0:1][obj], target[..., 0:1][obj])
+        class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj])
 
         loss = box_loss + object_loss + no_object_loss + class_loss 
         # assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 2:6][obj]}"
