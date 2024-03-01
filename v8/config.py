@@ -43,7 +43,7 @@ class Config:
             self.epochs = 600
             self.batch_size = 4
             self.min_leanring_rate = 1e-4
-            self.max_leanring_rate = self.min_leanring_rate * 5
+            self.max_leanring_rate = self.min_leanring_rate * 10
             self.numerical_stability = 1e-6
 
             self.image_size = 640
