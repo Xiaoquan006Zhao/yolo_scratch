@@ -14,7 +14,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor):
     num_obj = torch.sum(targets_objectness_values == 1).item()
 
     predications_objectness_values = predictions[:, :, :, :, 0]
-    num_pred_obj = torch.sum(predications_objectness_values >= 0.9).item()
+    num_pred_obj = torch.sum(predications_objectness_values >= Config.valid_prediction_threshold).item()
     print(num_pred_obj)
     print(num_obj)
 
