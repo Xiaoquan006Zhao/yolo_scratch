@@ -83,7 +83,7 @@ if __name__ == "__main__":
 		for i in range(Config.num_anchors):
 			predictions = outputs[i]
 			targets = y[i].to(Config.device)
-			precision_batch, recall_batch = calculate_precision_recall(predictions, targets, Config.scaled_anchors[i])
+			precision_batch, recall_batch = calculate_precision_recall(predictions, targets, Config.scaled_anchors[i], Config.s[i])
 
 			precisions[i].append(precision_batch)
 			recalls[i].append(recall_batch)
