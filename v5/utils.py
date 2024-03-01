@@ -33,7 +33,7 @@ def ciou(box1, box2, is_pred=True):
 		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
 		alpha = v / (1 - iou + v + 1e-6)
 		
-		ciou_score = iou - (center_distance / (c_diag + 1e-6)) - alpha * v
+		ciou_score = iou - (center_distance / (c_diag + Config.numerical_stability)) - alpha * v
 
 		return ciou_score
 	else: 
@@ -48,7 +48,7 @@ def ciou(box1, box2, is_pred=True):
 		union_area = box1_area + box2_area - intersection_area 
 
 		# Calculate IoU score 
-		iou_score = intersection_area / union_area 
+		iou_score = intersection_area / union_area + Config.numerical_stability
 
 		# Return IoU score 
 		return iou_score
@@ -117,7 +117,7 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 	return box_preds
 
 # Function to convert cells to bounding boxes 
-def decodePrediction(predictions, scaled_anchor, grid_size): 
+def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True): 
 	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
 	# Number of anchors 
@@ -130,11 +130,10 @@ def decodePrediction(predictions, scaled_anchor, grid_size):
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
-		batch_size, num_anchors  * grid_size * grid_size, 6) 
+	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
 
-	# Returning the reshaped and converted bounding box list 
-	return decoded_bboxes.tolist()
+	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
+		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
 
 # Function to plot images with bounding boxes and class labels 
 def plot_image(image, boxes): 
