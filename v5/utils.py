@@ -36,10 +36,10 @@ def ciou(box1, box2, is_pred=True):
 def nms(bboxes):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
 	# Check decodePrediction method for why objectness is stored at index 1
-    bboxes = [box for box in bboxes if box[1] > Config.valid_prediction_threshold]
+    bboxes = [box for box in bboxes if box[0] > Config.valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
-    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
+    bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
 
     bboxes_nms = []
     while bboxes:
@@ -50,7 +50,7 @@ def nms(bboxes):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:]), is_pred=False) < Config.enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[5] != first_box[5] or ciou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < Config.enough_overlap_threshold]
 
     return bboxes_nms
 
@@ -94,7 +94,7 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
-	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1)
+	decoded_bboxes = torch.cat((objectness, box_preds, best_class), dim=-1)
 
 	return decoded_bboxes if to_list else decoded_bboxes.reshape(
 		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
