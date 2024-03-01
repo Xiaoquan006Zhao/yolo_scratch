@@ -48,7 +48,7 @@ def ciou(box1, box2, is_pred=True):
 		union_area = box1_area + box2_area - intersection_area 
 
 		# Calculate IoU score 
-		iou_score = intersection_area / union_area 
+		iou_score = intersection_area / union_area + Config.numerical_stability
 
 		# Return IoU score 
 		return iou_score
