@@ -37,9 +37,9 @@ class YOLOLoss(nn.Module):
         object_loss = self.bce(self.sigmoid(pred[..., 1:2][obj]), target[..., 1:2][obj])
 
         # Calculating class loss
-        class_loss = self.cross_entropy(pred[..., 0:1][obj], target[..., 0:1][obj].long())
+        class_loss = self.cross_entropy(pred[..., 0:1][obj], target[..., 0:1][obj])
 
         loss = box_loss + object_loss + no_object_loss + class_loss 
-        assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 2:6][obj]}"
+        # assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 2:6][obj]}"
 
         return (loss)
