@@ -8,6 +8,7 @@ from utils import (
 
 def calculate_precision_recall(predictions, targets, scaled_anchor):
     obj = targets[..., 0] == 1
+    pred_obj = predictions[..., 0] == 1
      # Reshaping anchors to match predictions
     scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
     
@@ -17,7 +18,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor):
 
      # Filter predictions based on CIoU threshold
     true_positives = torch.sum(cious > Config.enough_overlap_threshold*1.1).item()
-    false_positives = torch.sum(cious <= Config.enough_overlap_threshold*1.1).item()
+    false_positives = len(predictions[pred_obj]) - true_positives
     # targets[..., 1:5][obj].shape[0] is number of bounding boxes
     false_negatives = targets[..., 1:5][obj].shape[0] - true_positives
 
