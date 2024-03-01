@@ -81,7 +81,6 @@ class Config:
             self.valid_prediction_threshold = 0.6
             self.enough_overlap_threshold = 0.6
 
-            # Transform for training 
             self.train_transform = A.Compose( 
                 [ 
                     # just resize without respecting the aspect ratio and padding
@@ -124,7 +123,6 @@ class Config:
                             ) 
             ) 
 
-            # Transform for testing 
             self.test_transform = A.Compose( 
                 [ 
                     # Rescale an image so that maximum side is equal to image_size 

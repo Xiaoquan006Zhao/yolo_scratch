@@ -14,11 +14,9 @@ class YOLOLoss(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, pred, target, scaled_anchor, scale):
-        # Identifying object and no-object cells in target
         obj = target[..., 1] == 1
         no_obj = target[..., 1] == 0
 
-        # Calculating No object loss
         no_object_loss = self.bce(
             pred[..., 1:2][no_obj], target[..., 1:2][no_obj],
         )
@@ -30,13 +28,10 @@ class YOLOLoss(nn.Module):
         
         cious = ciou(box_preds[obj], target[..., 2:6][obj])
 
-        # CIoU loss for bounding box regression
         box_loss = torch.mean(1-cious)
 
-        # Objectness loss for predicting the presence of an object
         object_loss = self.bce(self.sigmoid(pred[..., 1:2][obj]), target[..., 1:2][obj])
 
-        # Calculating class loss
         class_loss = self.cross_entropy(pred[..., 0:1][obj], target[..., 0:1][obj])
 
         loss = box_loss + object_loss + no_object_loss + class_loss 

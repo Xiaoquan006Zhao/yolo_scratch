@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches 
 from config import Config
 
-# Defining a function to calculate Intersection over Union (IoU) 
 def ciou(box1, box2, is_pred=True): 
 	if is_pred: 
 		# Convert from center to corner format
@@ -53,7 +52,6 @@ def ciou(box1, box2, is_pred=True):
 		# Return IoU score 
 		return iou_score
 
-# Non-maximum suppression function to remove overlapping bounding boxes 
 def nms(bboxes):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
 	# Check decodePrediction method for why objectness is stored at index 1
@@ -91,9 +89,6 @@ def decodePrediction_bbox_no_offset(pred, scaled_anchor, start_index=1):
 def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 	box_predictions = predictions[..., 2:6] 
 
-	# box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])
-	# box_predictions[..., 2:4] = torch.exp(box_predictions[..., 2:4]) * scaled_anchors
-
 	box_predictions[..., 0:4] = decodePrediction_bbox_no_offset(box_predictions, scaled_anchor, start_index=0)
 
 	# Calculate cell indices 
@@ -116,11 +111,8 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 
 	return box_preds
 
-# Function to convert cells to bounding boxes 
 def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True): 
-	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
-	# Number of anchors 
 	num_anchors = 3
 
 	scaled_anchor = scaled_anchor.reshape(1, len(scaled_anchor), 1, 1, 2) 
@@ -135,7 +127,6 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
 		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
 
-# Function to plot images with bounding boxes and class labels 
 def plot_image(image, boxes): 
 	# Getting the color map from matplotlib 
 	colour_map = plt.get_cmap("tab20b") 
