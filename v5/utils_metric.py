@@ -15,8 +15,8 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     # same class and ground truth labeled as positive objectiveness
     potential_TP = [(pred[5] == target[5]) and (target[0] > Config.valid_prediction_threshold) for pred, target in zip(decoded_predictions, decoded_targets)]
 
-    num_predictions = len([1 for prediction in decoded_predictions[..., 0] if prediction > Config.valid_prediction_threshold])
-    num_targets = len([1 for target in decoded_targets[..., 0] if target > Config.valid_prediction_threshold])
+    num_predictions = len([1 for prediction in decoded_predictions if prediction[0] > Config.valid_prediction_threshold])
+    num_targets = len([1 for target in decoded_targets if target[0] > Config.valid_prediction_threshold])
 
     ious = ciou(np.array(decoded_predictions)[potential_TP, 1:5], np.array(decoded_targets)[potential_TP, 1:5], is_pred=False)
 
