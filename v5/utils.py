@@ -53,19 +53,12 @@ def ciou(box1, box2, is_pred=True):
 		# Return IoU score 
 		return iou_score
 
-# Non-maximum suppression function to remove overlapping bounding boxes 
 def nms(bboxes):
-    # Filter out bounding boxes with objectness below the valid_prediction_threshold
 	# Check decodePrediction method for why objectness is stored at index 1
     bboxes = [box for box in bboxes if box[0] > Config.valid_prediction_threshold]
-
-    # Sort the bounding boxes by confidence in descending order
     bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
-
-	# Initialize the list of bounding boxes after non-maximum suppression. 
     bboxes_nms = []
     while bboxes:
-        # Get the bounding box with the highest confidence
         first_box = bboxes.pop(0)
         bboxes_nms.append(first_box)
 
@@ -112,9 +105,7 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 	return box_preds
 
 def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True): 
-	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
-	# Number of anchors 
 	num_anchors = 3
 
 	scaled_anchor = scaled_anchor.reshape(1, len(scaled_anchor), 1, 1, 2) 
@@ -126,7 +117,6 @@ def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True):
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
 	decoded = torch.cat([objectness, box_preds, best_class], dim=-1)
 
-	# Returning the reshaped and converted bounding box list 
 	return decoded if not to_list else decoded.reshape(batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
 
 # Function to plot images with bounding boxes and class labels 
@@ -150,9 +140,9 @@ def plot_image(image, boxes):
 	# Plotting the bounding boxes and labels over the image 
 	for box in boxes: 
 		# Get the class from the box 
-		class_pred = box[0] 
+		class_pred = box[5] 
 		# Get the center x and y coordinates 
-		box = box[2:] 
+		box = box[1:5] 
 		# Get the upper left corner coordinates 
 		upper_left_x = box[0] - box[2] / 2
 		upper_left_y = box[1] - box[3] / 2

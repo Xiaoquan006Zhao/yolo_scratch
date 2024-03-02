@@ -58,19 +58,13 @@ with torch.no_grad():
 
 		for batch, (d) in enumerate(decoded_scale_i): 
 			decoded[batch] += (d) 
-model.train() 
 
 for i in range(batch_size): 
 	nms_boxes = nms(decoded[i]) 
-
-	# Plotting the image with bounding boxes 
 	plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
 precisions = [[] for _ in range(Config.num_anchors)]
 recalls = [[] for _ in range(Config.num_anchors)]
-
-
-model.eval() 
 progress_bar = tqdm(test_loader, leave=True) 
 for _, (x, y) in enumerate(progress_bar): 
 	x = x.to(Config.device) 
