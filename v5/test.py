@@ -61,7 +61,6 @@ with torch.no_grad():
 model.train() 
 
 for i in range(batch_size): 
-	print(decoded.shape)
 	nms_boxes = nms(decoded[i]) 
 
 	# Plotting the image with bounding boxes 
