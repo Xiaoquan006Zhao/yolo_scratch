@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
 	test_loader = torch.utils.data.DataLoader( 
 		test_dataset, 
-		batch_size = 2, 
+		batch_size = 1, 
 		num_workers = 2, 
 		shuffle = True, 
 	) 
