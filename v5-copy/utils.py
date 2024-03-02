@@ -21,7 +21,7 @@ def ciou(box1, box2, is_pred=True):
 		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
 		alpha = v / (1 - iou + v + 1e-6)
 		
-		ciou_score = iou - stable_divide(center_distance ,c_diag) - alpha * v
+		ciou_score = iou - stable_divide(center_distance, c_diag) - alpha * v
 
 		return ciou_score
 	else: 

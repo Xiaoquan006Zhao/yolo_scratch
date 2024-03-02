@@ -57,10 +57,10 @@ def ciou(box1, box2, is_pred=True):
 def nms(bboxes):
     # Filter out bounding boxes with objectness below the valid_prediction_threshold
 	# Check decodePrediction method for why objectness is stored at index 1
-    bboxes = [box for box in bboxes if box[1] > Config.valid_prediction_threshold]
+    bboxes = [box for box in bboxes if box[0] > Config.valid_prediction_threshold]
 
     # Sort the bounding boxes by confidence in descending order
-    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
+    bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
 
 	# Initialize the list of bounding boxes after non-maximum suppression. 
     bboxes_nms = []
@@ -72,7 +72,7 @@ def nms(bboxes):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check decodePrediction for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or ciou(torch.tensor(first_box[2:]), torch.tensor(box[2:]), is_pred=False) < Config.enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[5] != first_box[5] or ciou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < Config.enough_overlap_threshold]
 
     return bboxes_nms
 
@@ -117,7 +117,7 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 	return box_preds
 
 # Function to convert cells to bounding boxes 
-def decodePrediction(predictions, scaled_anchor, grid_size): 
+def decodePrediction(predictions, scaled_anchor, grid_size, to_list=True): 
 	# Batch size used on predictions 
 	batch_size = predictions.shape[0] 
 	# Number of anchors 
@@ -130,11 +130,11 @@ def decodePrediction(predictions, scaled_anchor, grid_size):
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	decoded_bboxes = torch.cat((best_class, objectness, box_preds), dim=-1).reshape(
-		batch_size, num_anchors  * grid_size * grid_size, 6) 
+	decoded_bboxes = torch.cat((objectness, box_preds, best_class), dim=-1)
 
 	# Returning the reshaped and converted bounding box list 
-	return decoded_bboxes.tolist()
+	return decoded_bboxes if not to_list else decoded_bboxes.reshape(
+		batch_size, num_anchors  * grid_size * grid_size, 6).tolist()
 
 # Function to plot images with bounding boxes and class labels 
 def plot_image(image, boxes): 
