@@ -43,29 +43,26 @@ test_loader = torch.utils.data.DataLoader(
 	shuffle = True, 
 ) 
 
-# Getting a sample image from the test data loader 
 x, y = next(iter(test_loader)) 
 x = x.to(Config.device) 
 
 model.eval() 
 with torch.no_grad(): 
-	# Getting the model predictions 
 	output = model(x) 
+	decoded = [[] for _ in range(x.shape[0])] 
 
-	# Getting the bounding boxes from the predictions 
-	bboxes = [[] for _ in range(x.shape[0])] 
-
-	# Getting bounding boxes for each scale 
 	for i in range(3): 
-		batch_size, A, grid_size, _, _ = output[i].shape 
-		boxes_scale_i = decodePrediction(output[i], Config.scaled_anchors[i], grid_size=grid_size) 
-		bboxes[i].extend(boxes_scale_i)
-		# for idx, (box) in enumerate(boxes_scale_i): 
-		# 	bboxes[idx] += box 
+		batch_size, _, grid_size, _, _ = output[i].shape 
+
+		decoded_scale_i = decodePrediction(output[i], Config.scaled_anchors[i], grid_size=grid_size) 
+
+		for batch, (d) in enumerate(decoded_scale_i): 
+			decoded[batch] += (d) 
 model.train() 
 
 for i in range(batch_size): 
-	nms_boxes = nms(bboxes[i]) 
+	print(decoded.shape)
+	nms_boxes = nms(decoded[i]) 
 
 	# Plotting the image with bounding boxes 
 	plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
