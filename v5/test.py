@@ -59,7 +59,7 @@ with torch.no_grad():
 	for i in range(3): 
 		batch_size, A, grid_size, _, _ = output[i].shape 
 		boxes_scale_i = decodePrediction(output[i], Config.scaled_anchors[i], grid_size=grid_size) 
-		bboxes[i].expand(boxes_scale_i)
+		bboxes[i].extend(boxes_scale_i)
 		# for idx, (box) in enumerate(boxes_scale_i): 
 		# 	bboxes[idx] += box 
 model.train() 
