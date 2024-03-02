@@ -62,7 +62,7 @@ def decodePrediction_bbox(predictions, scaled_anchor, grid_size):
 
 	return box_preds
 
-def decodePrediction(predictions, scaled_anchors, grid_size, batch_seperate=True): 
+def decodePrediction(predictions, scaled_anchors, grid_size, to_list=True): 
 	batch_size = predictions.shape[0] 
 	num_anchors = len(scaled_anchors)
 
@@ -73,11 +73,9 @@ def decodePrediction(predictions, scaled_anchors, grid_size, batch_seperate=True
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 
 	# Concatinating the values and reshaping them in (BATCH_SIZE, num_anchors * S * S, 6) shape 
-	decoded = torch.cat([objectness, box_preds, best_class], dim=-1)
+	decoded = torch.cat([objectness, box_preds, best_class], dim=-1).reshape(batch_size, num_anchors*grid_size*grid_size, 6)
 
-	return_size = batch_size*num_anchors*grid_size*grid_size if not batch_seperate else num_anchors*grid_size*grid_size
-
-	return decoded.reshape(return_size, 6).tolist() if not batch_seperate else decoded.reshape(batch_size, return_size, 6).tolist()
+	return decoded.tolist() if to_list else decoded
 
 def nms(bboxes):
 	# Check decodePrediction method for why objectness is stored at index 0
