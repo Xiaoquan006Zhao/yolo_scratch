@@ -77,7 +77,7 @@ def decodePrediction(predictions, scaled_anchors, grid_size, batch_seperate=True
 
 	return_size = batch_size*num_anchors*grid_size*grid_size if not batch_seperate else num_anchors*grid_size*grid_size
 
-	return decoded.reshape(return_size, 6).tolist()
+	return decoded.reshape(return_size, 6).tolist() if not batch_seperate else decoded.reshape(batch_size, return_size, 6).tolist()
 
 def nms(bboxes):
 	# Check decodePrediction method for why objectness is stored at index 0
