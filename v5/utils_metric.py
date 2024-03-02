@@ -18,7 +18,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     tar_obj = decoded_targets[..., 0] > Config.valid_prediction_threshold
     pred_obj = decoded_predictions[..., 0] > Config.valid_prediction_threshold
 
-    ious = ciou(predictions[..., 1:5][pred_obj], targets[..., 1:5][tar_obj], is_pred=False)
+    ious = ciou(decoded_predictions[..., 1:5][pred_obj], decoded_targets[..., 1:5][tar_obj], is_pred=False)
 
     true_positives = torch.sum(ious > Config.enough_overlap_threshold).item()
     false_positives = num_predictions - true_positives
