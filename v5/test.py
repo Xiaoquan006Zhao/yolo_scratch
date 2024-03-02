@@ -59,13 +59,12 @@ with torch.no_grad():
 	for i in range(3): 
 		batch_size, A, grid_size, _, _ = output[i].shape 
 		boxes_scale_i = decodePrediction(output[i], Config.scaled_anchors[i], grid_size=grid_size) 
-		for idx, (box) in enumerate(boxes_scale_i): 
-			bboxes[idx] += box 
+		bboxes[i].expand(boxes_scale_i)
+		# for idx, (box) in enumerate(boxes_scale_i): 
+		# 	bboxes[idx] += box 
 model.train() 
 
-# Plotting the image with bounding boxes for each image in the batch 
 for i in range(batch_size): 
-	# Applying non-max suppression to remove overlapping bounding boxes 
 	nms_boxes = nms(bboxes[i]) 
 
 	# Plotting the image with bounding boxes 
