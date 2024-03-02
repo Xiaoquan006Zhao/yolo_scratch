@@ -27,10 +27,10 @@ class Config:
                 self.label_dir = os.path.join(base_dir, "data", dataset, "labels")
                 self.checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
             else:
-                self.train_csv_file = f"../data/{dataset}/100examples.csv"
-                self.test_csv_file = f"../data/{dataset}/100examples_test.csv"
-                #self.train_csv_file = f"../data/{dataset}/train.csv"
-                #self.test_csv_file = f"../data/{dataset}/test.csv"
+                #self.train_csv_file = f"../data/{dataset}/100examples.csv"
+                #self.test_csv_file = f"../data/{dataset}/100examples_test.csv"
+                self.train_csv_file = f"../data/{dataset}/train.csv"
+                self.test_csv_file = f"../data/{dataset}/test.csv"
                 self.image_dir = f"../data/{dataset}/images/"
                 self.label_dir = f"../data/{dataset}/labels/"  
                 self.checkpoint_file = f"{dataset}_checkpoint.pth.tar"
@@ -43,7 +43,7 @@ class Config:
             self.epochs = 600
             self.batch_size = 4
             self.min_leanring_rate = 1e-4
-            self.max_leanring_rate = self.min_leanring_rate
+            self.max_leanring_rate = self.min_leanring_rate * 5
             self.numerical_stability = 1e-6
             self.image_size = 640
             self.s = [self.image_size // 32, self.image_size // 16, self.image_size // 8] 
