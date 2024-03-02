@@ -1,6 +1,6 @@
 import torch
 from config import Config
-from model import YOLOv5
+from model import YOLOv8
 from loss import YOLOLoss
 import numpy as np
 import torch.optim as optim 
@@ -15,7 +15,7 @@ from dataset import Dataset
 from utils_metric import calculate_precision_recall
 
 if __name__ == "__main__":
-	model = YOLOv5().to(Config.device) 
+	model = YOLOv8().to(Config.device) 
 	optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
 	loss_fn = YOLOLoss() 
 	scaler = torch.cuda.amp.GradScaler() 
