@@ -6,10 +6,6 @@ from Blocks.CSP import CSPBlock
 from Blocks.PAN import PAN
 from Blocks.SPPF import SPPFBlock
 
-# yolo v5 architecture defination
-# https://user-images.githubusercontent.com/31005897/172404576-c260dcf9-76bb-4bc8-b6a9-f2d987792583.png
-# https://docs.ultralytics.com/yolov5/tutorials/architecture_description/#1-model-structure
-
 class YOLOv5(nn.Module): 
 	def __init__(self, in_channels=3, num_classes=Config.num_classes): 
 		super().__init__() 
@@ -48,7 +44,6 @@ class YOLOv5(nn.Module):
 
 			elif isinstance(layer, SPPFBlock):
 				outputs.append(x)
-				
 
 		# Because return is done in PAN layer
 		# return outputs

@@ -16,14 +16,12 @@ class CSPBlock(nn.Module):
         self.process_blocks = nn.Sequential(
             *[BottleNeck(in_channels//2, bottleNeck_use_residual) for _ in range(BottleNeck_repeats)],
         )
+        self.in_channels = in_channels
 
         self.BottleNeck_repeats = BottleNeck_repeats
         self.use_dropblock = use_dropblock
         self.dropblock_params = dropblock_params
 
-        self.in_channels = in_channels
-
-        # Halved due to CSP split
         conv_input_channels = in_channels // 2
         self.conv_part1 = ConvBNMish(conv_input_channels, conv_input_channels, kernel_size=1, stride=1, padding=0)
         self.conv_part2 = ConvBNMish(conv_input_channels, conv_input_channels, kernel_size=1, stride=1, padding=0)
@@ -31,22 +29,13 @@ class CSPBlock(nn.Module):
         self.conv_out = ConvBNMish(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
-        # Split input into two parts
         part1, part2 = torch.split(x, x.shape[1] // 2, dim=1)  # Split channels into two halves
-        
         part1 = self.conv_part1(part1)
         part2 = self.conv_part2(part2)
-
-        # Process part1 through transition (if necessary) and part2 through the specified process_block
-        
         part2 = self.process_blocks(part2)
-        
-        # Concatenate the processed parts along dimension 1 (channel dimension)
-        # dimension 0 is Batch dimension
         out = torch.cat((part1, part2), dim=1)
 
         if self.use_dropblock:
-            # Apply DropBlock on the concatenated output
             out = drop_block2d(out, **self.dropblock_params)
 
         out = self.conv_out(out)

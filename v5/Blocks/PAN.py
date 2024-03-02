@@ -14,7 +14,6 @@ class ScalePrediction(nn.Module):
         out_channels = (num_classes + 5) * 3
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
         
-    
     # Defining the forward pass and reshaping the output to the desired output 
     # format: (batch_size, 3, grid_size, grid_size, num_classes + 5) 
     def forward(self, x): 
