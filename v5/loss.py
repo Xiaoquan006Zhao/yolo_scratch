@@ -18,7 +18,7 @@ class YOLOLoss(nn.Module):
         no_obj = target[..., 0] == 0
 
         no_object_loss = self.bce(
-            pred[..., 0:1][no_obj], target[..., 0:1][no_obj],
+            self.sigmoid(pred[..., 0:1][no_obj]), target[..., 0:1][no_obj],
         )
 
         scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
