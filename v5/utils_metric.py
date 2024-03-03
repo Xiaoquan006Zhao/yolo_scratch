@@ -16,7 +16,7 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     num_targets = 0
     true_positives = 0
 
-    for batch_idx in range(Config.test_batch_size):
+    for batch_idx in range(decoded_targets.shape[0]):
         decoded_predictions_batch = decoded_predictions[batch_idx]
         decoded_targets_batch = decoded_targets[batch_idx]
 
