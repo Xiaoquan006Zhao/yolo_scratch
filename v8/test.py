@@ -61,16 +61,16 @@ if __name__ == "__main__":
 		nms_boxes = nms(decoded[i]) 
 		plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
-	true_positives = [[] for _ in range(Config.num_anchors)]
-	num_predictions = [[] for _ in range(Config.num_anchors)]
-	num_targets = [[] for _ in range(Config.num_anchors)]
+	true_positives = [[] for _ in range(Config.num_scales)]
+	num_predictions = [[] for _ in range(Config.num_scales)]
+	num_targets = [[] for _ in range(Config.num_scales)]
 
 	progress_bar = tqdm(test_loader, leave=True) 
 	for _, (x, y) in enumerate(progress_bar): 
 		x = x.to(Config.device) 
 		outputs = model(x) 
 
-		for i in range(Config.num_anchors):
+		for i in range(Config.num_scales):
 			predictions = outputs[i]
 			targets = y[i].to(Config.device)
 			true_positives_batch, num_predictions_batch, num_targets_batch = calculate_precision_recall(predictions, targets, Config.scaled_anchors[i], Config.s[i])
@@ -80,7 +80,7 @@ if __name__ == "__main__":
 			num_targets[i].append(num_targets_batch)
 	model.train() 
 
-	for i in range(Config.num_anchors):
-		precision = stable_divide(sum(true_positives), sum(num_predictions))
-		recall = stable_divide(sum(true_positives), sum(num_targets))
+	for i in range(Config.num_scales):
+		precision = stable_divide(sum(true_positives[i]), sum(num_predictions[i]))
+		recall = stable_divide(sum(true_positives[i]), sum(num_targets[i]))
 		print(f"Precision:{precision}, Recall:{recall}")	

@@ -47,12 +47,13 @@ class Config:
             self.numerical_stability = 1e-6
             self.image_size = 640
             self.s = [self.image_size // 32, self.image_size // 16, self.image_size // 8] 
-            self.num_anchors = 3
 
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"-{self.device}-")
 
             self.ANCHORS = auto_anchor(self.num_anchors, self.label_dir, self.s)
+            self.num_anchors = len(self.ANCHORS)
+            self.num_scales = len(self.s)
 
             # ANCHORS = [ 
             # 	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
