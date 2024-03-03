@@ -5,7 +5,6 @@ import numpy as np
 from utils import (
     ciou,
     decodePrediction,
-    stable_divide
 )
 
 def calculate_precision_recall(predictions, targets, scaled_anchor, s):
@@ -22,7 +21,4 @@ def calculate_precision_recall(predictions, targets, scaled_anchor, s):
 
     true_positives = torch.sum(ious > Config.enough_overlap_threshold).item()
     
-    precision = stable_divide(true_positives, num_predictions)
-    recall = stable_divide(true_positives, num_targets)
-    
-    return precision, recall
+    return true_positives, num_predictions, num_targets

@@ -6,10 +6,11 @@ import numpy as np
 import torch.optim as optim 
 from tqdm import tqdm
 from utils import (
-load_checkpoint,	
-decodePrediction,
-plot_image,
-nms,
+	load_checkpoint,	
+	decodePrediction,
+	plot_image,
+	stable_divide,
+	nms,
 )
 from dataset import Dataset
 from utils_metric import calculate_precision_recall
@@ -60,8 +61,10 @@ if __name__ == "__main__":
 		nms_boxes = nms(decoded[i]) 
 		plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
-	precisions = [[] for _ in range(Config.num_anchors)]
-	recalls = [[] for _ in range(Config.num_anchors)]
+	true_positives = [[] for _ in range(Config.num_anchors)]
+	num_predictions = [[] for _ in range(Config.num_anchors)]
+	num_targets = [[] for _ in range(Config.num_anchors)]
+
 	progress_bar = tqdm(test_loader, leave=True) 
 	for _, (x, y) in enumerate(progress_bar): 
 		x = x.to(Config.device) 
@@ -70,11 +73,14 @@ if __name__ == "__main__":
 		for i in range(Config.num_anchors):
 			predictions = outputs[i]
 			targets = y[i].to(Config.device)
-			precision_batch, recall_batch = calculate_precision_recall(predictions, targets, Config.scaled_anchors[i], Config.s[i])
+			true_positives_batch, num_predictions_batch, num_targets_batch = calculate_precision_recall(predictions, targets, Config.scaled_anchors[i], Config.s[i])
 
-			precisions[i].append(precision_batch)
-			recalls[i].append(recall_batch)
+			true_positives[i].append(true_positives_batch)
+			num_predictions[i].append(num_predictions_batch)
+			num_targets[i].append(num_targets_batch)
 	model.train() 
 
 	for i in range(Config.num_anchors):
-		print(f"Precision:{sum(precisions[i])/len(precisions[i])}, Recall:{sum(recalls[i])/len(recalls[i])}")	
+		precision = stable_divide(sum(true_positives), sum(num_predictions))
+		recall = stable_divide(sum(true_positives), sum(num_targets))
+		print(f"Precision:{precision}, Recall:{recall}")	
