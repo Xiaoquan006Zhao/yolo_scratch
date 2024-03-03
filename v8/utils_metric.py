@@ -5,13 +5,15 @@ import numpy as np
 from utils import (
     ciou,
     decodePrediction,
+    nms,
 )
 
 def calculate_precision_recall(predictions, targets, scaled_anchor, s):
     decoded_predictions = decodePrediction(predictions, scaled_anchor, s, to_list=False)
     decoded_targets = targets.reshape(decoded_predictions.shape)
 
-    num_predictions = torch.sum(decoded_predictions[:, :, 0] >  Config.valid_prediction_threshold).item()
+    decoded_predictions_nms = torch.tensor(nms(decoded_predictions)).view(Config.batch_size, -1, 6)
+    num_predictions = torch.sum(decoded_predictions_nms[:, :, 0] >  Config.valid_prediction_threshold).item()
     num_targets = torch.sum(decoded_targets[:, :, 0] >  Config.valid_prediction_threshold).item()
 
     tar_obj = decoded_targets[..., 0] > Config.valid_prediction_threshold
