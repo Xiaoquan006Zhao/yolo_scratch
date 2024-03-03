@@ -51,8 +51,8 @@ class Config:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"-{self.device}-")
 
+            self.num_anchors = 3
             self.ANCHORS = auto_anchor(self.num_anchors, self.label_dir, self.s)
-            self.num_anchors = len(self.ANCHORS)
             self.num_scales = len(self.s)
 
             # ANCHORS = [ 
