@@ -65,27 +65,31 @@ class PAN(nn.Module):
         x = self.conv1(x)
         route_connections.insert(0, x)
         x = self.upsample1(x)
-        x = torch.cat((x, route_connections.pop()), dim=1)
+        x = torch.cat([x, route_connections[-1]], dim=1)
+        route_connections.pop()
         x = self.CSP1(x)
 
         x = self.conv2(x)
         route_connections.insert(1, x)
         x = self.upsample2(x)
-        x = torch.cat((x, route_connections.pop()), dim=1)
+        x = torch.cat([x, route_connections[-1]], dim=1)
+        route_connections.pop()
         x = self.CSP2(x)
         # x = drop_block2d(x, **self.dropblock_params)
 
         outputs.append(self.predication1(x))
 
         x = self.downsample1(x)
-        x = torch.cat((x, route_connections.pop()), dim=1)
+        x = torch.cat([x, route_connections[-1]], dim=1)
+        route_connections.pop()
         x = self.CSP3(x)
         # x = drop_block2d(x, **self.dropblock_params)
 
         outputs.append(self.predication2(x))
 
         x = self.downsample2(x)
-        x = torch.cat((x, route_connections.pop()), dim=1)
+        x = torch.cat([x, route_connections[-1]], dim=1)
+        route_connections.pop()
         x = self.CSP4(x)
         # x = drop_block2d(x, **self.dropblock_params)
 
