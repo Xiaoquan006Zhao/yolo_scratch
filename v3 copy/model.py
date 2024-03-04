@@ -87,19 +87,19 @@ class YOLOv3(nn.Module):
 			CSPBlock(64, 64, bottleNeck_use_residual=True, BottleNeck_repeats=1),
 
 			CNNBlock(64, 128, kernel_size=3, stride=2, padding=1), 
-			ResidualBlock(128, num_repeats=2), 
+			# ResidualBlock(128, num_repeats=2), 
 			CSPBlock(128, 128, bottleNeck_use_residual=True, BottleNeck_repeats=2),
 
 			CNNBlock(128, 256, kernel_size=3, stride=2, padding=1), 
-			ResidualBlock(256, num_repeats=8), 
+			# ResidualBlock(256, num_repeats=8), 
 			CSPBlock(256, 256, bottleNeck_use_residual=True, BottleNeck_repeats=8),
 
 			CNNBlock(256, 512, kernel_size=3, stride=2, padding=1), 
-			ResidualBlock(512, num_repeats=8), 
+			# ResidualBlock(512, num_repeats=8), 
 			CSPBlock(512, 512, bottleNeck_use_residual=True, BottleNeck_repeats=8),
 
 			CNNBlock(512, 1024, kernel_size=3, stride=2, padding=1), 
-			ResidualBlock(1024, num_repeats=4), 
+			# ResidualBlock(1024, num_repeats=4), 
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
 
 			CNNBlock(1024, 512, kernel_size=1, stride=1, padding=0), 
