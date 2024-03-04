@@ -43,12 +43,12 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		progress_bar.set_postfix(loss=mean_loss)
 
 model = YOLOv5(num_classes=len(Config.class_labels)).to(Config.device) 
-optimizer = optim.Adam(model.parameters(), lr = Config.leanring_rate) 
+optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
 
 if Config.load_model: 
-	load_checkpoint(Config.checkpoint_file, model, optimizer, Config.leanring_rate) 
+	load_checkpoint(Config.checkpoint_file, model, optimizer, Config.max_leanring_rate) 
 
 train_dataset = Dataset( 
 	csv_file = Config.train_csv_file,
