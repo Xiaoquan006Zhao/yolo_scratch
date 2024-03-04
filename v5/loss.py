@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn 
 from utils import (
-	iou,
+	ciou,
 )
 
 class YOLOLoss(nn.Module): 
@@ -24,7 +24,7 @@ class YOLOLoss(nn.Module):
 
 		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 
-		ious = iou(box_preds[obj], target[..., 1:5][obj])
+		ious = ciou(box_preds[obj], target[..., 1:5][obj], is_pred=False)
 
 		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
 		
@@ -37,8 +37,8 @@ class YOLOLoss(nn.Module):
 		class_loss = self.cross_entropy((pred[..., 5:][obj]), target[..., 5][obj].long()) 
 
 		return ( 
-			box_loss 
-			+ object_loss 
-			+ no_object_loss 
-			+ class_loss 
+			box_loss.to(torch.float32)
+			+ object_loss.to(torch.float32)
+			+ no_object_loss.to(torch.float32)
+			+ class_loss.to(torch.float32)
 		)
