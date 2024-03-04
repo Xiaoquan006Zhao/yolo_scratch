@@ -103,12 +103,11 @@ class YOLOv3(nn.Module):
 		]) 
 	
 	def forward(self, x): 
-		outputs = [] 
 		route_connections = [] 
 
 		for layer in self.layers: 
 			if isinstance(layer, PAN):
-				return layer(outputs)
+				return layer(route_connections)
 			
 			x = layer(x) 
 
