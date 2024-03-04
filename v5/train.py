@@ -36,7 +36,7 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
 				+ loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
 			) 
-			
+
 		optimizer.zero_grad() 
 		scaler.scale(loss).backward() 
 		scaler.step(optimizer) 
@@ -50,14 +50,15 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 
 model = YOLOv5().to(Config.device) 
 loss_fn = YOLOLoss() 
+optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
 
-optimizer = optim.Adam(
-    [
-        {'params': model.parameters()},
-        {'params': loss_fn.parameters(), 'lr': Config.min_leanring_rate}, 
-    ],
-    lr=Config.max_leanring_rate
-)
+# optimizer = optim.Adam(
+#     [
+#         {'params': model.parameters()},
+#         {'params': loss_fn.parameters(), 'lr': Config.min_leanring_rate}, 
+#     ],
+#     lr=Config.max_leanring_rate
+# )
 
 scheduler = CosineAnnealingWarmRestarts(optimizer, 
 										T_0 = 32,

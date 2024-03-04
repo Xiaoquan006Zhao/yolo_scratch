@@ -18,14 +18,15 @@ from utils_metric import calculate_precision_recall
 if __name__ == "__main__":
 	model = YOLOv5().to(Config.device) 
 	loss_fn = YOLOLoss() 
+	optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
 
-	optimizer = optim.Adam(
-		[
-			{'params': model.parameters()},
-			{'params': loss_fn.parameters(), 'lr': Config.min_leanring_rate}, 
-		],
-		lr=Config.max_leanring_rate
-	)
+	# optimizer = optim.Adam(
+	# 	[
+	# 		{'params': model.parameters()},
+	# 		{'params': loss_fn.parameters(), 'lr': Config.min_leanring_rate}, 
+	# 	],
+	# 	lr=Config.max_leanring_rate
+	# )
 
 	scaler = torch.cuda.amp.GradScaler() 
 
