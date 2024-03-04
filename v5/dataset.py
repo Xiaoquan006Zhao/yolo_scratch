@@ -34,8 +34,7 @@ class Dataset(torch.utils.data.Dataset):
         label_path = os.path.join(self.label_dir, self.label_list.iloc[idx, 1]) 
         # We are applying roll to move class label to the last column 
         # 5 columns: x, y, width, height, class_label 
-        bboxes = np.roll(np.loadtxt(fname=label_path, 
-                        delimiter=" ", ndmin=2), 4, axis=1).tolist() 
+        bboxes = np.roll(np.loadtxt(fname=label_path, delimiter=" ", ndmin=2), 4, axis=1).tolist() 
         
         img_path = os.path.join(self.image_dir, self.label_list.iloc[idx, 0]) 
         image = np.array(Image.open(img_path).convert("RGB")) 
@@ -51,9 +50,7 @@ class Dataset(torch.utils.data.Dataset):
                 for s in self.grid_sizes] 
         
         for box in bboxes: 
-            iou_anchors = iou(torch.tensor(box[2:4]), 
-                            self.anchors, 
-                            is_pred=False) 
+            iou_anchors = iou(torch.tensor(box[2:4]), self.anchors, is_pred=False) 
             anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
             x, y, width, height, class_label = box 
 

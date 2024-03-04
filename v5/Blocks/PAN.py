@@ -73,21 +73,21 @@ class PAN(nn.Module):
         x = self.upsample2(x)
         x = torch.cat((x, route_connections.pop()), dim=1)
         x = self.CSP2(x)
-        x = drop_block2d(x, **self.dropblock_params)
+        # x = drop_block2d(x, **self.dropblock_params)
 
         outputs.append(self.predication1(x))
 
         x = self.downsample1(x)
         x = torch.cat((x, route_connections.pop()), dim=1)
         x = self.CSP3(x)
-        x = drop_block2d(x, **self.dropblock_params)
+        # x = drop_block2d(x, **self.dropblock_params)
 
         outputs.append(self.predication2(x))
 
         x = self.downsample2(x)
         x = torch.cat((x, route_connections.pop()), dim=1)
         x = self.CSP4(x)
-        x = drop_block2d(x, **self.dropblock_params)
+        # x = drop_block2d(x, **self.dropblock_params)
 
         outputs.append(self.predication3(x))
 

@@ -35,8 +35,8 @@ class CSPBlock(nn.Module):
         part2 = self.process_blocks(part2)
         out = torch.cat((part1, part2), dim=1)
 
-        if self.use_dropblock:
-            out = drop_block2d(out, **self.dropblock_params)
+        # if self.use_dropblock:
+        #     out = drop_block2d(out, **self.dropblock_params)
 
         out = self.conv_out(out)
 
