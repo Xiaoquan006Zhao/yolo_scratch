@@ -29,7 +29,7 @@ class YOLOLoss(nn.Module):
 
         scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
         box_preds = decodePrediction_bbox_no_offset(pred, scaled_anchor)
-        cious = (box_preds[obj], target[..., 1:5][obj])
+        cious = ciou(box_preds[obj], target[..., 1:5][obj])
         box_loss = torch.mean(1-cious)
 
         # box_loss = self.mse(box_preds[obj], target[..., 1:5][obj])
