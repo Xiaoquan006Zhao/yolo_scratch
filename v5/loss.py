@@ -10,6 +10,7 @@ class YOLOLoss(nn.Module):
     def __init__(self):
         super().__init__()
         self.bce = nn.BCEWithLogitsLoss()
+        self.mse = nn.MSELoss()
         self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.sigmoid = nn.Sigmoid()
 
@@ -23,14 +24,15 @@ class YOLOLoss(nn.Module):
         no_obj = target[..., 0] == 0
 
         no_object_loss = self.bce(
-            self.sigmoid(pred[..., 0:1][no_obj]), target[..., 0:1][no_obj],
+            pred[..., 0:1][no_obj], target[..., 0:1][no_obj],
         )
 
         scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
         box_preds = decodePrediction_bbox_no_offset(pred, scaled_anchor)
-        cious = ciou(box_preds[obj], target[..., 1:5][obj])
-        box_loss = torch.mean(1-cious)
-        object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
+        # cious = (box_preds[obj], target[..., 1:5][obj])
+        box_loss = self.mse(box_preds[obj], target[..., 1:5][obj])
+
+        object_loss = self.bce(pred[..., 0:1][obj], target[..., 0:1][obj])
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
 
         # weighted_box_loss = self.weight_box * box_loss.to(Config.device)
