@@ -25,7 +25,7 @@ class Config:
                 self.test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
                 self.image_dir = os.path.join(base_dir, "data", dataset, "images")
                 self.label_dir = os.path.join(base_dir, "data", dataset, "labels")
-                self.checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
+                self.checkpoint_file = os.path.join(base_dir, "v8", f"{dataset}_checkpoint.pth.tar")
             else:
                 #self.train_csv_file = f"../data/{dataset}/2examples.csv"
                 #self.test_csv_file = f"../data/{dataset}/2examples_test.csv"
