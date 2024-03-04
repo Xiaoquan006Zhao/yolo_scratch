@@ -106,24 +106,39 @@ class YOLOv3(nn.Module):
 			# ResidualBlock(1024, num_repeats=4), 
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
 
+			############################################################
 			CNNBlock(1024, 512, kernel_size=1, stride=1, padding=0), 
 			CNNBlock(512, 1024, kernel_size=3, stride=1, padding=1), 
-			ResidualBlock(1024, use_residual=False, num_repeats=1), 
+
+			# ResidualBlock(1024, use_residual=False, num_repeats=1), 
+			CSPBlock(1024, 1024, bottleNeck_use_residual=False, BottleNeck_repeats=3),
+			
 			CNNBlock(1024, 512, kernel_size=1, stride=1, padding=0), 
+
 			ScalePrediction(512, num_classes=num_classes), 
+
 			CNNBlock(512, 256, kernel_size=1, stride=1, padding=0), 
 			nn.Upsample(scale_factor=2), 
 			CNNBlock(768, 256, kernel_size=1, stride=1, padding=0), 
 			CNNBlock(256, 512, kernel_size=3, stride=1, padding=1), 
-			ResidualBlock(512, use_residual=False, num_repeats=1), 
+
+			# ResidualBlock(512, use_residual=False, num_repeats=1), 
+			CSPBlock(512, 512, bottleNeck_use_residual=False, BottleNeck_repeats=3),
+
 			CNNBlock(512, 256, kernel_size=1, stride=1, padding=0), 
+
 			ScalePrediction(256, num_classes=num_classes), 
+
 			CNNBlock(256, 128, kernel_size=1, stride=1, padding=0), 
 			nn.Upsample(scale_factor=2), 
 			CNNBlock(384, 128, kernel_size=1, stride=1, padding=0), 
 			CNNBlock(128, 256, kernel_size=3, stride=1, padding=1), 
-			ResidualBlock(256, use_residual=False, num_repeats=1), 
+
+			# ResidualBlock(256, use_residual=False, num_repeats=1),
+			CSPBlock(256, 256, bottleNeck_use_residual=False, BottleNeck_repeats=3),
+
 			CNNBlock(256, 128, kernel_size=1, stride=1, padding=0), 
+
 			ScalePrediction(128, num_classes=num_classes) 
 		]) 
 	
