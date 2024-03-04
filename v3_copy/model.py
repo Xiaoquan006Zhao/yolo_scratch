@@ -115,7 +115,7 @@ class YOLOv3(nn.Module):
 			
 			x = layer(x) 
 
-			if isinstance(layer, CSPBlock) and layer.num_repeats > 3: 
+			if isinstance(layer, CSPBlock) and layer.BottleNeck_repeats > 3: 
 				route_connections.append(x) 
 
 			if isinstance(layer, SPPFBlock): 
