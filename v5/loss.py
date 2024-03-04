@@ -14,8 +14,10 @@ class YOLOLoss(nn.Module):
         self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.sigmoid = nn.Sigmoid()
 
-    def norm(self, array):
-        return F.normalize(array.unsqueeze(0),p=2, dim=1).squeeze(0)
+        self.weight_box = nn.Parameter(torch.ones(1))
+        self.weight_object = nn.Parameter(torch.ones(1))
+        self.weight_no_object = nn.Parameter(torch.ones(1))
+        self.weight_class = nn.Parameter(torch.ones(1))
 
     def forward(self, pred, target, scaled_anchor, scale):
         obj = target[..., 0] == 1
@@ -32,7 +34,11 @@ class YOLOLoss(nn.Module):
         object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
 
-        loss = self.norm(box_loss) + self.norm(object_loss) + self.norm(no_object_loss) + self.norm(class_loss)
-        # assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
+        weighted_box_loss = self.weight_box * box_loss
+        weighted_object_loss = self.weight_object * object_loss
+        weighted_no_object_loss = self.weight_no_object * no_object_loss
+        weighted_class_loss = self.weight_class * class_loss
 
-        return (loss)
+        loss = weighted_box_loss + weighted_object_loss + weighted_no_object_loss + weighted_class_loss
+
+        return loss

@@ -39,22 +39,30 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 			optimizer.zero_grad() 
 			scaler.scale(loss).backward() 
 			scaler.step(optimizer) 
+			scaler.update() 
 
 		losses.append(loss.item()) 
 		scheduler.step(e + i / iters)
-		scaler.update() 
 
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
 model = YOLOv5().to(Config.device) 
-optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
+loss_fn = YOLOLoss() 
+
+optimizer = optim.Adam(
+    [
+        {'params': model.parameters()},
+        {'params': loss_fn.parameters()}, 
+    ],
+    lr=Config.max_leanring_rate
+)
+
 scheduler = CosineAnnealingWarmRestarts(optimizer, 
 										T_0 = 32,
 										T_mult = 1, # A factor increases TiTi​ after a restart
 										eta_min = Config.min_leanring_rate) 
 scheduler.base_lrs[0] = Config.max_leanring_rate
-loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
 
 if Config.load_model: 
