@@ -40,11 +40,11 @@ class Config:
             self.load_model = True
             self.save_model = True
 
-            self.epochs = 3000
+            self.epochs = 1000
             self.batch_size = 4
             self.test_batch_size = 2
             self.min_leanring_rate = 1e-4
-            self.max_leanring_rate = self.min_leanring_rate * 10
+            self.max_leanring_rate = self.min_leanring_rate
             self.numerical_stability = 1e-6
             self.image_size = 640
             self.s = [self.image_size // 32, self.image_size // 16, self.image_size // 8] 
