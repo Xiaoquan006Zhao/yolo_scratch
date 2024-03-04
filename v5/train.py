@@ -42,8 +42,8 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 		scaler.step(optimizer) 
 		scheduler.step(e + i / iters)
 		scaler.update() 
-		# mean_loss = sum(losses) / len(losses) 
-		progress_bar.set_postfix(loss=losses[-1])
+		mean_loss = sum(losses) / len(losses) 
+		progress_bar.set_postfix(loss=mean_loss)
 
 model = YOLOv5().to(Config.device) 
 optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
