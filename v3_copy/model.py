@@ -85,21 +85,18 @@ class YOLOv3(nn.Module):
 		self.in_channels = in_channels 
 
 		self.layers = nn.ModuleList([ 
-			ConvBNMish(in_channels, 32, kernel_size=3, stride=1, padding=1), 
-			ConvBNMish(32, 64, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(64, 64, bottleNeck_use_residual=True, BottleNeck_repeats=1),
-
+			ConvBNMish(in_channels, 64, kernel_size=6, stride=2, padding=2), 
 			ConvBNMish(64, 128, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(128, 128, bottleNeck_use_residual=True, BottleNeck_repeats=2),
+			CSPBlock(128, 128, bottleNeck_use_residual=True, BottleNeck_repeats=3),
 
 			ConvBNMish(128, 256, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(256, 256, bottleNeck_use_residual=True, BottleNeck_repeats=8),
+			CSPBlock(256, 256, bottleNeck_use_residual=True, BottleNeck_repeats=6),
 
 			ConvBNMish(256, 512, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(512, 512, bottleNeck_use_residual=True, BottleNeck_repeats=8),
+			CSPBlock(512, 512, bottleNeck_use_residual=True, BottleNeck_repeats=9),
 
 			ConvBNMish(512, 1024, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
+			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=3),
 
 			SPPFBlock(1024, pool_size=5, pool_repeats=3),
 			PAN(config.PAN_channels, num_classes=config.num_classes),
@@ -114,7 +111,7 @@ class YOLOv3(nn.Module):
 			
 			x = layer(x) 
 			
-			if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 8): 
+			if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 6 or layer.BottleNeck_repeats == 9): 
 				route_connections.append(x) 
 
 			if isinstance(layer, SPPFBlock): 
