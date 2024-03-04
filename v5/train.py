@@ -13,7 +13,8 @@ from utils import (
 	save_checkpoint,
 )
 
-def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors, scales):
+# def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors, scales):
+def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors, scales):
 	model.train()
 
 	iters = len(loader) 
@@ -43,7 +44,7 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 		scaler.update() 
 
 		losses.append(loss.item()) 
-		scheduler.step(e + i / iters)
+		# scheduler.step(e + i / iters)
 
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
@@ -52,19 +53,11 @@ model = YOLOv5().to(Config.device)
 loss_fn = YOLOLoss() 
 optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
 
-# optimizer = optim.Adam(
-#     [
-#         {'params': model.parameters()},
-#         {'params': loss_fn.parameters(), 'lr': Config.min_leanring_rate}, 
-#     ],
-#     lr=Config.max_leanring_rate
-# )
-
-scheduler = CosineAnnealingWarmRestarts(optimizer, 
-										T_0 = 32,
-										T_mult = 1, # A factor increases TiTi​ after a restart
-										eta_min = Config.min_leanring_rate) 
-scheduler.base_lrs[0] = Config.max_leanring_rate
+# scheduler = CosineAnnealingWarmRestarts(optimizer, 
+# 										T_0 = 32,
+# 										T_mult = 1, # A factor increases TiTi​ after a restart
+# 										eta_min = Config.min_leanring_rate) 
+# scheduler.base_lrs[0] = Config.max_leanring_rate
 scaler = torch.cuda.amp.GradScaler() 
 
 if Config.load_model: 
@@ -90,7 +83,8 @@ train_loader = torch.utils.data.DataLoader(
 
 for e in range(1, Config.epochs+1): 
 	print("Epoch:", e) 
-	training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, Config.scaled_anchors, Config.s) 
+	# training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, Config.scaled_anchors, Config.s) 
+	training_loop(e, train_loader, model, optimizer, loss_fn, scaler, Config.scaled_anchors, Config.s) 
 
 	if Config.save_model and e%100 == 0: 
 		save_checkpoint(model, optimizer, filename=Config.checkpoint_file)

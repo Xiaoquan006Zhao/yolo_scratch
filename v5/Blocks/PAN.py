@@ -34,11 +34,11 @@ class PAN(nn.Module):
         self.dropblock_params = dropblock_params
 
         self.conv1 = ConvBNMish(channels_list[2], channels_list[1], kernel_size=1, stride=1,padding=0)
-        self.upsample1 = nn.Upsample(scale_factor=2)
+        self.upsample1 = nn.UpsamplingBilinear2d(scale_factor=2)
         self.CSP1 = CSPBlock(channels_list[2], channels_list[1], bottleNeck_use_residual=False, BottleNeck_repeats=3)
 
         self.conv2 = ConvBNMish(channels_list[1], channels_list[0], kernel_size=1, stride=1,padding=0)
-        self.upsample2 = nn.Upsample(scale_factor=2)
+        self.upsample2 = nn.UpsamplingBilinear2d(scale_factor=2)
         self.CSP2 = CSPBlock(channels_list[1], channels_list[0], bottleNeck_use_residual=False, BottleNeck_repeats=3)
 
         self.predication1 = ScalePrediction(channels_list[0], self.num_classes)
