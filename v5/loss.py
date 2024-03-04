@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import math
+from config import Config
 from utils import (
     ciou,  
     decodePrediction_bbox_no_offset,
@@ -13,10 +13,10 @@ class YOLOLoss(nn.Module):
         self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.sigmoid = nn.Sigmoid()
         
-        self.weight_box = nn.Parameter(torch.ones(1))
-        self.weight_object = nn.Parameter(torch.ones(1))
-        self.weight_no_object = nn.Parameter(torch.ones(1))
-        self.weight_class = nn.Parameter(torch.ones(1))
+        self.weight_box = nn.Parameter(torch.ones(1)).to(Config.device)
+        self.weight_object = nn.Parameter(torch.ones(1)).to(Config.device)
+        self.weight_no_object = nn.Parameter(torch.ones(1)).to(Config.device)
+        self.weight_class = nn.Parameter(torch.ones(1)).to(Config.device)
 
     def forward(self, pred, target, scaled_anchor, scale):
         obj = target[..., 0] == 1
@@ -34,10 +34,10 @@ class YOLOLoss(nn.Module):
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
 
         loss = (
-            self.weight_box * box_loss +
-            self.weight_object * object_loss +
-            self.weight_no_object * no_object_loss +
-            self.weight_class * class_loss
+            self.weight_box * box_loss.to(Config.device) +
+            self.weight_object * object_loss.to(Config.device) +
+            self.weight_no_object * no_object_loss.to(Config.device) +
+            self.weight_class * class_loss.to(Config.device)
         )
         # assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
 
