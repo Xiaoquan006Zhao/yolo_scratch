@@ -1,48 +1,44 @@
 import torch
-import torch.nn as nn
-from config import Config
+import torch.nn as nn 
 from utils import (
-    ciou,  
-    decodePrediction_bbox_no_offset,
+	iou,
 )
 
-class YOLOLoss(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.bce = nn.BCEWithLogitsLoss()
-        self.mse = nn.MSELoss()
-        self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
-        self.sigmoid = nn.Sigmoid()
+class YOLOLoss(nn.Module): 
+	def __init__(self): 
+		super().__init__() 
+		self.mse = nn.MSELoss() 
+		self.bce = nn.BCEWithLogitsLoss() 
+		self.cross_entropy = nn.CrossEntropyLoss() 
+		self.sigmoid = nn.Sigmoid() 
+	
+	def forward(self, pred, target, anchors): 
+		obj = target[..., 0] == 1
+		no_obj = target[..., 0] == 0
 
-        # self.weight_box = nn.Parameter(torch.ones(1)).to(Config.device)
-        # self.weight_object = nn.Parameter(torch.ones(1)).to(Config.device)
-        # self.weight_no_object = nn.Parameter(torch.ones(1)).to(Config.device)
-        # self.weight_class = nn.Parameter(torch.ones(1)).to(Config.device)
+		no_object_loss = self.bce( 
+			(pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), 
+		) 
 
-    def forward(self, pred, target, scaled_anchor, scale):
-        obj = target[..., 0] == 1
-        no_obj = target[..., 0] == 0
+		anchors = anchors.reshape(1, 3, 1, 1, 2) 
 
-        no_object_loss = self.bce(pred[..., 0:1][no_obj], target[..., 0:1][no_obj])
+		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 
-        scaled_anchor = scaled_anchor.reshape(1, 3, 1, 1, 2)
-        box_preds = decodePrediction_bbox_no_offset(pred, scaled_anchor)
-        cious = ciou(box_preds[obj], target[..., 1:5][obj], is_pred=False)
-        box_loss = torch.mean(1-cious)
+		ious = iou(box_preds[obj], target[..., 1:5][obj])
 
-        # box_loss = self.mse(box_preds[obj].to(torch.float64), target[..., 1:5][obj].to(torch.float64))
+		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
+		
+		pred[..., 1:3] = self.sigmoid(pred[..., 1:3]) 
+		
+		target[..., 3:5] = torch.log(1e-6 + target[..., 3:5] / anchors) 
 
-        object_loss = self.bce(pred[..., 0:1][obj], target[..., 0:1][obj])
-        class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
+		box_loss = self.mse(pred[..., 1:5][obj], target[..., 1:5][obj]) 
 
-        # weighted_box_loss = self.weight_box * box_loss.to(Config.device)
-        # weighted_object_loss = self.weight_object * object_loss.to(Config.device)
-        # weighted_no_object_loss = self.weight_no_object * no_object_loss.to(Config.device)
-        # weighted_class_loss = self.weight_class * class_loss.to(Config.device)
+		class_loss = self.cross_entropy((pred[..., 5:][obj]), target[..., 5][obj].long()) 
 
-        # loss = weighted_box_loss + weighted_object_loss + weighted_no_object_loss + weighted_class_loss
-
-        loss = box_loss + object_loss + no_object_loss + class_loss
-
-
-        return loss
+		return ( 
+			box_loss 
+			+ object_loss 
+			+ no_object_loss 
+			+ class_loss 
+		)

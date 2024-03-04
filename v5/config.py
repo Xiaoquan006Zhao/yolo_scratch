@@ -40,7 +40,7 @@ class Config:
             self.load_model = True
             self.save_model = True
 
-            self.epochs = 600
+            self.epochs = 3000
             self.batch_size = 4
             self.test_batch_size = 2
             self.min_leanring_rate = 1e-4
