@@ -11,21 +11,15 @@ from utils import (
 )
 from dataset import Dataset
 
-# Taking a sample image and testing the model 
-# Setting the load_model to True 
-load_model = True
 
-# Defining the model, optimizer, loss function and scaler 
 model = YOLOv3(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
 
-# Loading the checkpoint 
-if load_model: 
+if config.load_model: 
 	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
 
-# Defining the test dataset and data loader 
 test_dataset = Dataset( 
 	csv_file=config.test_csv_file,
 	image_dir=config.image_dir,
@@ -40,22 +34,18 @@ test_loader = torch.utils.data.DataLoader(
 	shuffle = True, 
 ) 
 
-# Getting a sample image from the test data loader 
 x, y = next(iter(test_loader)) 
 x = x.to(config.device) 
 
 model.eval() 
 with torch.no_grad(): 
-	# Getting the model predictions 
 	output = model(x) 
 
-	# Getting the bounding boxes from the predictions 
 	bboxes = [[] for _ in range(x.shape[0])] 
 	anchors = ( 
 			torch.tensor(config.ANCHORS) * torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
 			).to(config.device) 
 
-	# Getting bounding boxes for each scale 
 	for i in range(3): 
 		batch_size, A, S, _, _ = output[i].shape 
 		anchor = anchors[i] 
@@ -64,10 +54,7 @@ with torch.no_grad():
 			bboxes[idx] += box 
 model.train() 
 
-# Plotting the image with bounding boxes for each image in the batch 
 for i in range(batch_size): 
-	# Applying non-max suppression to remove overlapping bounding boxes 
 	nms_boxes = nms(bboxes[i], enough_overlap_threshold=0.5, valid_prediction_threshold=0.6) 
 
-	# Plotting the image with bounding boxes 
 	plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
