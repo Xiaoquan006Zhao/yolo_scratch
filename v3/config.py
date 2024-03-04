@@ -31,7 +31,7 @@ ANCHORS = [
 ] 
 batch_size = 16
 leanring_rate = 1e-4
-epochs = 50
+epochs = 1000
 image_size = 416
 s = [image_size // 32, image_size // 16, image_size // 8] 
 
