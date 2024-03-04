@@ -99,7 +99,7 @@ class YOLOv3(nn.Module):
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=3),
 
 			SPPFBlock(1024, pool_size=5, pool_repeats=3),
-			PAN(Config.PAN_channels, num_classes=Config.num_classes),
+			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
 	def forward(self, x): 
