@@ -4,6 +4,7 @@ import os
 import numpy as np
 from PIL import Image
 from utils import (
+    iou,
     ciou,
 )
 
@@ -50,7 +51,7 @@ class Dataset(torch.utils.data.Dataset):
                 for s in self.grid_sizes] 
         
         for box in bboxes: 
-            iou_anchors = ciou(torch.tensor(box[2:4]), 
+            iou_anchors = iou(torch.tensor(box[2:4]), 
                             self.anchors, 
                             is_pred=False) 
             anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
