@@ -96,7 +96,6 @@ class YOLOv3(nn.Module):
 			CSPBlock(256, 256, bottleNeck_use_residual=True, BottleNeck_repeats=8),
 
 			ConvBNMish(256, 512, kernel_size=3, stride=2, padding=1), 
-			ResidualBlock(512, num_repeats=8), 
 			CSPBlock(512, 512, bottleNeck_use_residual=True, BottleNeck_repeats=8),
 
 			ConvBNMish(512, 1024, kernel_size=3, stride=2, padding=1), 
@@ -115,7 +114,7 @@ class YOLOv3(nn.Module):
 			
 			x = layer(x) 
 			
-			if isinstance(layer, ResidualBlock) and (layer.num_repeats == 8): 
+			if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 8): 
 				route_connections.append(x) 
 
 			if isinstance(layer, SPPFBlock): 
