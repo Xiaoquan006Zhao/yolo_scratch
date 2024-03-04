@@ -53,7 +53,7 @@ loss_fn = YOLOLoss()
 optimizer = optim.Adam(
     [
         {'params': model.parameters()},
-        {'params': loss_fn.parameters(), 'lr': Config.loss_learning_rate}, 
+        {'params': loss_fn.parameters(), 'lr': Config.min_leanring_rate}, 
     ],
     lr=Config.max_leanring_rate
 )
