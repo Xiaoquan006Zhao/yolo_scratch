@@ -3,7 +3,7 @@ import torch.nn as nn
   
 import numpy as np 
 import pandas as pd 
-  
+import config
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches 
 from Blocks.BasicBlock import ConvBNMish
@@ -107,15 +107,16 @@ class YOLOv3(nn.Module):
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
 
 			############################################################
-			ScalePrediction(1024, num_classes=num_classes), 
-			ConvBNMish(1024, 512, kernel_size=1, stride=1, padding=0),
-			nn.Upsample(scale_factor=2), 
-			CSPBlock(1024, 512, bottleNeck_use_residual=False, BottleNeck_repeats=3),
-			ScalePrediction(512, num_classes=num_classes), 
-			ConvBNMish(512, 256, kernel_size=1, stride=1, padding=0), 
-			nn.Upsample(scale_factor=2), 
-			CSPBlock(512, 256, bottleNeck_use_residual=False, BottleNeck_repeats=3),
-			ScalePrediction(256, num_classes=num_classes), 
+			# ScalePrediction(1024, num_classes=num_classes), 
+			# ConvBNMish(1024, 512, kernel_size=1, stride=1, padding=0),
+			# nn.Upsample(scale_factor=2), 
+			# CSPBlock(1024, 512, bottleNeck_use_residual=False, BottleNeck_repeats=3),
+			# ScalePrediction(512, num_classes=num_classes), 
+			# ConvBNMish(512, 256, kernel_size=1, stride=1, padding=0), 
+			# nn.Upsample(scale_factor=2), 
+			# CSPBlock(512, 256, bottleNeck_use_residual=False, BottleNeck_repeats=3),
+			# ScalePrediction(256, num_classes=num_classes), 
+			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
 	def forward(self, x): 
@@ -123,9 +124,11 @@ class YOLOv3(nn.Module):
 		route_connections = [] 
 
 		for layer in self.layers: 
-			if isinstance(layer, ScalePrediction): 
-				outputs.append(layer(x)) 
-				continue
+			# if isinstance(layer, ScalePrediction): 
+			# 	outputs.append(layer(x)) 
+			# 	continue
+			if isinstance(layer, PAN):
+				return layer(outputs)
 			
 			x = layer(x) 
 
@@ -134,7 +137,8 @@ class YOLOv3(nn.Module):
 			
 			elif isinstance(layer, nn.Upsample): 
 				x = torch.cat([x, route_connections[-1]], dim=1) 
-				route_connections.pop() 
-		return outputs
+				route_connections.pop()
+				
+		# return outputs
 
 
