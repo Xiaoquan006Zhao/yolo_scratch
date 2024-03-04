@@ -4,7 +4,7 @@ from albumentations.pytorch import ToTensorV2
 import cv2 
   
 
-which_dataset = "pascal vox"
+which_dataset = "pascal voc"
 
 # Class labels 
 class_labels = [ 
