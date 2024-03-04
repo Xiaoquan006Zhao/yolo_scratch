@@ -73,7 +73,7 @@ if __name__ == "__main__":
 	model.train() 
 
 	for i in range(batch_size): 
-		nms_boxes = nms(bboxes[i], enough_overlap_threshold=0.5, valid_prediction_threshold=0.6) 
+		nms_boxes = nms(bboxes[i]) 
 
 		plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
