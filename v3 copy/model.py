@@ -116,6 +116,8 @@ class YOLOv3(nn.Module):
 			# nn.Upsample(scale_factor=2), 
 			# CSPBlock(512, 256, bottleNeck_use_residual=False, BottleNeck_repeats=3),
 			# ScalePrediction(256, num_classes=num_classes), 
+			SPPFBlock(1024, pool_size=5, pool_repeats=3),
+
 			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
