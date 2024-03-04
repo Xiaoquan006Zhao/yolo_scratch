@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from config import Config
+
 from utils import (
     ciou,  
     decodePrediction_bbox_no_offset,
@@ -32,11 +34,6 @@ class YOLOLoss(nn.Module):
         box_loss = torch.mean(1-cious)
         object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
-
-        self.weight_box = torch.max(self.weight_box, 1)
-        self.weight_object = torch.max(self.weight_object, 1)
-        self.weight_no_object = torch.max(self.weight_no_object, 1)
-        self.weight_class = torch.max(self.weight_class, 1)
 
         loss = (
             self.weight_box * box_loss.to(Config.device) +

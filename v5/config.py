@@ -29,8 +29,8 @@ class Config:
             else:
                 self.train_csv_file = f"../data/{dataset}/2examples.csv"
                 self.test_csv_file = f"../data/{dataset}/2examples_test.csv"
-                self.train_csv_file = f"../data/{dataset}/train.csv"
-                self.test_csv_file = f"../data/{dataset}/test.csv"
+                #self.train_csv_file = f"../data/{dataset}/train.csv"
+                #self.test_csv_file = f"../data/{dataset}/test.csv"
                 self.image_dir = f"../data/{dataset}/images/"
                 self.label_dir = f"../data/{dataset}/labels/"  
                 self.checkpoint_file = f"{dataset}_checkpoint.pth.tar"
