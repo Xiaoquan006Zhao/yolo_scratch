@@ -40,9 +40,6 @@ def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scale
 			scaler.scale(loss).backward() 
 			scaler.step(optimizer) 
 
-		# for loss weights learning
-		optimizer.step()
-
 		losses.append(loss.item()) 
 		scheduler.step(e + i / iters)
 		scaler.update() 
