@@ -29,7 +29,7 @@ test_dataset = Dataset(
 ) 
 test_loader = torch.utils.data.DataLoader( 
 	test_dataset, 
-	batch_size = 1, 
+	batch_size = 2, 
 	num_workers = 2, 
 	shuffle = True, 
 ) 
