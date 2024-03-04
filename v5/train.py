@@ -80,5 +80,5 @@ for e in range(1, Config.epochs+1):
 	print("Epoch:", e) 
 	training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, Config.scaled_anchors, Config.s) 
 
-	if Config.save_model: 
+	if Config.save_model and e%100 == 0: 
 		save_checkpoint(model, optimizer, filename=Config.checkpoint_file)

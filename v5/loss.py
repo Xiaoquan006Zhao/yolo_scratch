@@ -12,6 +12,7 @@ class YOLOLoss(nn.Module):
         self.bce = nn.BCEWithLogitsLoss()
         self.cross_entropy = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.sigmoid = nn.Sigmoid()
+        self.norm = nn.BatchNorm1d(1)
 
     def forward(self, pred, target, scaled_anchor, scale):
         obj = target[..., 0] == 1
@@ -28,7 +29,7 @@ class YOLOLoss(nn.Module):
         object_loss = self.bce(self.sigmoid(pred[..., 0:1][obj]), target[..., 0:1][obj])
         class_loss = self.cross_entropy(pred[..., 5:][obj], target[..., 5][obj].long())
 
-        loss = self.sigmoid(box_loss) + self.sigmoid(object_loss) + self.sigmoid(no_object_loss) + self.sigmoid(class_loss)
+        loss = self.norm(box_loss) + self.norm(object_loss) + self.norm(no_object_loss) + self.norm(class_loss)
         # assert not math.isnan(loss), f"{box_loss}, {object_loss}, {no_object_loss}, {class_loss}, {cious}, \n {box_preds[obj]}, \n {target[..., 1:5][obj]}"
 
         return (loss)
