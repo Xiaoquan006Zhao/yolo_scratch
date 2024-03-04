@@ -10,6 +10,7 @@ from utils import (
 	decodePrediction,
 	plot_image,
 	stable_divide,
+	convert_cells_to_bboxes,
 	nms,
 )
 from dataset import Dataset
@@ -40,6 +41,7 @@ if __name__ == "__main__":
 		anchors=Config.ANCHORS, 
 		image_size = Config.image_size, 
 		grid_sizes = Config.s, 
+		num_classes= Config.num_classes,
 		transform=Config.test_transform 
 	) 
 
@@ -56,18 +58,23 @@ if __name__ == "__main__":
 	model.eval() 
 	with torch.no_grad(): 
 		output = model(x) 
-		decoded = [[] for _ in range(x.shape[0])] 
+
+		bboxes = [[] for _ in range(x.shape[0])] 
+		anchors = ( 
+				torch.tensor(Config.ANCHORS) * torch.tensor(Config.s).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2) 
+				).to(Config.device) 
 
 		for i in range(3): 
-			batch_size, _, grid_size, _, _ = output[i].shape 
-
-			decoded_scale_i = decodePrediction(output[i], Config.scaled_anchors[i], grid_size=grid_size) 
-
-			for batch, (d) in enumerate(decoded_scale_i): 
-				decoded[batch] += (d) 
+			batch_size, A, S, _, _ = output[i].shape 
+			anchor = anchors[i] 
+			boxes_scale_i = convert_cells_to_bboxes(output[i], anchor, s=S, is_predictions=True) 
+			for idx, (box) in enumerate(boxes_scale_i): 
+				bboxes[idx] += box 
+	model.train() 
 
 	for i in range(batch_size): 
-		nms_boxes = nms(decoded[i]) 
+		nms_boxes = nms(bboxes[i], enough_overlap_threshold=0.5, valid_prediction_threshold=0.6) 
+
 		plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
 	true_positives = [[] for _ in range(Config.num_scales)]

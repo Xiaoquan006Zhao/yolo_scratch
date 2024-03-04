@@ -13,15 +13,11 @@ from utils import (
 	save_checkpoint,
 )
 
-# def training_loop(e, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors, scales):
-def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors, scales):
-	model.train()
-
-	iters = len(loader) 
+def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
 	progress_bar = tqdm(loader, leave=True) 
 	losses = [] 
 
-	for i, (x, y) in enumerate(progress_bar): 
+	for _, (x, y) in enumerate(progress_bar): 
 		x = x.to(Config.device) 
 		y0, y1, y2 = ( 
 			y[0].to(Config.device), 
@@ -31,37 +27,28 @@ def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors, 
 
 		with torch.cuda.amp.autocast(): 
 			outputs = model(x) 
-
 			loss = ( 
-				loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
-				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
-				+ loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
+				loss_fn(outputs[0], y0, scaled_anchors[0]) 
+				+ loss_fn(outputs[1], y1, scaled_anchors[1]) 
+				+ loss_fn(outputs[2], y2, scaled_anchors[2]) 
 			) 
 
+		losses.append(loss.item()) 
 		optimizer.zero_grad() 
 		scaler.scale(loss).backward() 
 		scaler.step(optimizer) 
 		scaler.update() 
 
-		losses.append(loss.item()) 
-		# scheduler.step(e + i / iters)
-
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
-model = YOLOv5().to(Config.device) 
+model = YOLOv5(num_classes=len(Config.class_labels)).to(Config.device) 
+optimizer = optim.Adam(model.parameters(), lr = Config.leanring_rate) 
 loss_fn = YOLOLoss() 
-optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
-
-# scheduler = CosineAnnealingWarmRestarts(optimizer, 
-# 										T_0 = 32,
-# 										T_mult = 1, # A factor increases TiTi​ after a restart
-# 										eta_min = Config.min_leanring_rate) 
-# scheduler.base_lrs[0] = Config.max_leanring_rate
 scaler = torch.cuda.amp.GradScaler() 
 
 if Config.load_model: 
-	load_checkpoint(Config.checkpoint_file, model, optimizer, Config.max_leanring_rate) 
+	load_checkpoint(Config.checkpoint_file, model, optimizer, Config.leanring_rate) 
 
 train_dataset = Dataset( 
 	csv_file = Config.train_csv_file,
@@ -70,6 +57,7 @@ train_dataset = Dataset(
 	anchors=Config.ANCHORS, 
 	image_size = Config.image_size, 
 	grid_sizes = Config.s, 
+	num_classes= Config.num_classes,
 	transform=Config.train_transform 
 ) 
 

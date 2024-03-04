@@ -11,8 +11,6 @@ class_labels = [
 	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
 ]
 
-# class_labels = ["pod"]
-
 train_csv_file = f"../data/{which_dataset}/2examples.csv"
 test_csv_file = f"../data/{which_dataset}/2examples.csv"
 # train_csv_file = f"../data/{which_dataset}/train.csv"
