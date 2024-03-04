@@ -13,7 +13,7 @@ from utils import (
 	save_checkpoint,
 )
 
-def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
+def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors, scales): 
 	progress_bar = tqdm(loader, leave=True) 
 	losses = [] 
 
@@ -28,9 +28,9 @@ def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		with torch.cuda.amp.autocast(): 
 			outputs = model(x) 
 			loss = ( 
-				loss_fn(outputs[0], y0, scaled_anchors[0]) 
-				+ loss_fn(outputs[1], y1, scaled_anchors[1]) 
-				+ loss_fn(outputs[2], y2, scaled_anchors[2]) 
+				loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
+				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
+				+ loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
 			) 
 
 		losses.append(loss.item()) 
@@ -71,7 +71,7 @@ train_loader = torch.utils.data.DataLoader(
 
 for e in range(1, Config.epochs+1): 
 	print("Epoch:", e) 
-	training_loop(e, train_loader, model, optimizer, loss_fn, scaler, Config.scaled_anchors) 
+	training_loop(e, train_loader, model, optimizer, loss_fn, scaler, Config.scaled_anchors, Config.s) 
 
 	if Config.save_model and e%100 == 0: 
 		save_checkpoint(model, optimizer, filename=Config.checkpoint_file)
