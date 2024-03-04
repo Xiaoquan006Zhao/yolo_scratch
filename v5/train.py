@@ -13,7 +13,7 @@ from utils import (
 	save_checkpoint,
 )
 
-def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
+def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
 	progress_bar = tqdm(loader, leave=True) 
 	losses = [] 
 
@@ -71,8 +71,7 @@ train_loader = torch.utils.data.DataLoader(
 
 for e in range(1, Config.epochs+1): 
 	print("Epoch:", e) 
-	# training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, Config.scaled_anchors, Config.s) 
-	training_loop(e, train_loader, model, optimizer, loss_fn, scaler, Config.scaled_anchors, Config.s) 
+	training_loop(e, train_loader, model, optimizer, loss_fn, scaler, Config.scaled_anchors) 
 
 	if Config.save_model and e%100 == 0: 
 		save_checkpoint(model, optimizer, filename=Config.checkpoint_file)
