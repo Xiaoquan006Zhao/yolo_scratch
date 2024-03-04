@@ -14,10 +14,9 @@ class BottleNeck(nn.Module):
         self.use_residual = use_residual
 
     def forward(self,x):
-        x_residual = x
         output = self.conv2(self.conv1(x))
 
-        return output if not self.use_residual else x_residual+output
+        return output if not self.use_residual else x+output
 
 # def test_DenseLayer():
 #     x = torch.randn(1,64,224,224)

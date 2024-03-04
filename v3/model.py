@@ -124,8 +124,8 @@ class YOLOv3(nn.Module):
 				route_connections.append(x) 
 			
 			elif isinstance(layer, nn.Upsample): 
-				x = torch.cat([x, route_connections[-1]], dim=1) 
-				route_connections.pop() 
+				x = torch.cat([x, route_connections.pop()], dim=1) 
+				
 		return outputs
 
 
