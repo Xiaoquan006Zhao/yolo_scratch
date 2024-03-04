@@ -15,9 +15,10 @@ which_dataset = "soybean"
 
 class_labels = ["pod"]
 
-#train_csv_file = f"../data/{which_dataset}/100examples.csv"
-train_csv_file = f"../data/{which_dataset}/train.csv"
-test_csv_file = f"../data/{which_dataset}/test.csv"
+train_csv_file = f"../data/{which_dataset}/2examples.csv"
+test_csv_file = f"../data/{which_dataset}/2examples.csv"
+# train_csv_file = f"../data/{which_dataset}/train.csv"
+# test_csv_file = f"../data/{which_dataset}/test.csv"
 image_dir = f"../data/{which_dataset}/images/"
 label_dir = f"../data/{which_dataset}/labels/"  
 
