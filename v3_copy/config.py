@@ -10,6 +10,7 @@ class_labels = [
 	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
 	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
 ]
+num_classes = len(class_labels)
 
 train_csv_file = f"../data/{which_dataset}/2examples.csv"
 test_csv_file = f"../data/{which_dataset}/2examples.csv"
