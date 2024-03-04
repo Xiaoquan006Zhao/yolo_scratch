@@ -115,12 +115,11 @@ class YOLOv3(nn.Module):
 			
 			x = layer(x) 
 
-			if isinstance(layer, ResidualBlock) and layer.num_repeats == 8: 
+			if isinstance(layer, CSPBlock) and layer.num_repeats > 3: 
 				route_connections.append(x) 
-			
-			elif isinstance(layer, nn.Upsample): 
-				x = torch.cat([x, route_connections[-1]], dim=1) 
-				route_connections.pop()
+
+			if isinstance(layer, SPPFBlock): 
+				route_connections.append(x) 
 				
 		# return outputs
 
