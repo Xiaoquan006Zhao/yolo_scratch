@@ -4,16 +4,16 @@ from albumentations.pytorch import ToTensorV2
 import cv2 
   
 
-which_dataset = "soybean"
+which_dataset = "pascal vox"
 
 # Class labels 
-#class_labels = [ 
-#	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
-#	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
-#	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
-#]
+class_labels = [ 
+	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
+	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
+	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
+]
 
-class_labels = ["pod"]
+# class_labels = ["pod"]
 
 train_csv_file = f"../data/{which_dataset}/2examples.csv"
 test_csv_file = f"../data/{which_dataset}/2examples.csv"
@@ -25,7 +25,7 @@ label_dir = f"../data/{which_dataset}/labels/"
 # Device 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 # Load and save model variable 
-load_model = True
+load_model = False
 save_model = True
 # model checkpoint file name 
 checkpoint_file = "checkpoint.pth.tar"
