@@ -36,7 +36,7 @@ test_batch_size = 2
 min_leanring_rate = 1e-5 * 5
 max_leanring_rate = min_leanring_rate
 numerical_stability = 1e-6
-image_size = 640
+image_size = 416
 s = [image_size // 32, image_size // 16, image_size // 8] 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
