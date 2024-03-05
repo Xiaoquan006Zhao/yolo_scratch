@@ -104,7 +104,7 @@ class YOLOv3(nn.Module):
 			
 			x = layer(x) 
 
-			if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 6 or layer.BottleNeck_repeats==9): 
+			if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 8 or layer.BottleNeck_repeats == 9): 
 				route_connections.append(x) 
 			
 			elif isinstance(layer, nn.Upsample): 
