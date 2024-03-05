@@ -29,11 +29,13 @@ ANCHORS = [
 	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
 ] 
-batch_size = 16
+batch_size = 4
 leanring_rate = 1e-4
 epochs = 1000
-image_size = 416
+image_size = 640
 s = [image_size // 32, image_size // 16, image_size // 8] 
+
+PAN_channels = [256, 512, 1024]
 
 train_transform = A.Compose( 
 	[ 
