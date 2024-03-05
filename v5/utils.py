@@ -78,7 +78,7 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, is_predictio
 				cell_indices.permute(0, 1, 3, 2, 4)) 
 	width_height = 1 / grid_size * box_predictions[..., 2:4] 
 
-	converted_bboxes = torch.cat((best_class, objectness, x, y, width_height), dim=-1).reshape(
+	converted_bboxes = torch.cat((objectness, x, y, width_height, best_class), dim=-1).reshape(
 		batch_size, num_anchors * grid_size * grid_size, 6) 
 
 	return converted_bboxes.tolist()
