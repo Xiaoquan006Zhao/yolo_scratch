@@ -48,7 +48,7 @@ with torch.no_grad():
 
 	for i in range(3): 
 		batch_size, A, _, _, _ = output[i].shape 
-		boxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i], is_predictions=True) 
+		boxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
 		for idx, (box) in enumerate(boxes_scale_i): 
 			bboxes[idx] += box 
 model.train() 
