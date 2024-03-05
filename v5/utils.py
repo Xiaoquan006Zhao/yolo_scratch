@@ -43,44 +43,22 @@ def iou(box1, box2, is_pred=True):
 
 		return iou_score
 
-def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
-    bboxes = [box for box in bboxes if box[1] > valid_prediction_threshold]
-
-    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
-
-    bboxes_nms = []
-    while bboxes:
-        first_box = bboxes.pop(0)
-        bboxes_nms.append(first_box)
-
-        # Keep only bounding boxes that do not overlap significantly with the first_box  
-		# And skip for different classes, because prediction for different classes should be independent
-		# Check convert_cells_to_bboxes method for why class_prediction is stored at index 0 and why bbox parameter is stored at index [2:]
-        bboxes = [box for box in bboxes if box[0] != first_box[0] or iou(torch.tensor(first_box[2:]), torch.tensor(box[2:])) < enough_overlap_threshold]
-
-    return bboxes_nms
-
-def convert_cells_to_bboxes(predictions, anchors, grid_size, is_predictions=True): 
+def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, ): 
 	batch_size = predictions.shape[0] 
-	num_anchors = len(anchors) 
-	box_predictions = predictions[..., 1:5] 
+	num_anchors = len(scaled_anchors) 
+	scaled_anchors = scaled_anchors.reshape(1, num_anchors, 1, 1, 2) 
 
-	# If the input is predictions then we will pass the x and y coordinate 
-	# through sigmoid function and width and height to exponent function and 
-	# calculate the score and best class. 
-	if is_predictions: 
-		anchors = anchors.reshape(1, len(anchors), 1, 1, 2) 
-		box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2]) 
-		box_predictions[..., 2:] = torch.exp( 
-			box_predictions[..., 2:]) * anchors 
-		objectness = torch.sigmoid(predictions[..., 0:1]) 
-		best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
+	# box_predictions = predictions[..., 1:5] 
+	# box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2]) 
+	# box_predictions[..., 2:] = torch.exp(box_predictions[..., 2:]) * scaled_anchors 
+
+	box_predictions = torch.cat([2 * torch.sigmoid(predictions[..., 1:3] - 0.5), 
+                               ((2*torch.sigmoid(predictions[..., 3:5])) ** 2) * scaled_anchors
+                            ],dim=-1) 
+
+	objectness = torch.sigmoid(predictions[..., 0:1]) 
+	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 	
-	# Else we will just calculate scores and best class. 
-	else: 
-		objectness = predictions[..., 0:1] 
-		best_class = predictions[..., 5:6] 
-
 	# Calculate cell indices 
 	cell_indices = ( 
 		torch.arange(grid_size) 
@@ -89,30 +67,45 @@ def convert_cells_to_bboxes(predictions, anchors, grid_size, is_predictions=True
 		.to(predictions.device) 
 	) 
 
-	x = 1 / grid_size * (box_predictions[..., 0:1] + cell_indices) 
-	y = 1 / grid_size * (box_predictions[..., 1:2] +
-				cell_indices.permute(0, 1, 3, 2, 4)) 
-	width_height = 1 / grid_size * box_predictions[..., 2:4] 
+	grid_multiplier = 1 / grid_size
+	x = grid_multiplier * (box_predictions[..., 0:1] + cell_indices) 
+	y = grid_multiplier * (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4)) 
+	width = grid_multiplier * box_predictions[..., 2:3] 
+	height = grid_multiplier * box_predictions[..., 3:4] 
 
-	converted_bboxes = torch.cat((best_class, objectness, x, y, width_height), dim=-1).reshape(
+	converted_bboxes = torch.cat((objectness, x, y, width, height, best_class), dim=-1).reshape(
 		batch_size, num_anchors * grid_size * grid_size, 6) 
 
 	return converted_bboxes.tolist()
 
+def nms(bboxes):
+	# Check decodePrediction method for why objectness is stored at index 0
+    bboxes = [box for box in bboxes if box[0] > config.valid_prediction_threshold]
+    bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
+    bboxes_nms = []
+    while bboxes:
+        first_box = bboxes.pop(0)
+        bboxes_nms.append(first_box)
+
+        # Keep only bounding boxes that do not overlap significantly with the first_box  
+		# And skip for different classes, because prediction for different classes should be independent
+		# Check decodePrediction for why class_prediction is stored at index 5 and why bbox parameter is stored at index [1:5]
+        bboxes = [box for box in bboxes if box[5] != first_box[5] or iou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < Config.enough_overlap_threshold]
+
+    return bboxes_nms
+
 def plot_image(image, boxes): 
 	colour_map = plt.get_cmap("tab20b") 
-	colors = [colour_map(i) for i in np.linspace(0, 1, len(config.class_labels))] 
+	colors = [colour_map(i) for i in np.linspace(0, 1, config.num_classes)] 
 
 	img = np.array(image) 
 	h, w, _ = img.shape 
-
 	fig, ax = plt.subplots(1) 
-
 	ax.imshow(img) 
 
 	for box in boxes: 
-		class_pred = box[0] 
-		box = box[2:] 
+		class_pred = box[5] 
+		box = box[1:5] 
 		upper_left_x = box[0] - box[2] / 2
 		upper_left_y = box[1] - box[3] / 2
 
@@ -137,13 +130,13 @@ def plot_image(image, boxes):
 
 	plt.show()
 
-def save_checkpoint(model, optimizer, checkpoint_file): 
+def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"): 
 	print("==> Saving checkpoint") 
 	checkpoint = { 
 		"state_dict": model.state_dict(), 
 		"optimizer": optimizer.state_dict(), 
 	} 
-	torch.save(checkpoint, checkpoint_file)
+	torch.save(checkpoint, filename)
 
 def load_checkpoint(checkpoint_file, model, optimizer, lr): 
     if not os.path.exists(checkpoint_file):
@@ -159,4 +152,5 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
 
-
+def stable_divide(a, b):
+	return a / (b + config.numerical_stability)
