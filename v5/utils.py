@@ -5,7 +5,6 @@ import matplotlib.patches as patches
 import config
 import os
 
-
 def iou(box1, box2, is_pred=True): 
 	if is_pred: 
 		b1_x1 = box1[..., 0:1] - box1[..., 2:3] / 2
@@ -61,7 +60,7 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
 
     return bboxes_nms
 
-def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True): 
+def convert_cells_to_bboxes(predictions, anchors, grid_size, is_predictions=True): 
 	batch_size = predictions.shape[0] 
 	num_anchors = len(anchors) 
 	box_predictions = predictions[..., 1:5] 
@@ -85,7 +84,7 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 	# Calculate cell indices 
 	cell_indices = ( 
 		torch.arange(s) 
-		.repeat(predictions.shape[0], 3, s, 1) 
+		.repeat(predictions.shape[0], 3, grid_size, 1) 
 		.unsqueeze(-1) 
 		.to(predictions.device) 
 	) 
@@ -96,7 +95,7 @@ def convert_cells_to_bboxes(predictions, anchors, s, is_predictions=True):
 	width_height = 1 / s * box_predictions[..., 2:4] 
 
 	converted_bboxes = torch.cat((best_class, objectness, x, y, width_height), dim=-1).reshape(
-		batch_size, num_anchors * s * s, 6) 
+		batch_size, num_anchors * grid_size * grid_size, 6) 
 
 	return converted_bboxes.tolist()
 

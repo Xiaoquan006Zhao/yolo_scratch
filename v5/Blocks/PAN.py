@@ -1,11 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchview import draw_graph
-
 from .BasicBlock import ConvBNMish
 from .CSP import CSPBlock
-from torchvision.ops import drop_block2d
 
 class ScalePrediction(nn.Module): 
     def __init__(self, in_channels, num_classes): 

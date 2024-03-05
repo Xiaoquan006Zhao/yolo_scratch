@@ -30,7 +30,7 @@ ANCHORS = [
 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
 ] 
 batch_size = 16
-leanring_rate = 1e-4
+learning_rate = 1e-4
 epochs = 1000
 image_size = 416
 s = [image_size // 32, image_size // 16, image_size // 8] 

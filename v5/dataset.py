@@ -2,7 +2,7 @@ import torch
 import pandas as pd 
 import os 
 import numpy as np
-from PIL import Image, ImageFile 
+from PIL import Image 
 from utils import (
 	iou,
 )
@@ -10,8 +10,8 @@ from utils import (
 class Dataset(torch.utils.data.Dataset): 
 	def __init__( 
 		self, csv_file, image_dir, label_dir, anchors, 
-		image_size=416, grid_sizes=[13, 26, 52], 
-		num_classes=20, transform=None
+		image_size, grid_sizes, 
+		num_classes, transform=None
 	): 
 		self.label_list = pd.read_csv(csv_file) 
 		self.image_dir = image_dir 
@@ -19,11 +19,11 @@ class Dataset(torch.utils.data.Dataset):
 		self.image_size = image_size 
 		self.transform = transform 
 		self.grid_sizes = grid_sizes 
-		self.anchors = torch.tensor( 
-			anchors[0] + anchors[1] + anchors[2]) 
+		self.anchors = torch.tensor(anchors[0] + anchors[1] + anchors[2]) 
 		self.num_anchors = self.anchors.shape[0] 
 		self.num_anchors_per_scale = self.num_anchors // 3
 		self.num_classes = num_classes 
+
 		self.ignore_iou_thresh = 0.5
 
 	def __len__(self): 
@@ -59,13 +59,10 @@ class Dataset(torch.utils.data.Dataset):
 			anchor_indices = iou_anchors.argsort(descending=True, dim=0) 
 			x, y, width, height, class_label = box 
 
-			# At each scale, assigning the bounding box to the 
-			# best matching anchor box 
+			# At each scale, assigning the bounding box to the best matching anchor box 
 			has_anchor = [False] * 3
 			for anchor_idx in anchor_indices: 
-				# which scale of [13, 26, 52], more detail refer to anchor_indices calculation
 				scale_idx = anchor_idx // self.num_anchors_per_scale 
-				# which anchor which in the scale
 				anchor_on_scale = anchor_idx % self.num_anchors_per_scale 
 				
 				s = self.grid_sizes[scale_idx] 

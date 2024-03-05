@@ -3,9 +3,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 
 import cv2 
 import os
-  
 
-dataset = "pascal voc"
+# -------------------------------------- DATASET --------------------------------------
 class_labels = [ 
 	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
 	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
@@ -13,6 +12,8 @@ class_labels = [
 ]
 num_classes = len(class_labels)
 
+# -------------------------------------- DATA Location --------------------------------------
+dataset = "pascal voc"
 if os.name == 'nt':
 	base_dir = os.getcwd()
 	#train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
@@ -31,23 +32,32 @@ else:
 	label_dir = f"../data/{dataset}/labels/"  
 	checkpoint_file = f"{dataset}_checkpoint.pth.tar"
 
+# -------------------------------------- Model Parameter --------------------------------------
 device = "cuda" if torch.cuda.is_available() else "cpu"
 load_model = True
 save_model = True
+train_batch_size = 16
+test_batch_size = 2
+epochs = 1000
+learning_rate = 1e-4
+enough_overlap_threshold = 0.6
+valid_prediction_threshold = 0.6
 
+image_size = 416
+# ANCHORS = auto_anchor(self.num_anchors, self.label_dir, self.s)
 ANCHORS = [ 
 	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
 	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
 ] 
-batch_size = 16
-leanring_rate = 1e-4
-epochs = 1000
-image_size = 416
-s = [image_size // 32, image_size // 16, image_size // 8] 
-
+grid_sizes = [image_size // 32, image_size // 16, image_size // 8] 
+scaled_anchors = ( 
+                torch.tensor(ANCHORS) *
+                torch.tensor(grid_sizes).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
+            ).to(device) 
 PAN_channels = [256, 512, 1024]
 
+# -------------------------------------- Augmentation --------------------------------------
 train_transform = A.Compose( 
 	[ 
 		A.LongestMaxSize(max_size=image_size), 

@@ -1,9 +1,4 @@
-import torch
 import torch.nn as nn
-from IPython.display import Image
-import torchvision
-from torchview import draw_graph
-
 from .BasicBlock import ConvBNMish
 
 class BottleNeck(nn.Module):
@@ -18,17 +13,3 @@ class BottleNeck(nn.Module):
 
         return output if not self.use_residual else x+output
 
-# def test_DenseLayer():
-#     x = torch.randn(1,64,224,224)
-#     model = DenseLayer(64)
-#     # print(model(x).shape)
-#     # print(model)
-#     # del model
-#     return model
-
-# model = test_DenseLayer()
-
-# architecture = 'denselayer'
-# model_graph = draw_graph(model, input_size=(1,64,224,224), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
-# model_graph.visual_graph
-    

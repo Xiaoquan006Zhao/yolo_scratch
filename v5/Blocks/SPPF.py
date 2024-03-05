@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchview import draw_graph
-
 from .BasicBlock import ConvBNMish
 
 class SPPFBlock(nn.Module):
@@ -26,20 +24,3 @@ class SPPFBlock(nn.Module):
         features = torch.cat(features, dim=1)
         
         return self.conv_out(features)
-
-
-# test_shape = (1,512,13,13)
-# x = torch.randn(test_shape)
-
-# def test_SPPBlock():
-#     model = SPPBlock()
-#     print(model(x).shape)
-#     # print(model)
-#     # del model
-#     return model
-
-# model = test_SPPBlock()
-
-# architecture = 'denselayer'
-# model_graph = draw_graph(model, input_size=(test_shape), graph_dir ='TB' , roll=True, expand_nested=True, graph_name=f'self_{architecture}',save_graph=True,filename=f'self_{architecture}')
-# model_graph.visual_graph
