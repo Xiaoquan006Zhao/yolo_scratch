@@ -50,7 +50,7 @@ class Dataset(torch.utils.data.Dataset):
 		for box in bboxes: 
 			# Calculate iou of bounding box with anchor boxes
 			# Because it's not prediction, we only pass in width and height (aspect ratio)
-			iou_anchors = ciou(torch.tensor(box[2:4]), self.anchors, is_pred=False) 
+			iou_anchors = ciou(torch.tensor(box[2:4]), self.anchors, WidthHeight_model=True) 
 
 			# Selecting the best anchor box and maintain the order from [0 to 8]
 			# Since the config.Anchors is organized in 3x3 mannner, 
