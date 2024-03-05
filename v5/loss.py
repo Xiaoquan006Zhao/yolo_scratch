@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn 
 from utils import (
 	ciou,
+	iou,
 )
 
 class YOLOLoss(nn.Module): 
@@ -25,7 +26,10 @@ class YOLOLoss(nn.Module):
 		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 
 		# match size of target[..., 0:1] without casting
-		ious = ciou(box_preds[obj], target[..., 1:5][obj]).reshape(-1, 1)
+		# ious = ciou(box_preds[obj], target[..., 1:5][obj]).reshape(-1, 1)
+
+		ious = iou(box_preds[obj], target[..., 1:5][obj])
+		print(ious.shape)
 
 		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
 		
