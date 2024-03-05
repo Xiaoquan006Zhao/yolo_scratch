@@ -10,8 +10,7 @@ class_labels = [
 	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
 	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
 ]
-
-# class_labels = ["pod"]
+num_classes = len(class_labels)
 
 train_csv_file = f"../data/{which_dataset}/2examples.csv"
 test_csv_file = f"../data/{which_dataset}/2examples.csv"
@@ -34,6 +33,8 @@ leanring_rate = 1e-4
 epochs = 1000
 image_size = 416
 s = [image_size // 32, image_size // 16, image_size // 8] 
+
+PAN_channels = [256, 512, 1024]
 
 train_transform = A.Compose( 
 	[ 

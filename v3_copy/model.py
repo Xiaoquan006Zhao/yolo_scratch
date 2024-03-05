@@ -1,6 +1,6 @@
 import torch 
 import torch.nn as nn 
-
+import config
 from Blocks.BasicBlock import ConvBNMish
 from Blocks.CSP import CSPBlock
 from Blocks.PAN import PAN
@@ -71,45 +71,25 @@ class YOLOv3(nn.Module):
 			ConvBNMish(512, 1024, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
 
-			
-			ConvBNMish(1024, 512, kernel_size=1, stride=1, padding=0), 
-			ConvBNMish(512, 1024, kernel_size=3, stride=1, padding=1), 
-			ResidualBlock(1024, use_residual=False, num_repeats=1), 
-			ConvBNMish(1024, 512, kernel_size=1, stride=1, padding=0), 
-			ScalePrediction(512, num_classes=num_classes), 
-			ConvBNMish(512, 256, kernel_size=1, stride=1, padding=0), 
-			nn.Upsample(scale_factor=2), 
-			ConvBNMish(768, 256, kernel_size=1, stride=1, padding=0), 
-			ConvBNMish(256, 512, kernel_size=3, stride=1, padding=1), 
-			ResidualBlock(512, use_residual=False, num_repeats=1), 
-			ConvBNMish(512, 256, kernel_size=1, stride=1, padding=0), 
-			ScalePrediction(256, num_classes=num_classes), 
-			ConvBNMish(256, 128, kernel_size=1, stride=1, padding=0), 
-			nn.Upsample(scale_factor=2), 
-			ConvBNMish(384, 128, kernel_size=1, stride=1, padding=0), 
-			ConvBNMish(128, 256, kernel_size=3, stride=1, padding=1), 
-			ResidualBlock(256, use_residual=False, num_repeats=1), 
-			ConvBNMish(256, 128, kernel_size=1, stride=1, padding=0), 
-			ScalePrediction(128, num_classes=num_classes) 
+			SPPFBlock(1024, pool_size=5, pool_repeats=3),
+			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
 	def forward(self, x): 
-		outputs = [] 
 		route_connections = [] 
 
 		for layer in self.layers: 
-			if isinstance(layer, ScalePrediction): 
-				outputs.append(layer(x)) 
-				continue
+			if isinstance(layer, PAN):
+				return layer(route_connections)
 			
 			x = layer(x) 
-
+			
 			if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 8 or layer.BottleNeck_repeats == 9): 
 				route_connections.append(x) 
-			
-			elif isinstance(layer, nn.Upsample): 
-				x = torch.cat([x, route_connections[-1]], dim=1) 
-				route_connections.pop() 
-		return outputs
+
+			if isinstance(layer, SPPFBlock): 
+				route_connections.append(x) 
+				
+		# return outputs
 
 
