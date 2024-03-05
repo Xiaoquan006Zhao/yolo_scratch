@@ -42,19 +42,22 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
-model = YOLOv3(num_classes=len(config.class_labels)).to(config.device) 
+model = YOLOv3(num_classes=config.num_classes).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
 
 if config.load_model: 
 	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
-
+	
 train_dataset = Dataset( 
 	csv_file = config.train_csv_file,
 	image_dir = config.image_dir,
 	label_dir = config.label_dir,
 	anchors=config.ANCHORS, 
+	image_size = config.image_size, 
+	grid_sizes = config.s, 
+	num_classes= config.num_classes,
 	transform=config.train_transform 
 ) 
 

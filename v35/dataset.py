@@ -10,8 +10,8 @@ from utils import (
 class Dataset(torch.utils.data.Dataset): 
 	def __init__( 
 		self, csv_file, image_dir, label_dir, anchors, 
-		image_size=416, grid_sizes=[13, 26, 52], 
-		num_classes=20, transform=None
+		image_size, grid_sizes, 
+		num_classes, transform=None
 	): 
 		self.label_list = pd.read_csv(csv_file) 
 		self.image_dir = image_dir 
