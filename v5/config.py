@@ -43,8 +43,8 @@ train_batch_size = 4
 test_batch_size = 2
 epochs = 1000
 learning_rate = 1e-4
-enough_overlap_threshold = 0.6
-valid_prediction_threshold = 0.6
+enough_overlap_threshold = 0.5
+valid_prediction_threshold = 0.75
 numerical_stability = 1e-6
 
 class CIOU_MODE(Enum):

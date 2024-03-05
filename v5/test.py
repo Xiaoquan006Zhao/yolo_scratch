@@ -1,7 +1,7 @@
 import torch
 import config
 from model import YOLOv3
-import tqdm
+from tqdm import tqdm
 from loss import YOLOLoss
 import torch.optim as optim 
 from utils import (
