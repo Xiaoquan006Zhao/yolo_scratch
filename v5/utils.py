@@ -50,7 +50,7 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size):
 	scaled_anchors = scaled_anchors.reshape(1, num_anchors, 1, 1, 2) 
 	
 	box_predictions[..., 0:2] = 2 * torch.sigmoid(box_predictions[..., 0:2] - 0.5) 
-	box_predictions[..., 2:] = ((2*torch.sigmoid(predictions[..., 2:])) ** 2) * scaled_anchors
+	box_predictions[..., 2:] = ((2*torch.sigmoid(box_predictions[..., 2:])) ** 2) * scaled_anchors
 
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
