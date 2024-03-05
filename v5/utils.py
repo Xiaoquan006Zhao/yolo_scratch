@@ -78,14 +78,10 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
     bboxes = [box for box in bboxes if box[0] > valid_prediction_threshold]
     bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
     bboxes_nms = []
-    counter = 0
 
     while bboxes:
         first_box = bboxes.pop(0)
         bboxes_nms.append(first_box)
-
-        print(counter)
-        counter+=1
 
         # Keep only bounding boxes that do not overlap significantly with the first_box  
         # And skip for different classes, because prediction for different classes should be independent
