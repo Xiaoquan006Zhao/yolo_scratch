@@ -4,6 +4,8 @@ from albumentations.pytorch import ToTensorV2
 import cv2 
 import os
 from kmeans_anchor import auto_anchor
+from enum import Enum
+
 
 # -------------------------------------- DATASET --------------------------------------
 class_labels = [ 
@@ -44,6 +46,11 @@ learning_rate = 1e-4
 enough_overlap_threshold = 0.6
 valid_prediction_threshold = 0.6
 numerical_stability = 1e-6
+
+class CIOU_MODE(Enum):
+	CI0U = 1
+	IoU = 2
+	WidthHeight = 3
 
 image_size = 640
 grid_sizes = [image_size // 32, image_size // 16, image_size // 8] 

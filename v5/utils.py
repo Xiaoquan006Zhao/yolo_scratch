@@ -5,8 +5,8 @@ import matplotlib.patches as patches
 import config
 import os
 
-def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False): 
-	if not WidthHeight_model: 
+def ciou(box1, box2, mode=config.CIOU_MODE.CI0U): 
+	if mode == config.CIOU_MODE.WidthHeight: 
 		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0] - box1[..., 2] / 2, box1[..., 1] - box1[..., 3] / 2, box1[..., 0] + box1[..., 2] / 2, box1[..., 1] + box1[..., 3] / 2
 		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0] - box2[..., 2] / 2, box2[..., 1] - box2[..., 3] / 2, box2[..., 0] + box2[..., 2] / 2, box2[..., 1] + box2[..., 3] / 2
 		
@@ -15,7 +15,7 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 		
 		iou_score = stable_divide(intersection_area, union_area)
 
-		if IoU_mode:
+		if mode == config.CIOU_MODE.IoU:
 			return iou_score
 		
 		# Center distance
@@ -42,7 +42,7 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 
 		return iou_score
 
-def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size): 
+def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True): 
 	batch_size = predictions.shape[0] 
 	num_anchors = len(scaled_anchors) 
 	scaled_anchors = scaled_anchors.reshape(1, num_anchors, 1, 1, 2) 
@@ -68,10 +68,10 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size):
 	width = scale_multiplier * box_predictions[..., 2:3] 
 	height = scale_multiplier * box_predictions[..., 3:4] 
 
-	converted_bboxes = torch.cat((objectness, x, y, width, height, best_class), dim=-1).reshape(
-		batch_size, num_anchors * grid_size * grid_size, 6) 
+	converted_bboxes = torch.cat((objectness, x, y, width, height, best_class), dim=-1)
 
-	return converted_bboxes.tolist()
+	return converted_bboxes if not to_list else converted_bboxes.reshape(
+		batch_size, num_anchors * grid_size * grid_size, 6).tolist()
 
 def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
 	# Check decodePrediction method for why objectness is stored at index 0
@@ -85,7 +85,7 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check decodePrediction for why class_prediction is stored at index 5 and why bbox parameter is stored at index [1:5]
-        bboxes = [box for box in bboxes if box[5] != first_box[5] or ciou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), IoU_mode=True) < enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[5] != first_box[5] or ciou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), mode=config.CIOU_MODE.IoU) < enough_overlap_threshold]
 
     return bboxes_nms
 
