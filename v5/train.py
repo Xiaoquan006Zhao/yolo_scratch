@@ -69,14 +69,9 @@ train_loader = torch.utils.data.DataLoader(
 	pin_memory = True, 
 ) 
 
-scaled_anchors = ( 
-	torch.tensor(config.ANCHORS) *
-	torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
-).to(config.device) 
-
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
-	training_loop(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors) 
+	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
 
 	# Saving the model 
 	if config.save_model and e%100 == 0: 
