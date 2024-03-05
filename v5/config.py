@@ -37,7 +37,7 @@ else:
 device = "cuda" if torch.cuda.is_available() else "cpu"
 load_model = True
 save_model = True
-train_batch_size = 16
+train_batch_size = 4
 test_batch_size = 2
 epochs = 1000
 learning_rate = 1e-4
@@ -45,7 +45,7 @@ enough_overlap_threshold = 0.6
 valid_prediction_threshold = 0.6
 numerical_stability = 1e-6
 
-image_size = 416
+image_size = 640
 grid_sizes = [image_size // 32, image_size // 16, image_size // 8] 
 num_anchors = 3
 
