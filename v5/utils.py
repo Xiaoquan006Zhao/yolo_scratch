@@ -130,13 +130,13 @@ def plot_image(image, boxes):
 
 	plt.show()
 
-def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"): 
+def save_checkpoint(model, optimizer, checkpoint_file): 
 	print("==> Saving checkpoint") 
 	checkpoint = { 
 		"state_dict": model.state_dict(), 
 		"optimizer": optimizer.state_dict(), 
 	} 
-	torch.save(checkpoint, filename)
+	torch.save(checkpoint, checkpoint_file)
 
 def load_checkpoint(checkpoint_file, model, optimizer, lr): 
     if not os.path.exists(checkpoint_file):
