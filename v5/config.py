@@ -43,7 +43,10 @@ train_batch_size = 4
 test_batch_size = 2
 epochs = 1000
 learning_rate = 1e-4
-enough_overlap_threshold = 0.5
+# 0.33 represents 50% overlap. Think of two boxes, side by side of the same size
+# One covers half of the other, then we are left with 50% uncovered, 50% overlap, 50 uncovered
+# Thus, 50% overlap = 0.33 IoU
+enough_overlap_threshold = 0.33 
 valid_prediction_threshold = 0.75
 numerical_stability = 1e-6
 
