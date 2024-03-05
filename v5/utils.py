@@ -5,43 +5,66 @@ import matplotlib.patches as patches
 import config
 import os
 
-def iou(box1, box2, is_pred=True): 
-	if is_pred: 
-		b1_x1 = box1[..., 0:1] - box1[..., 2:3] / 2
-		b1_y1 = box1[..., 1:2] - box1[..., 3:4] / 2
-		b1_x2 = box1[..., 0:1] + box1[..., 2:3] / 2
-		b1_y2 = box1[..., 1:2] + box1[..., 3:4] / 2
-
-		b2_x1 = box2[..., 0:1] - box2[..., 2:3] / 2
-		b2_y1 = box2[..., 1:2] - box2[..., 3:4] / 2
-		b2_x2 = box2[..., 0:1] + box2[..., 2:3] / 2
-		b2_y2 = box2[..., 1:2] + box2[..., 3:4] / 2
-
-		x1 = torch.max(b1_x1, b2_x1) 
-		y1 = torch.max(b1_y1, b2_y1) 
-		x2 = torch.min(b1_x2, b2_x2) 
-		y2 = torch.min(b1_y2, b2_y2) 
+def ciou(box1, box2, is_predication=True): 
+	if is_predication: 
+		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0] - box1[..., 2] / 2, box1[..., 1] - box1[..., 3] / 2, box1[..., 0] + box1[..., 2] / 2, box1[..., 1] + box1[..., 3] / 2
+		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0] - box2[..., 2] / 2, box2[..., 1] - box2[..., 3] / 2, box2[..., 0] + box2[..., 2] / 2, box2[..., 1] + box2[..., 3] / 2
 		
-		intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0) 
+		intersection_area = torch.clamp(torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1), min=0) * torch.clamp(torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1), min=0)
+		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - intersection_area
+		
+		iou = stable_divide(intersection_area, union_area)
 
-		box1_area = abs((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) 
-		box2_area = abs((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) 
-		union = box1_area + box2_area - intersection 
+		# Center distance
+		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
+		
+		# Enclosing box
+		c_x1, c_y1, c_x2, c_y2 = torch.min(b1_x1, b2_x1), torch.min(b1_y1, b2_y1), torch.max(b1_x2, b2_x2), torch.max(b1_y2, b2_y2)
+		c_diag = (c_x2 - c_x1)**2 + (c_y2 - c_y1)**2
+		
+		# Aspect ratio
+		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
+		alpha = v / (1 - iou + v + 1e-6)
+		
+		ciou_score = iou - (center_distance / (c_diag + 1e-6)) - alpha * v
 
-		epsilon = 1e-6
-		iou_score = intersection / (union + epsilon) 
-
-		return iou_score 
-	
+		return ciou_score
 	else: 
+		# assume 0 and 1 are width and height, so calculate pure IoU score
 		intersection_area = torch.min(box1[..., 0], box2[..., 0]) * torch.min(box1[..., 1], box2[..., 1]) 
+
 		box1_area = box1[..., 0] * box1[..., 1] 
 		box2_area = box2[..., 0] * box2[..., 1] 
 		union_area = box1_area + box2_area - intersection_area 
-
-		iou_score = intersection_area / union_area 
+		iou_score = stable_divide(intersection_area, union_area)
 
 		return iou_score
+
+def iou(box1, box2): 
+	b1_x1 = box1[..., 0:1] - box1[..., 2:3] / 2
+	b1_y1 = box1[..., 1:2] - box1[..., 3:4] / 2
+	b1_x2 = box1[..., 0:1] + box1[..., 2:3] / 2
+	b1_y2 = box1[..., 1:2] + box1[..., 3:4] / 2
+
+	b2_x1 = box2[..., 0:1] - box2[..., 2:3] / 2
+	b2_y1 = box2[..., 1:2] - box2[..., 3:4] / 2
+	b2_x2 = box2[..., 0:1] + box2[..., 2:3] / 2
+	b2_y2 = box2[..., 1:2] + box2[..., 3:4] / 2
+
+	x1 = torch.max(b1_x1, b2_x1) 
+	y1 = torch.max(b1_y1, b2_y1) 
+	x2 = torch.min(b1_x2, b2_x2) 
+	y2 = torch.min(b1_y2, b2_y2) 
+	
+	intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0) 
+
+	box1_area = abs((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) 
+	box2_area = abs((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) 
+	union = box1_area + box2_area - intersection 
+
+	iou_score = stable_divide(intersection, union) 
+
+	return iou_score 
 
 def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size): 
 	batch_size = predictions.shape[0] 
@@ -86,7 +109,7 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check decodePrediction for why class_prediction is stored at index 5 and why bbox parameter is stored at index [1:5]
-        bboxes = [box for box in bboxes if box[5] != first_box[5] or iou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[5] != first_box[5] or iou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5])) < enough_overlap_threshold]
 
     return bboxes_nms
 

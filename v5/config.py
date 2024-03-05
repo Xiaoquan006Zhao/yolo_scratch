@@ -43,6 +43,7 @@ epochs = 1000
 learning_rate = 1e-4
 enough_overlap_threshold = 0.6
 valid_prediction_threshold = 0.6
+numerical_stability = 1e-6
 
 image_size = 416
 grid_sizes = [image_size // 32, image_size // 16, image_size // 8] 
