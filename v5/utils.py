@@ -46,12 +46,12 @@ def iou(box1, box2, is_pred=True):
 def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size): 
 	batch_size = predictions.shape[0] 
 	num_anchors = len(scaled_anchors) 
-	box_predictions = predictions[..., 1:5] 
 	scaled_anchors = scaled_anchors.reshape(1, num_anchors, 1, 1, 2) 
 	
-	box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2]) 
-	box_predictions[..., 2:] = torch.exp(box_predictions[..., 2:]) * scaled_anchors 
-
+	box_predictions = torch.cat([torch.sigmoid(predictions[..., 1:3] ), 
+                               torch.exp(predictions[..., 3:5] ) * scaled_anchors 
+                            ],dim=-1) 
+	
 	objectness = torch.sigmoid(predictions[..., 0:1]) 
 	best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
 	
@@ -66,9 +66,10 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size):
 	scale_multiplier = 1 / grid_size
 	x = scale_multiplier * (box_predictions[..., 0:1] + cell_indices) 
 	y = scale_multiplier * (box_predictions[..., 1:2] + cell_indices.permute(0, 1, 3, 2, 4)) 
-	width_height = scale_multiplier * box_predictions[..., 2:4] 
+	width = scale_multiplier * box_predictions[..., 2:3] 
+	height = scale_multiplier * box_predictions[..., 3:4] 
 
-	converted_bboxes = torch.cat((objectness, x, y, width_height, best_class), dim=-1).reshape(
+	converted_bboxes = torch.cat((objectness, x, y, width, height, best_class), dim=-1).reshape(
 		batch_size, num_anchors * grid_size * grid_size, 6) 
 
 	return converted_bboxes.tolist()
