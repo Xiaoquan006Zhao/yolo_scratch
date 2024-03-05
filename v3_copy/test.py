@@ -13,12 +13,12 @@ from dataset import Dataset
 
 
 model = YOLOv3(num_classes=len(config.class_labels)).to(config.device) 
-optimizer = optim.Adam(model.parameters(), lr = config.leanring_rate) 
+optimizer = optim.Adam(model.parameters(), lr = config.max_leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
 
 if config.load_model: 
-	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
+	load_checkpoint(config.checkpoint_file, model, optimizer, config.max_leanring_rate) 
 
 test_dataset = Dataset( 
 	csv_file = config.train_csv_file,
