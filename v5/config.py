@@ -48,18 +48,19 @@ image_size = 416
 grid_sizes = [image_size // 32, image_size // 16, image_size // 8] 
 num_anchors = 3
 
-# ANCHORS = auto_anchor(num_anchors, label_dir, grid_sizes)
+ANCHORS = auto_anchor(num_anchors, label_dir, grid_sizes)
 
-ANCHORS = [ 
-	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
-	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
-	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
-] 
+# ANCHORS = [ 
+# 	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
+# 	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
+# 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
+# ] 
 
 scaled_anchors = ( 
-                torch.tensor(ANCHORS) *
-                torch.tensor(grid_sizes).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
-            ).to(device) 
+    torch.tensor(ANCHORS, dtype=torch.float32) *
+    torch.tensor(grid_sizes, dtype=torch.float32).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
+).to(device)
+
 
 PAN_channels = [256, 512, 1024]
 
