@@ -20,13 +20,13 @@ class SPPFBlock(nn.Module):
         pool = x
 
         for _ in range(self.pool_repeats):
-            pool = F.max_pool2d(pool, kernel_size=self.pool_size, stride=1, padding=2)
+            pool = F.max_pool2d(pool, kernel_size=self.pool_size, stride=1, padding=0)
             features.append(pool)
         
-        # Concatenate along the channel dimension, (dim=0 is batch dimension)
         features = torch.cat(features, dim=1)
         
         return self.conv_out(features)
+
 
 # test_shape = (1,512,13,13)
 # x = torch.randn(test_shape)
