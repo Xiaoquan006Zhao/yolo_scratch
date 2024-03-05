@@ -1,36 +1,36 @@
-from config import Config
+import config
 import torch
 from dataset import Dataset
-from PIL import ImageFile 
+from PIL import Image, ImageFile 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 import torch.optim as optim 
 from tqdm import tqdm
-from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
-from model import YOLOv5
+import config
+from model import YOLOv3
 from loss import YOLOLoss
 from utils import (
 	load_checkpoint,
 	save_checkpoint,
 )
 
-def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors, scales): 
+def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
 	progress_bar = tqdm(loader, leave=True) 
 	losses = [] 
 
 	for _, (x, y) in enumerate(progress_bar): 
-		x = x.to(Config.device) 
+		x = x.to(config.device) 
 		y0, y1, y2 = ( 
-			y[0].to(Config.device), 
-			y[1].to(Config.device), 
-			y[2].to(Config.device), 
+			y[0].to(config.device), 
+			y[1].to(config.device), 
+			y[2].to(config.device), 
 		) 
 
 		with torch.cuda.amp.autocast(): 
 			outputs = model(x) 
 			loss = ( 
-				loss_fn(outputs[0], y0, scaled_anchors[0], scales[0]) 
-				+ loss_fn(outputs[1], y1, scaled_anchors[1], scales[1]) 
-				+ loss_fn(outputs[2], y2, scaled_anchors[2], scales[2]) 
+				loss_fn(outputs[0], y0, scaled_anchors[0]) 
+				+ loss_fn(outputs[1], y1, scaled_anchors[1]) 
+				+ loss_fn(outputs[2], y2, scaled_anchors[2]) 
 			) 
 
 		losses.append(loss.item()) 
@@ -42,36 +42,42 @@ def training_loop(e, loader, model, optimizer, loss_fn, scaler, scaled_anchors, 
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
-model = YOLOv5(num_classes=len(Config.class_labels)).to(Config.device) 
-optimizer = optim.Adam(model.parameters(), lr = Config.max_leanring_rate) 
+model = YOLOv3(num_classes=len(config.class_labels)).to(config.device) 
+optimizer = optim.Adam(model.parameters(), lr = config.max_leanring_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
 
-if Config.load_model: 
-	load_checkpoint(Config.checkpoint_file, model, optimizer, Config.max_leanring_rate) 
+if config.load_model: 
+	load_checkpoint(config.checkpoint_file, model, optimizer, config.max_leanring_rate) 
 
 train_dataset = Dataset( 
-	csv_file = Config.train_csv_file,
-	image_dir = Config.image_dir,
-	label_dir = Config.label_dir,
-	anchors=Config.ANCHORS, 
-	image_size = Config.image_size, 
-	grid_sizes = Config.s, 
-	num_classes= Config.num_classes,
-	transform=Config.train_transform 
+	csv_file = config.train_csv_file,
+	image_dir = config.image_dir,
+	label_dir = config.label_dir,
+	anchors=config.ANCHORS, 
+	image_size = config.image_size, 
+	grid_sizes = config.s, 
+	num_classes= config.num_classes,
+	transform=config.train_transform 
 ) 
 
 train_loader = torch.utils.data.DataLoader( 
 	train_dataset, 
-	batch_size = Config.batch_size, 
+	batch_size = config.batch_size, 
 	num_workers = 2, 
 	shuffle = True, 
 	pin_memory = True, 
 ) 
 
-for e in range(1, Config.epochs+1): 
-	print("Epoch:", e) 
-	training_loop(e, train_loader, model, optimizer, loss_fn, scaler, Config.scaled_anchors, Config.s) 
+scaled_anchors = ( 
+	torch.tensor(config.ANCHORS) *
+	torch.tensor(config.s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
+).to(config.device) 
 
-	if Config.save_model and e%100 == 0: 
-		save_checkpoint(model, optimizer, filename=Config.checkpoint_file)
+for e in range(1, config.epochs+1): 
+	print("Epoch:", e) 
+	training_loop(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors) 
+
+	# Saving the model 
+	if config.save_model and e%100 == 0: 
+		save_checkpoint(model, optimizer, filename=config.checkpoint_file)

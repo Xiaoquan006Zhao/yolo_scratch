@@ -1,111 +1,94 @@
 import torch
 import albumentations as A 
 from albumentations.pytorch import ToTensorV2 
-import cv2   
-from kmeans_anchor import auto_anchor
+import cv2 
 import os
+  
+print("Initializing config...")
 
+dataset = "pascal voc"
+if os.name == 'nt':
+	base_dir = os.getcwd()
+	#train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
+	#test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
+	train_csv_file = os.path.join(base_dir, "data", dataset, "train.csv")
+	test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
+	image_dir = os.path.join(base_dir, "data", dataset, "images")
+	label_dir = os.path.join(base_dir, "data", dataset, "labels")
+	checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
+else:
+	train_csv_file = f"../data/{dataset}/2examples.csv"
+	test_csv_file = f"../data/{dataset}/2examples_test.csv"
+	#train_csv_file = f"../data/{dataset}/train.csv"
+	#test_csv_file = f"../data/{dataset}/test.csv"
+	image_dir = f"../data/{dataset}/images/"
+	label_dir = f"../data/{dataset}/labels/"  
+	checkpoint_file = f"{dataset}_checkpoint.pth.tar"
 
-class Config:
-    _initialized = False
+PAN_channels = [256, 512, 1024]
 
-    @classmethod
-    def initialize(self):
-        print(f"Initialized: {self._initialized}")
-        if not self._initialized:
-            print("Initializing config...")
-            self._initialized = True
-            
-            dataset = "pascal voc"
-            if os.name == 'nt':
-                base_dir = os.getcwd()
-                #self.train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
-                #self.test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
-                self.train_csv_file = os.path.join(base_dir, "data", dataset, "train.csv")
-                self.test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
-                self.image_dir = os.path.join(base_dir, "data", dataset, "images")
-                self.label_dir = os.path.join(base_dir, "data", dataset, "labels")
-                self.checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
-            else:
-                self.train_csv_file = f"../data/{dataset}/2examples.csv"
-                self.test_csv_file = f"../data/{dataset}/2examples_test.csv"
-                #self.train_csv_file = f"../data/{dataset}/train.csv"
-                #self.test_csv_file = f"../data/{dataset}/test.csv"
-                self.image_dir = f"../data/{dataset}/images/"
-                self.label_dir = f"../data/{dataset}/labels/"  
-                self.checkpoint_file = f"{dataset}_checkpoint.pth.tar"
+load_model = True
+save_model = True
 
-            self.PAN_channels = [256, 512, 1024]
+epochs = 1000
+batch_size = 4
+test_batch_size = 2
+min_leanring_rate = 1e-5 * 5
+max_leanring_rate = min_leanring_rate
+numerical_stability = 1e-6
+image_size = 640
+s = [image_size // 32, image_size // 16, image_size // 8] 
 
-            self.load_model = True
-            self.save_model = True
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"-{device}-")
 
-            self.epochs = 1000
-            self.batch_size = 4
-            self.test_batch_size = 2
-            self.min_leanring_rate = 1e-4
-            self.max_leanring_rate = self.min_leanring_rate
-            self.numerical_stability = 1e-6
-            self.image_size = 640
-            self.s = [self.image_size // 32, self.image_size // 16, self.image_size // 8] 
+num_anchors = 3
+# ANCHORS = auto_anchor(num_anchors, label_dir, s)
+num_scales = len(s)
 
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-            print(f"-{self.device}-")
+ANCHORS = [ 
+	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
+	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
+	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
+] 
 
-            self.num_anchors = 3
-            # self.ANCHORS = auto_anchor(self.num_anchors, self.label_dir, self.s)
-            self.num_scales = len(self.s)
+scaled_anchors = ( 
+	torch.tensor(ANCHORS) *
+	torch.tensor(s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
+).to(device) 
 
-            self.ANCHORS = [ 
-            	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
-            	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
-            	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
-            ] 
+class_labels = [ 
+	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
+	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
+	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
+]
+num_classes = len(class_labels)
 
-            self.scaled_anchors = ( 
-                torch.tensor(self.ANCHORS) *
-                torch.tensor(self.s).unsqueeze(1).unsqueeze(1).repeat(1,3,2) 
-            ).to(self.device) 
+valid_prediction_threshold = 0.8
+enough_overlap_threshold = 0.6
 
-            self.class_labels = [ 
-                "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
-                "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
-                "pottedplant", "sheep", "sofa", "train", "tvmonitor"
-            ]
-            self.num_classes = len(self.class_labels)
+train_transform = A.Compose( 
+	[ 
+		A.Resize(height=image_size, width=image_size),
+		A.ColorJitter(
+			brightness=0.5, contrast=0.5,
+			saturation=0.5, hue=0.5, p=0.5
+		),
+		A.Rotate(limit=45, p=0.5),
+		A.HorizontalFlip(p=0.5),
+		A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),  
+		A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255), 
+		ToTensorV2() 
+	], 
+	bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[]) 
+) 
 
-            self.valid_prediction_threshold = 0.8
-            self.enough_overlap_threshold = 0.6
-
-            self.train_transform = A.Compose( 
-                [ 
-                    A.Resize(height=self.image_size, width=self.image_size),
-                    A.ColorJitter(
-                        brightness=0.5, contrast=0.5,
-                        saturation=0.5, hue=0.5, p=0.5
-                    ),
-                    A.Rotate(limit=45, p=0.5),
-                    A.HorizontalFlip(p=0.5),
-                    A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),  
-                    A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255), 
-                    ToTensorV2() 
-                ], 
-                bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[]) 
-            ) 
-
-            self.test_transform = A.Compose( 
-                [ 
-                    A.LongestMaxSize(max_size=self.image_size), 
-                    A.PadIfNeeded(min_height=self.image_size, min_width=self.image_size, border_mode=cv2.BORDER_CONSTANT), 
-                    A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255), 
-                    ToTensorV2() 
-                ], 
-                bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[]) 
-            )
-
-Config.initialize()
-
-
-
-
-
+test_transform = A.Compose( 
+	[ 
+		A.LongestMaxSize(max_size=image_size), 
+		A.PadIfNeeded(min_height=image_size, min_width=image_size, border_mode=cv2.BORDER_CONSTANT), 
+		A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255), 
+		ToTensorV2() 
+	], 
+	bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[]) 
+)
