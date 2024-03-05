@@ -78,9 +78,9 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, ):
 
 	return converted_bboxes.tolist()
 
-def nms(bboxes):
+def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
 	# Check decodePrediction method for why objectness is stored at index 0
-    bboxes = [box for box in bboxes if box[0] > config.valid_prediction_threshold]
+    bboxes = [box for box in bboxes if box[0] > valid_prediction_threshold]
     bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
     bboxes_nms = []
     while bboxes:
@@ -90,7 +90,7 @@ def nms(bboxes):
         # Keep only bounding boxes that do not overlap significantly with the first_box  
 		# And skip for different classes, because prediction for different classes should be independent
 		# Check decodePrediction for why class_prediction is stored at index 5 and why bbox parameter is stored at index [1:5]
-        bboxes = [box for box in bboxes if box[5] != first_box[5] or iou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < Config.enough_overlap_threshold]
+        bboxes = [box for box in bboxes if box[5] != first_box[5] or iou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), is_pred=False) < enough_overlap_threshold]
 
     return bboxes_nms
 
