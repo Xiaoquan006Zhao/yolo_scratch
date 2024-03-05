@@ -19,24 +19,17 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 			return iou_score
 		
 		# Center distance
-		center_distance = ((box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2).unsqueeze(1)
+		center_distance = ((box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2)
 		
 		# Enclosing box
 		c_x1, c_y1, c_x2, c_y2 = torch.min(b1_x1, b2_x1), torch.min(b1_y1, b2_y1), torch.max(b1_x2, b2_x2), torch.max(b1_y2, b2_y2)
-		c_diag = ((c_x2 - c_x1)**2 + (c_y2 - c_y1)**2).unsqueeze(1)
+		c_diag = ((c_x2 - c_x1)**2 + (c_y2 - c_y1)**2)
 		
 		# Aspect ratio
-		v = stable_divide(4, np.pi ** 2) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2).unsqueeze(1)
+		v = stable_divide(4, np.pi ** 2) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
 		alpha = stable_divide(v, 1 - iou_score + v)
 
-
-		print(iou_score.shape)
-		print(stable_divide(center_distance, c_diag).shape)
-		print(alpha * v.shape)
-		print(ciou_score.shape)
-
-
-		ciou_score = iou_score - stable_divide(center_distance, c_diag) - alpha * v
+		ciou_score = iou_score - stable_divide(center_distance, c_diag).unsqueeze(1) - (alpha * v)..unsqueeze(1)
 
 		return ciou_score
 	else: 
