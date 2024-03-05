@@ -88,6 +88,7 @@ class YOLOv3(nn.Module):
 			ResidualBlock(512, num_repeats=8), 
 			CNNBlock(512, 1024, kernel_size=3, stride=2, padding=1), 
 			ResidualBlock(1024, num_repeats=4), 
+			
 			CNNBlock(1024, 512, kernel_size=1, stride=1, padding=0), 
 			CNNBlock(512, 1024, kernel_size=3, stride=1, padding=1), 
 			ResidualBlock(1024, use_residual=False, num_repeats=1), 
