@@ -55,6 +55,9 @@ train_dataset = Dataset(
 	image_dir = config.image_dir,
 	label_dir = config.label_dir,
 	anchors=config.ANCHORS, 
+	image_size = config.image_size, 
+	grid_sizes = config.s, 
+	num_classes= config.num_classes,
 	transform=config.train_transform 
 ) 
 

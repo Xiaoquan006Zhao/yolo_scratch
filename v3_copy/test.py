@@ -21,15 +21,18 @@ if config.load_model:
 	load_checkpoint(config.checkpoint_file, model, optimizer, config.leanring_rate) 
 
 test_dataset = Dataset( 
-	csv_file=config.test_csv_file,
-	image_dir=config.image_dir,
-	label_dir=config.label_dir,
+	csv_file = config.train_csv_file,
+	image_dir = config.image_dir,
+	label_dir = config.label_dir,
 	anchors=config.ANCHORS, 
+	image_size = config.image_size, 
+	grid_sizes = config.s, 
+	num_classes= config.num_classes,
 	transform=config.test_transform 
 ) 
 test_loader = torch.utils.data.DataLoader( 
 	test_dataset, 
-	batch_size = 1, 
+	batch_size = config.test_batch_size, 
 	num_workers = 2, 
 	shuffle = True, 
 ) 
