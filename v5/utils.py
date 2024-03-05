@@ -26,11 +26,12 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 		c_diag = (c_x2 - c_x1)**2 + (c_y2 - c_y1)**2
 		
 		# Aspect ratio
-		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
-		alpha = v / (1 - iou_score + v + 1e-6)
+		v = stable_divide(4, np.pi ** 2) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
+		alpha = stable_divide(v, 1 - iou_score + v) 
 
 		print(stable_divide(center_distance, c_diag).unsqueeze(1).shape)
-		print((alpha * v.unsqueeze(1)).shape)
+		print(alpha.shape)
+		print(v.shape)
 		
 		ciou_score = iou_score - stable_divide(center_distance, c_diag).unsqueeze(1) - alpha * v.unsqueeze(1)
 
