@@ -25,10 +25,7 @@ class YOLOLoss(nn.Module):
 
 		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 
-		# match size of target[..., 0:1] without casting
 		ious = ciou(box_preds[obj], target[..., 1:5][obj])
-
-		# ious = iou(box_preds[obj], target[..., 1:5][obj])
 
 		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
 		

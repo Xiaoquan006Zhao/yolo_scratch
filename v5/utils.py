@@ -7,27 +7,17 @@ import os
 
 def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False): 
 	if not WidthHeight_model: 
-		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0:1] - box1[..., 2:3] / 2, box1[..., 1:2] - box1[..., 3:4] / 2, box1[..., 0:1] + box1[..., 2:3] / 2, box1[..., 1:2] + box1[..., 3:4] / 2
-		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0:1] - box2[..., 2:3] / 2, box2[..., 1:2] - box2[..., 3:4] / 2, box2[..., 0:1] + box2[..., 2:3] / 2, box2[..., 1:2] + box2[..., 3:4] / 2
+		b1_x1, b1_y1, b1_x2, b1_y2 = box1[..., 0] - box1[..., 2] / 2, box1[..., 1] - box1[..., 3] / 2, box1[..., 0] + box1[..., 2] / 2, box1[..., 1] + box1[..., 3] / 2
+		b2_x1, b2_y1, b2_x2, b2_y2 = box2[..., 0] - box2[..., 2] / 2, box2[..., 1] - box2[..., 3] / 2, box2[..., 0] + box2[..., 2] / 2, box2[..., 1] + box2[..., 3] / 2
 		
-		x1 = torch.max(b1_x1, b2_x1) 
-		y1 = torch.max(b1_y1, b2_y1) 
-		x2 = torch.min(b1_x2, b2_x2) 
-		y2 = torch.min(b1_y2, b2_y2) 
-
-		intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0) 
-
-		box1_area = abs((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) 
-		box2_area = abs((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) 
-		union = box1_area + box2_area - intersection 
-
-		iou_score = stable_divide(intersection, union) 
-
-		print(iou_score.shape)
+		intersection_area = torch.clamp(torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1), min=0) * torch.clamp(torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1), min=0)
+		union_area = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) + ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) - intersection_area
+		
+		iou_score = stable_divide(intersection_area, union_area)
 
 		if IoU_mode:
 			return iou_score
-
+		
 		# Center distance
 		center_distance = (box1[..., 0] - box2[..., 0])**2 + (box1[..., 1] - box2[..., 1])**2
 		
@@ -39,8 +29,8 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 		v = (4 / (np.pi ** 2)) * ((torch.atan(box1[..., 2] / box1[..., 3]) - torch.atan(box2[..., 2] / box2[..., 3])) ** 2)
 		alpha = v / (1 - iou_score + v + 1e-6)
 		
-		ciou_score = iou_score - (center_distance / (c_diag + 1e-6)) - alpha * v
-		print(ciou_score.shape)
+		ciou_score = iou_score - stable_divide(center_distance, c_diag).unsqueeze(1) - alpha * v.unsqueeze(1)
+
 		return ciou_score
 	else: 
 		intersection_area = torch.min(box1[..., 0], box2[..., 0]) * torch.min(box1[..., 1], box2[..., 1]) 
@@ -51,32 +41,6 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 		iou_score = stable_divide(intersection_area, union_area)
 
 		return iou_score
-
-def iou(box1, box2): 
-	b1_x1 = box1[..., 0:1] - box1[..., 2:3] / 2
-	b1_y1 = box1[..., 1:2] - box1[..., 3:4] / 2
-	b1_x2 = box1[..., 0:1] + box1[..., 2:3] / 2
-	b1_y2 = box1[..., 1:2] + box1[..., 3:4] / 2
-
-	b2_x1 = box2[..., 0:1] - box2[..., 2:3] / 2
-	b2_y1 = box2[..., 1:2] - box2[..., 3:4] / 2
-	b2_x2 = box2[..., 0:1] + box2[..., 2:3] / 2
-	b2_y2 = box2[..., 1:2] + box2[..., 3:4] / 2
-
-	x1 = torch.max(b1_x1, b2_x1) 
-	y1 = torch.max(b1_y1, b2_y1) 
-	x2 = torch.min(b1_x2, b2_x2) 
-	y2 = torch.min(b1_y2, b2_y2) 
-
-	intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0) 
-
-	box1_area = abs((b1_x2 - b1_x1) * (b1_y2 - b1_y1)) 
-	box2_area = abs((b2_x2 - b2_x1) * (b2_y2 - b2_y1)) 
-	union = box1_area + box2_area - intersection 
-
-	iou_score = stable_divide(intersection, union) 
-
-	return iou_score 
 
 def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size): 
 	batch_size = predictions.shape[0] 
