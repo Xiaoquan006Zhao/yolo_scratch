@@ -21,7 +21,7 @@ if config.load_model:
 	load_checkpoint(config.checkpoint_file, model, optimizer, config.max_leanring_rate) 
 
 test_dataset = Dataset( 
-	csv_file = config.test_csv_file,
+	csv_file = config.train_csv_file,
 	image_dir = config.image_dir,
 	label_dir = config.label_dir,
 	anchors=config.ANCHORS, 
