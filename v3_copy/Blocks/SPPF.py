@@ -21,7 +21,7 @@ class SPPFBlock(nn.Module):
 
         for _ in range(self.pool_repeats):
             pool = F.max_pool2d(pool, kernel_size=self.pool_size, stride=1, padding=0)
-            features.append(pool)
+            features.append(F.interpolate(pool, size=x.shape[2:], mode='nearest'))
         
         features = torch.cat(features, dim=1)
         
