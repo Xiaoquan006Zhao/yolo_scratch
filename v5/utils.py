@@ -23,6 +23,8 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 
 		iou_score = stable_divide(intersection, union) 
 
+		print(iou_score.shape)
+
 		if IoU_mode:
 			return iou_score
 
@@ -38,7 +40,7 @@ def ciou(box1, box2, IoU_mode=False, WidthHeight_model=False):
 		alpha = v / (1 - iou_score + v + 1e-6)
 		
 		ciou_score = iou_score - (center_distance / (c_diag + 1e-6)) - alpha * v
-
+		print(ciou_score.shape)
 		return ciou_score
 	else: 
 		intersection_area = torch.min(box1[..., 0], box2[..., 0]) * torch.min(box1[..., 1], box2[..., 1]) 

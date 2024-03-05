@@ -29,7 +29,6 @@ class YOLOLoss(nn.Module):
 		ious = ciou(box_preds[obj], target[..., 1:5][obj])
 
 		# ious = iou(box_preds[obj], target[..., 1:5][obj])
-		print(ious.shape)
 
 		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
 		
