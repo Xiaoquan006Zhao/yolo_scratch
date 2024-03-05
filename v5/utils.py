@@ -83,16 +83,16 @@ def convert_cells_to_bboxes(predictions, anchors, grid_size, is_predictions=True
 
 	# Calculate cell indices 
 	cell_indices = ( 
-		torch.arange(s) 
+		torch.arange(grid_size) 
 		.repeat(predictions.shape[0], 3, grid_size, 1) 
 		.unsqueeze(-1) 
 		.to(predictions.device) 
 	) 
 
-	x = 1 / s * (box_predictions[..., 0:1] + cell_indices) 
-	y = 1 / s * (box_predictions[..., 1:2] +
+	x = 1 / grid_size * (box_predictions[..., 0:1] + cell_indices) 
+	y = 1 / grid_size * (box_predictions[..., 1:2] +
 				cell_indices.permute(0, 1, 3, 2, 4)) 
-	width_height = 1 / s * box_predictions[..., 2:4] 
+	width_height = 1 / grid_size * box_predictions[..., 2:4] 
 
 	converted_bboxes = torch.cat((best_class, objectness, x, y, width_height), dim=-1).reshape(
 		batch_size, num_anchors * grid_size * grid_size, 6) 
