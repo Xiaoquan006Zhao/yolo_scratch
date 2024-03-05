@@ -77,4 +77,4 @@ for e in range(1, config.epochs+1):
 
 	# Saving the model 
 	if config.save_model and e%100 == 0: 
-		save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+		save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
