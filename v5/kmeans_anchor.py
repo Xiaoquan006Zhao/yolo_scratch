@@ -30,8 +30,8 @@ def auto_anchor(num_anchors, label_dir, scales):
     print(anchor_boxes)
 
     ANCHORS = [[] for _ in range(len(scales))]
-    ANCHORS[0] = anchor_boxes.astype(float)
-    
+    ANCHORS[0] = anchor_boxes
+
     for i in range(1, len(scales)):
         scaled_anchor_boxes = [anchor_box / float(2*i) for anchor_box in anchor_boxes]
         ANCHORS[i].extend(scaled_anchor_boxes)
