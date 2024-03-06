@@ -82,7 +82,9 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True
 
 def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
     # Check decodePrediction method for why objectness is stored at index 0
+    print(len(bboxes))
     bboxes = [box for box in bboxes if box[0] > valid_prediction_threshold]
+    print(len(bboxes))
     bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
     bboxes_nms = []
 
