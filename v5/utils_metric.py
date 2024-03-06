@@ -3,6 +3,7 @@ import torch.nn as nn
 import config
 import numpy as np
 from utils import (
+    ciou,
     stable_divide,
 )
 
@@ -19,12 +20,13 @@ def find_matching_target(pred_box, targets):
 
             intersection_x = [max(b1_x1, b2_x1), min(b1_x2, b2_x2)]
             intersection_y = [max(b1_y1, b2_y1), min(b1_y2, b2_y2)]
-            
+
             area_intersection = (intersection_x[1] - intersection_x[0]) * (intersection_y[1] - intersection_y[0])
 
             iou_score = area_intersection / (area_box1 + area_box2 - area_intersection)
 
             if iou_score > config.enough_overlap_threshold:
+                print(1)
                 targets.remove(target_box)
                 return target_box
 
