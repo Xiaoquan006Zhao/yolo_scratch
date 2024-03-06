@@ -78,7 +78,6 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True
 
 def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
     # Check decodePrediction method for why objectness is stored at index 0
-    print(len(bboxes))
     bboxes = [box for box in bboxes if box[0] > valid_prediction_threshold]
     bboxes = sorted(bboxes, key=lambda x: x[0], reverse=True)
     bboxes_nms = []
@@ -93,7 +92,6 @@ def nms(bboxes, enough_overlap_threshold, valid_prediction_threshold):
         bboxes = [box for box in bboxes if box[5] != first_box[5] or 
                   ciou(torch.tensor(first_box[1:5]), torch.tensor(box[1:5]), mode=config.CIOU_MODE.IoU) < enough_overlap_threshold]
 
-    print(len(bboxes_nms))
     return bboxes_nms
 
 def plot_image(image, boxes): 
