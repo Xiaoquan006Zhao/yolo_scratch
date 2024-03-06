@@ -48,16 +48,17 @@ model.eval()
 with torch.no_grad(): 
     # output shape (num_scale, batch, num_anchor, grid_size, grid_size, num_class+5)
     output = model(x) 
+    batch_size = x.shape[0]
 
     # x shape (batch, num_anchor, grid_size, grid_size, num_class+5)
-    bboxes = [[] for _ in range(x.shape[0])] 
+    bboxes = [[] for _ in range(batch_size)]
     for i in range(3): 
         _, A, _, _, _ = output[i].shape 
         boxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
         for idx, (box) in enumerate(boxes_scale_i): 
             bboxes[idx] += box 
 
-for i in range(config.test_batch_size): 
+for i in range(batch_size): 
     nms_boxes = nms(bboxes[i], config.enough_overlap_threshold, config.valid_prediction_threshold) 
     plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
@@ -68,22 +69,23 @@ recalls = []
 progress_bar = tqdm(test_loader, leave=True) 
 for _, (x, y) in enumerate(progress_bar): 
     x = x.to(config.device) 
+    batch_size = x.shape[0]
 
     with torch.no_grad(): 
         output = model(x) 
-        prediction_bboxes = [[] for _ in range(x.shape[0])] 
-        target_bboxes = [[] for _ in range(x.shape[0])] 
+        prediction_bboxes = [[] for _ in range(batch_size)] 
+        target_bboxes = [[] for _ in range(batch_size)] 
 
         for i in range(3): 
             _, A, _, _, _ = output[i].shape 
             prediction_bboxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
             target_bboxes_scale_i = convert_cells_to_bboxes(y[i].to(config.device), config.scaled_anchors[i], config.grid_sizes[i]) 
 
-            for index in range(config.test_batch_size):
+            for index in range(batch_size):
                 prediction_bboxes[index] += prediction_bboxes_scale_i[index]
                 target_bboxes[index] += target_bboxes_scale_i[index]
 
-    for i in range(config.test_batch_size): 
+    for i in range(batch_size): 
         predication_nms = nms(prediction_bboxes[i], config.enough_overlap_threshold, config.valid_prediction_threshold) 
         target_nms = nms(target_bboxes[i], config.enough_overlap_threshold, config.valid_prediction_threshold) 
         precision_batch, recall_batch = calculate_precision_recall(predication_nms, target_nms)
