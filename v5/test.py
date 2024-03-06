@@ -80,8 +80,8 @@ for _, (x, y) in enumerate(progress_bar):
             target_bboxes_scale_i = convert_cells_to_bboxes(y[i].to(config.device), config.scaled_anchors[i], config.grid_sizes[i]) 
 
             for index in range(config.test_batch_size):
-                prediction_bboxes[index].append(prediction_bboxes_scale_i)
-                target_bboxes[index].append(target_bboxes_scale_i)
+                prediction_bboxes[index].append(prediction_bboxes_scale_i[index])
+                target_bboxes[index].append(target_bboxes_scale_i[index])
 
     for i in range(config.test_batch_size): 
         precision_batch, recall_batch = calculate_precision_recall(prediction_bboxes[i], target_bboxes[i])
