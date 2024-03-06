@@ -25,6 +25,8 @@ def find_matching_target(pred_box, targets):
 
             iou_score = area_intersection / (area_box1 + area_box2 - area_intersection)
 
+            print(box1)
+            print(box2)
             print(iou_score)
             if iou_score > config.enough_overlap_threshold:
                 targets.remove(target_box)
