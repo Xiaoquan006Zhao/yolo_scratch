@@ -45,7 +45,7 @@ def ciou(box1, box2, mode=config.CIOU_MODE.CI0U):
 
         return iou_score
 
-def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True): 
+def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True, is_groundTruth=False): 
     batch_size = predictions.shape[0] 
     num_anchors = len(scaled_anchors) 
     scaled_anchors = scaled_anchors.reshape(1, num_anchors, 1, 1, 2) 
@@ -54,8 +54,12 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True
                                torch.exp(predictions[..., 3:5] ) * scaled_anchors 
                             ],dim=-1) 
     
-    objectness = torch.sigmoid(predictions[..., 0:1]) 
-    best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
+    if is_groundTruth:
+        objectness = predictions[..., 0:1]
+        best_class = predictions[..., 5]
+    else:
+        objectness = torch.sigmoid(predictions[..., 0:1]) 
+        best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
     
     # Calculate cell indices 
     cell_indices = ( 

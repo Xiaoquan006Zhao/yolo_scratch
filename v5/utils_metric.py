@@ -4,9 +4,7 @@ import config
 import numpy as np
 from utils import (
     iou,
-    convert_cells_to_bboxes,
     stable_divide,
-    nms,
 )
 
 def find_matching_target(pred_box, targets):
