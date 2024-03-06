@@ -27,6 +27,11 @@ def calculate_precision_recall(predictions, targets):
     false_positives = 0
     false_negatives = 0
 
+    print(len(predictions))
+    print(len(targets))
+    print(len(predictions[0]))
+    print(len(targets[0]))
+
     for pred_box in predictions:
         matching_target = find_matching_target(pred_box, targets)
 
