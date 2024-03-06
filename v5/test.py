@@ -48,34 +48,45 @@ model.eval()
 with torch.no_grad(): 
     output = model(x) 
 
+    # nms
     bboxes = [[] for _ in range(x.shape[0])] 
-
     for i in range(3): 
-        batch_size, A, _, _, _ = output[i].shape 
+        _, A, _, _, _ = output[i].shape 
         boxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
         for idx, (box) in enumerate(boxes_scale_i): 
             bboxes[idx] += box 
 
-for i in range(batch_size): 
+for i in range(config.test_batch_size): 
     nms_boxes = nms(bboxes[i], config.enough_overlap_threshold, config.valid_prediction_threshold) 
     plot_image(x[i].permute(1,2,0).detach().cpu(), nms_boxes)
 
 # ---------------------------------------- Precision & Recall ----------------------------------------
-precisions = [[] for _ in range(config.num_anchors)]
-recalls = [[] for _ in range(config.num_anchors)]
+precisions = []
+recalls = []
+
 progress_bar = tqdm(test_loader, leave=True) 
 for _, (x, y) in enumerate(progress_bar): 
     x = x.to(config.device) 
-    outputs = model(x) 
+    y = y.to(config.device) 
 
-    for i in range(config.num_anchors):
-        predictions = outputs[i]
-        targets = y[i].to(config.device)
-        precision_batch, recall_batch = calculate_precision_recall(predictions, targets, config.scaled_anchors[i], config.grid_sizes[i])
-        precisions[i].append(precision_batch)
-        recalls[i].append(recall_batch)
+    with torch.no_grad(): 
+        outputs = model(x) 
+        # nms
+        bboxes = [[] for _ in range(x.shape[0])] 
+        for i in range(3): 
+            _, A, _, _, _ = output[i].shape 
+            boxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
+            for idx, (box) in enumerate(boxes_scale_i): 
+                bboxes[idx] += box 
 
-for i in range(config.num_anchors):
-    print(f"Precision:{sum(precisions[i])/len(precisions[i])}, Recall:{sum(recalls[i])/len(recalls[i])}")
-
+    for i in range(config.test_batch_size): 
+        nms_boxes = nms(bboxes[i], config.enough_overlap_threshold, config.valid_prediction_threshold)
+        targets = y[i]
+        print(nms_boxes.shape)
+        print(targets.shape)
+        precision_batch, recall_batch = calculate_precision_recall(nms_boxes, targets)
+        precisions.append(precision_batch)
+        recalls.append(recall_batch)
+   
+print(f"Precision:{sum(precisions)/len(precisions)}, Recall:{sum(recalls)/len(recalls)}")
 model.train() 
