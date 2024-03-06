@@ -7,56 +7,48 @@ from utils import (
     stable_divide,
 )
 
+def find_matching_target(pred_box, targets):
+    for target_box in targets:
+        if pred_box[5] == target_box[5]:
+            box1 = pred_box[1:5]
+            box2 = target_box[1:5]
+            b1_x1, b1_y1, b1_x2, b1_y2 = box1[0] - box1[2] / 2, box1[1] - box1[3] / 2, box1[0] + box1[2] / 2, box1[1] + box1[3] / 2
+            b2_x1, b2_y1, b2_x2, b2_y2 = box2[0] - box2[2] / 2, box2[1] - box2[3] / 2, box2[0] + box2[2] / 2, box2[1] + box2[3] / 2
+
+            area_box1 = (b1_x2 - b1_x1) * (b1_y2 - b1_y1)
+            area_box2 = (b2_x2 - b2_x1) * (b2_y2 - b2_y1)
+
+            intersection_x = [max(b1_x1, b2_x1), min(b1_x2, b2_x2)]
+            intersection_y = [max(b1_y1, b2_y1), min(b1_y2, b2_y2)]
+
+            if intersection_x[0] >= intersection_x[1] or intersection_y[0] >= intersection_y[1]:
+                return 0.0
+            area_intersection = (intersection_x[1] - intersection_x[0]) * (intersection_y[1] - intersection_y[0])
+
+            iou_score = area_intersection / (area_box1 + area_box2 - area_intersection)
+
+            if iou_score > config.enough_overlap_threshold:
+                return target_box
+
+    return None
+
 def calculate_precision_recall(predictions, targets):
-    # Convert the predictions and targets lists to NumPy arrays for efficient calculations
-    predictions_np = np.array(predictions)
-    targets_np = np.array(targets)
-
-    # Extract bounding box coordinates for ease of computation
-    pred_boxes = predictions_np[:, :4]
-    target_boxes = targets_np[:, :4]
-
-    # Calculate IoU matrix using NumPy broadcasting
-    intersection_areas = np.maximum(0, np.minimum(pred_boxes[:, 2:], target_boxes[:, 2:]) - np.maximum(pred_boxes[:, :2], target_boxes[:, :2]))
-    intersection_areas = np.prod(intersection_areas, axis=1)
-    
-    pred_areas = np.prod(pred_boxes[:, 2:] - pred_boxes[:, :2], axis=1)
-    target_areas = np.prod(target_boxes[:, 2:] - target_boxes[:, :2], axis=1)
-
-    union_areas = pred_areas + target_areas - intersection_areas
-
-    iou = intersection_areas / np.maximum(union_areas, 1e-8)  # Avoid division by zero
-
-    # Initialize variables to track true positives, false positives, and false negatives
     true_positives = 0
     false_positives = 0
     false_negatives = 0
 
-    # Iterate through each predicted bounding box
-    for i in range(len(predictions)):
-        # Find the index of the maximum IoU in the corresponding row
-        matching_target_index = np.argmax(iou[i])
+    for pred_box in predictions:
+        matching_target = find_matching_target(pred_box, targets)
 
-        # If IoU is above the threshold, consider it a match
-        if iou[i, matching_target_index] > 0.5:
+        if matching_target is not None:
             true_positives += 1
-            # Remove the matching target index to avoid double counting
-            iou[:, matching_target_index] = 0
+            targets.remove(matching_target)
         else:
             false_positives += 1
 
-    # The remaining unmatched targets are false negatives
-    false_negatives = len(targets) - true_positives
+    false_negatives = len(targets)
 
-    # Calculate precision and recall
-    precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
-    recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
+    precision = stable_divide(true_positives, true_positives + false_positives)
+    recall = stable_divide(true_positives, true_positives + false_negatives)
 
     return precision, recall
-
-# Example usage
-predictions = [(10, 10, 20, 20, 1), (30, 30, 15, 15, 2)]
-targets = [(12, 12, 18, 18, 1), (35, 35, 10, 10, 2)]
-
-precision, recall = calculate_precision_recall(predictions, targets)
-print(f'Precision: {precision}, Recall: {recall}')
