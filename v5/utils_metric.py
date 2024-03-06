@@ -19,9 +19,7 @@ def find_matching_target(pred_box, targets):
 
             intersection_x = [max(b1_x1, b2_x1), min(b1_x2, b2_x2)]
             intersection_y = [max(b1_y1, b2_y1), min(b1_y2, b2_y2)]
-
-            if intersection_x[0] >= intersection_x[1] or intersection_y[0] >= intersection_y[1]:
-                return 0.0
+            
             area_intersection = (intersection_x[1] - intersection_x[0]) * (intersection_y[1] - intersection_y[0])
 
             iou_score = area_intersection / (area_box1 + area_box2 - area_intersection)
