@@ -22,28 +22,22 @@ def find_matching_target(pred_box, targets):
 
     return None
 
-def calculate_precision_recall(predictions, targets):
+def calculate_precision_recall(predictions_scales, targets_scales):
     true_positives = 0
     false_positives = 0
     false_negatives = 0
 
-    print(len(predictions))
-    print(len(predictions[0]))
-    print(len(predictions[0][0]))
-    print(len(targets))
-    print(len(targets[0]))
-    print(len(targets[0][0]))
+    for scale_index, predictions_scales_i in enumerate(predictions_scales):
+        for prediction_bbox in predictions_scales_i:
+            matching_target = find_matching_target(prediction_bbox, targets_scales[scale_index])
 
-    for pred_box in predictions:
-        matching_target = find_matching_target(pred_box, targets)
+            if matching_target is not None:
+                true_positives += 1
+                targets_scales[scale_index].remove(matching_target)
+            else:
+                false_positives += 1
 
-        if matching_target is not None:
-            true_positives += 1
-            targets.remove(matching_target)
-        else:
-            false_positives += 1
-
-    false_negatives = len(targets)
+        false_negatives += len(targets_scales[scale_index])
 
     precision = stable_divide(true_positives, true_positives + false_positives)
     recall = stable_divide(true_positives, true_positives + false_negatives)
