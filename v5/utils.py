@@ -46,16 +46,16 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True
     num_anchors = len(scaled_anchors) 
     scaled_anchors = scaled_anchors.reshape(1, num_anchors, 1, 1, 2) 
     
-    box_predictions = torch.cat([torch.sigmoid(predictions[..., 1:3] ), 
-                               torch.exp(predictions[..., 3:5] ) * scaled_anchors 
-                            ],dim=-1) 
-    
     if is_groundTruth:
         objectness = predictions[..., 0:1]
         best_class = predictions[..., 5].unsqueeze(-1) 
+        box_predictions = predictions[..., 1:5]
     else:
         objectness = torch.sigmoid(predictions[..., 0:1]) 
         best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
+        box_predictions = torch.cat([torch.sigmoid(predictions[..., 1:3] ), 
+                               torch.exp(predictions[..., 3:5] ) * scaled_anchors 
+                            ],dim=-1) 
     
     # Calculate cell indices 
     cell_indices = ( 
