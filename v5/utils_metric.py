@@ -29,9 +29,12 @@ def calculate_precision_recall(predictions, targets):
 
     print(len(predictions))
     print(len(predictions[0]))
+    print(len(predictions[0][0]))
+    print(len(targets))
+    print(len(targets[0]))
+    print(len(targets[0][0]))
 
     for pred_box in predictions:
-            
         matching_target = find_matching_target(pred_box, targets)
 
         if matching_target is not None:
