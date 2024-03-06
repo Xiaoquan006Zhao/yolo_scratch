@@ -56,7 +56,7 @@ def convert_cells_to_bboxes(predictions, scaled_anchors, grid_size, to_list=True
     
     if is_groundTruth:
         objectness = predictions[..., 0:1]
-        best_class = predictions[..., 5]
+        best_class = predictions[..., 5].unsqueeze(-1) 
     else:
         objectness = torch.sigmoid(predictions[..., 0:1]) 
         best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1) 
