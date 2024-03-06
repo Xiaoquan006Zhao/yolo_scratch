@@ -9,6 +9,7 @@ from utils import (
 )
 
 def calculate_precision_recall(predictions, targets):
+    predictions = np.array(predictions)
     predictions.reshape(targets.shape)
 
     num_predictions = torch.sum(predictions[:, :, 0] >  config.valid_prediction_threshold).item()
