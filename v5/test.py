@@ -85,6 +85,12 @@ for _, (x, y) in enumerate(progress_bar):
         prediction_bboxes_nms_batch = nms(prediction_bboxes[i], config.enough_overlap_threshold, config.valid_prediction_threshold)
         target_bboxes_batch = [box for box in target_bboxes[i] if box[0] > config.valid_prediction_threshold]
 
+        print(len(prediction_bboxes_nms_batch))
+        print(len(target_bboxes_batch))
+
+        print(len(prediction_bboxes_nms_batch[0]))
+        print(len(target_bboxes_batch[0]))
+
         precision_batch, recall_batch = calculate_precision_recall(prediction_bboxes_nms_batch, target_bboxes_batch)
         precisions.append(precision_batch)
         recalls.append(recall_batch)
