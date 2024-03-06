@@ -5,25 +5,36 @@ import numpy as np
 from utils import (
     ciou,
     convert_cells_to_bboxes,
-    stable_divide
+    stable_divide,
+    nms,
 )
 
+def find_matching_target(pred_box, targets):
+    for target_box in targets:
+        iou = ciou(pred_box, target_box, config.CIOU_MODE.IoU)
+
+        if iou > config.enough_overlap_threshold:
+            return target_box
+
+    return None
+
 def calculate_precision_recall(predictions, targets):
-    predictions = np.array(predictions)
-    predictions.reshape(targets.shape)
+    true_positives = 0
+    false_positives = 0
+    false_negatives = 0
 
-    num_predictions = torch.sum(predictions[:, :, 0] >  config.valid_prediction_threshold).item()
-    num_targets = torch.sum(targets[:, :, 0] >  config.valid_prediction_threshold).item()
+    for pred_box in predictions:
+        matching_target = find_matching_target(pred_box, targets)
 
-    tar_obj = targets[..., 0] > config.valid_prediction_threshold
-    pred_obj = predictions[..., 0] > config.valid_prediction_threshold
+        if matching_target is not None:
+            true_positives += 1
+            targets.remove(matching_target)
+        else:
+            false_positives += 1
 
-    # IoU to calculate the overlap between prediction and ground truth
-    ious = ciou(predictions[..., 1:5][pred_obj & tar_obj], targets[..., 1:5][pred_obj & tar_obj], mode=config.CIOU_MODE.IoU)
+    false_negatives = len(targets)
 
-    true_positives = torch.sum(ious > config.enough_overlap_threshold).item()
-    
-    precision = stable_divide(true_positives, num_predictions)
-    recall = stable_divide(true_positives, num_targets)
+    precision = stable_divide(true_positives, true_positives + false_positives)
+    recall = stable_divide(true_positives, true_positives + false_negatives)
 
     return precision, recall

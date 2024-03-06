@@ -46,9 +46,10 @@ x = x.to(config.device)
 
 model.eval() 
 with torch.no_grad(): 
+    # output shape (num_scale, batch, num_anchor, grid_size, grid_size, num_class+5)
     output = model(x) 
 
-    # nms
+    # x shape (batch, num_anchor, grid_size, grid_size, num_class+5)
     bboxes = [[] for _ in range(x.shape[0])] 
     for i in range(3): 
         _, A, _, _, _ = output[i].shape 
@@ -69,29 +70,21 @@ for _, (x, y) in enumerate(progress_bar):
     x = x.to(config.device) 
 
     with torch.no_grad(): 
-        outputs = model(x) 
-        # nms
+        output = model(x) 
         prediction_bboxes = [[] for _ in range(x.shape[0])] 
         target_bboxes = [[] for _ in range(x.shape[0])] 
 
         for i in range(3): 
             _, A, _, _, _ = output[i].shape 
-            prediction_bboxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
-            for index, (box) in enumerate(prediction_bboxes_scale_i): 
-                prediction_bboxes[index] += box 
-                target_bboxes[index] += y[i][index]
+            prediction_bboxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i], to_list=False) 
+            target_bboxes_scale_i = convert_cells_to_bboxes(y[i], config.scaled_anchors[i], config.grid_sizes[i], to_list=False) 
+
+            for index in len(config.test_batch_size):
+                prediction_bboxes[index].append(prediction_bboxes_scale_i)
+                target_bboxes[index].append(target_bboxes_scale_i)
 
     for i in range(config.test_batch_size): 
-        prediction_bboxes_nms_batch = nms(prediction_bboxes[i], config.enough_overlap_threshold, config.valid_prediction_threshold)
-        target_bboxes_batch = [box for box in target_bboxes[i] if box[0] > config.valid_prediction_threshold]
-
-        print(len(prediction_bboxes_nms_batch))
-        print(len(target_bboxes_batch))
-
-        print(len(prediction_bboxes_nms_batch[0]))
-        print(len(target_bboxes_batch[0]))
-
-        precision_batch, recall_batch = calculate_precision_recall(prediction_bboxes_nms_batch, target_bboxes_batch)
+        precision_batch, recall_batch = calculate_precision_recall(prediction_bboxes[i], target_bboxes[i])
         precisions.append(precision_batch)
         recalls.append(recall_batch)
    
