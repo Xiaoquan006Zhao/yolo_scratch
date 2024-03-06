@@ -106,6 +106,8 @@ class Dataset(torch.utils.data.Dataset):
 					# thus -1 is ignored
 					targets[scale_idx][anchor_on_scale, i, j, 0] = -1
 
-		return image, tuple(targets.to(config.device))
+		targets_on_device = [torch.tensor(target).to(config.device) for target in targets]
+
+		return image, tuple(targets_on_device)
 
 
