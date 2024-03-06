@@ -3,7 +3,6 @@ import torch.nn as nn
 import config
 import numpy as np
 from utils import (
-    iou,
     stable_divide,
 )
 
@@ -28,6 +27,7 @@ def find_matching_target(pred_box, targets):
             iou_score = area_intersection / (area_box1 + area_box2 - area_intersection)
 
             if iou_score > config.enough_overlap_threshold:
+                targets.remove(target_box)
                 return target_box
 
     return None
@@ -42,7 +42,6 @@ def calculate_precision_recall(predictions, targets):
 
         if matching_target is not None:
             true_positives += 1
-            targets.remove(matching_target)
         else:
             false_positives += 1
 
