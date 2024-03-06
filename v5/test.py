@@ -78,7 +78,7 @@ for _, (x, y) in enumerate(progress_bar):
         for i in range(3): 
             _, A, _, _, _ = output[i].shape 
             prediction_bboxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
-            target_bboxes_scale_i = convert_cells_to_bboxes(y[i].to(config.device), config.scaled_anchors[i], config.grid_sizes[i]) 
+            target_bboxes_scale_i = convert_cells_to_bboxes(y[i].to(config.device), config.scaled_anchors[i], config.grid_sizes[i], is_groundTruth=True) 
 
             for index in range(batch_size):
                 prediction_bboxes[index] += prediction_bboxes_scale_i[index]
