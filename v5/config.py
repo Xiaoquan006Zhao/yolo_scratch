@@ -44,6 +44,8 @@ else:
 
 # -------------------------------------- Model Parameter --------------------------------------
 device = "cuda" if torch.cuda.is_available() else "cpu"
+num_workers = 2 if device == "cuda" else 0
+
 load_model = True
 save_model = True
 train_batch_size = 4

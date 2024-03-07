@@ -64,7 +64,7 @@ train_dataset = Dataset(
 train_loader = torch.utils.data.DataLoader( 
 	train_dataset, 
 	batch_size = config.train_batch_size, 
-	num_workers = 2, 
+	num_workers = config.num_workers, 
 	shuffle = True, 
 	pin_memory = True, 
 ) 
