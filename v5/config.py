@@ -5,6 +5,8 @@ import cv2
 import os
 from kmeans_anchor import auto_anchor
 from enum import Enum
+import platform
+
 
 
 # -------------------------------------- DATASET --------------------------------------
@@ -17,7 +19,8 @@ num_classes = len(class_labels)
 
 # -------------------------------------- DATA Location --------------------------------------
 dataset = "pascal voc"
-if os.name == 'nt':
+system_type = platform.system()
+if system_type == "Windows":
 	base_dir = os.getcwd()
 	#train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
 	#test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
@@ -34,6 +37,10 @@ else:
 	image_dir = f"../data/{dataset}/images/"
 	label_dir = f"../data/{dataset}/labels/"  
 	checkpoint_file = f"{dataset}_checkpoint.pth.tar"
+
+	if system_type == "Darwin":
+		train_csv_file = f"../data/{dataset}/8examples.csv"
+		test_csv_file = f"../data/{dataset}/8examples_test.csv"
 
 # -------------------------------------- Model Parameter --------------------------------------
 device = "cuda" if torch.cuda.is_available() else "cpu"

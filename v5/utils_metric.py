@@ -23,7 +23,7 @@ def find_matching_target(pred_box, targets):
 
             area_intersection = (intersection_x[1] - intersection_x[0]) * (intersection_y[1] - intersection_y[0])
 
-            iou_score = area_intersection / (area_box1 + area_box2 - area_intersection)
+            iou_score = stable_divide(area_intersection, area_box1 + area_box2 - area_intersection)
 
             if iou_score > config.enough_overlap_threshold:
                 targets.remove(target_box)

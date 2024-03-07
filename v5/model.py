@@ -5,7 +5,7 @@ from Blocks.CSP import CSPBlock
 from Blocks.PAN import PAN
 from Blocks.SPPF import SPPFBlock
 
-class YOLOv3(nn.Module): 
+class YOLOv5(nn.Module): 
 	def __init__(self, in_channels=3, num_classes=20): 
 		super().__init__() 
 		self.num_classes = num_classes 
