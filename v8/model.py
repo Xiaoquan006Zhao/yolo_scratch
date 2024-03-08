@@ -1,5 +1,5 @@
 import torch.nn as nn 
-from config import Config
+import config
 
 from Blocks.BasicBlock import ConvBNMish
 from Blocks.CSP import CSPBlock
@@ -7,7 +7,7 @@ from Blocks.PAN import PAN
 from Blocks.SPPF import SPPFBlock
 
 class YOLOv8(nn.Module): 
-	def __init__(self, in_channels=3, num_classes=Config.num_classes): 
+	def __init__(self, in_channels=3, num_classes=config.num_classes): 
 		super().__init__() 
 		self.num_classes = num_classes 
 		self.in_channels = in_channels 
@@ -25,9 +25,9 @@ class YOLOv8(nn.Module):
 
 			ConvBNMish(512, 1024, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=3),
-
+	
 			SPPFBlock(1024, pool_size=5, pool_repeats=3),
-			PAN(Config.PAN_channels, num_classes=Config.num_classes),
+			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
 	def forward(self, x): 
