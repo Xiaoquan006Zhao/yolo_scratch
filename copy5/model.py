@@ -12,7 +12,7 @@ class YOLOv5(nn.Module):
 		self.in_channels = in_channels 
 
 		self.layers = nn.ModuleList([ 
-			ConvBNMish(in_channels, 64, kernel_size=6, stride=2, padding=2), 
+			ConvBNMish(in_channels, 64, kernel_size=3, stride=2, padding=1), 
 			ConvBNMish(64, 128, kernel_size=3, stride=2, padding=1), 
 
 			CSPBlock(128, 128, bottleNeck_use_residual=True, BottleNeck_repeats=3),
