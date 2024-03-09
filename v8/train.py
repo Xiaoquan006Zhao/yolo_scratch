@@ -4,23 +4,20 @@ from dataset import Dataset
 from PIL import ImageFile 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 import torch.optim as optim 
-from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from tqdm import tqdm
 import config
 from model import YOLOv8
 from loss import YOLOLoss
 from utils import (
-    load_checkpoint,
-    save_checkpoint,
+	load_checkpoint,
+	save_checkpoint,
 )
 
-# def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
-def training_loop(epoch, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors): 
-	iters = len(loader)
+def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
 	progress_bar = tqdm(loader, leave=True) 
 	losses = [] 
 
-	for i, (x, y) in enumerate(progress_bar): 
+	for _, (x, y) in enumerate(progress_bar): 
 		x = x.to(config.device) 
 		y0, y1, y2 = ( 
 			y[0].to(config.device), 
@@ -40,20 +37,15 @@ def training_loop(epoch, loader, model, optimizer, scheduler, loss_fn, scaler, s
 		optimizer.zero_grad() 
 		scaler.scale(loss).backward() 
 		scaler.step(optimizer) 
-		scheduler.step(epoch + i / iters)
 		scaler.update() 
 
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
-	scheduler.step(epoch)
-
 model = YOLOv8(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
-scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=config.learning_rate)
-scheduler.base_lrs[0] = config.learning_rate
 
 if config.load_model: 
 	load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate) 
@@ -79,8 +71,7 @@ train_loader = torch.utils.data.DataLoader(
 
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
-	# training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
-	training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors) 
+	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
 
 	if config.save_model: 
 		save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
