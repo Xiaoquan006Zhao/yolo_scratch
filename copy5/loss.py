@@ -19,17 +19,15 @@ class YOLOLoss(nn.Module):
 		obj = target[..., 0] == 1
 		no_obj = target[..., 0] == 0
 
-		no_object_loss = self.bce((pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj])) 
-		object_loss = self.bce((pred[..., 0:1][obj]), (target[..., 0:1][obj])) 
+		no_object_loss = self.bce(pred[..., 0:1][no_obj], target[..., 0:1][no_obj])
+		object_loss = self.bce(pred[..., 0:1][obj], target[..., 0:1][obj])
 	
 		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 
-		ious = ciou(box_preds[obj], target[..., 1:5][obj])
+		ious = 1-ciou(box_preds[obj], target[..., 1:5][obj])
 		box_loss = ious.mean()
 
 		class_loss = self.cross_entropy((pred[..., 5:][obj]), target[..., 5][obj].long()) 
-
-		assert all(abs(x) < 1 for x in ious), "Not all ious are abs less than 1"
 
 		return ( 
 			box_loss 
