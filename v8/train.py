@@ -15,11 +15,12 @@ from utils import (
 )
 
 # def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
-def training_loop(epoch, loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
+def training_loop(epoch, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors): 
+	iters = len(loader)
 	progress_bar = tqdm(loader, leave=True) 
 	losses = [] 
 
-	for _, (x, y) in enumerate(progress_bar): 
+	for i, (x, y) in enumerate(progress_bar): 
 		x = x.to(config.device) 
 		y0, y1, y2 = ( 
 			y[0].to(config.device), 
@@ -39,10 +40,13 @@ def training_loop(epoch, loader, model, optimizer, loss_fn, scaler, scaled_ancho
 		optimizer.zero_grad() 
 		scaler.scale(loss).backward() 
 		scaler.step(optimizer) 
+		scheduler.step(epoch + i / iters)
 		scaler.update() 
 
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
+
+	scheduler.step(epoch)
 
 model = YOLOv8(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
@@ -76,8 +80,7 @@ train_loader = torch.utils.data.DataLoader(
 for e in range(1, config.epochs+1): 
 	print("Epoch:", e) 
 	# training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
-	training_loop(e, train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
-	scheduler.step()
+	training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors) 
 
 	if config.save_model: 
 		save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
