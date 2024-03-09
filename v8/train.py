@@ -51,6 +51,7 @@ optimizer = optim.Adam(model.parameters(), lr=config.max_learning_rate)
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
 scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=config.min_learning_rate)
+scheduler.base_lrs[0] = config.max_leanring_rate
 
 if config.load_model: 
     load_checkpoint(config.checkpoint_file, model, optimizer, config.max_learning_rate) 
@@ -76,7 +77,7 @@ train_loader = torch.utils.data.DataLoader(
 
 for e in range(1, config.epochs+1): 
     print("Epoch:", e) 
-    training_loop(train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors, e) 
+    training_loop(e, train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors) 
     # training_loop(e, train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
 
     if config.save_model: 
