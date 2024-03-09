@@ -52,7 +52,7 @@ scaler = torch.cuda.amp.GradScaler()
 scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=config.min_learning_rate)
 
 if config.load_model: 
-    load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate) 
+    load_checkpoint(config.checkpoint_file, model, optimizer, config.max_learning_rate) 
 
 train_dataset = Dataset( 
     csv_file=config.train_csv_file,
