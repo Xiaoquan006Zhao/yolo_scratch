@@ -51,7 +51,7 @@ save_model = True
 train_batch_size = 4
 test_batch_size = 2
 epochs = 1000
-min_learning_rate = 1e-6
+min_learning_rate = 1e-5
 max_learning_rate = 1e-4
 # 0.33 represents 50% overlap. Think of two boxes, side by side of the same size
 # One covers half of the other, then we are left with 50% uncovered, 50% overlap, 50 uncovered

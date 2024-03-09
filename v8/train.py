@@ -14,8 +14,8 @@ from utils import (
     save_checkpoint,
 )
 
-# def training_loop(epoch, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors): 
-def training_loop(epoch, loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
+def training_loop(epoch, loader, model, optimizer, scheduler, loss_fn, scaler, scaled_anchors): 
+# def training_loop(epoch, loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
     progress_bar = tqdm(loader, leave=True) 
     losses = [] 
 
@@ -44,13 +44,13 @@ def training_loop(epoch, loader, model, optimizer, loss_fn, scaler, scaled_ancho
         mean_loss = sum(losses) / len(losses) 
         progress_bar.set_postfix(loss=mean_loss)
 
-    # scheduler.step(epoch)
+    scheduler.step(epoch)
 
 model = YOLOv8(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr=config.max_learning_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
-# scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=32, T_mult=2, eta_min=config.min_learning_rate)
+scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=config.min_learning_rate)
 
 if config.load_model: 
     load_checkpoint(config.checkpoint_file, model, optimizer, config.max_learning_rate) 
@@ -76,8 +76,8 @@ train_loader = torch.utils.data.DataLoader(
 
 for e in range(1, config.epochs+1): 
     print("Epoch:", e) 
-    # training_loop(train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors, e) 
-    training_loop(e, train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
+    training_loop(train_loader, model, optimizer, scheduler, loss_fn, scaler, config.scaled_anchors, e) 
+    # training_loop(e, train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
 
     if config.save_model: 
         save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
