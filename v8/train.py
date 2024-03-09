@@ -49,7 +49,7 @@ model = YOLOv8(num_classes=len(config.class_labels)).to(config.device)
 optimizer = optim.Adam(model.parameters(), lr=config.max_learning_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
-scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2)
+scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=32, T_mult=2, eta_min=config.min_learning_rate)
 
 if config.load_model: 
     load_checkpoint(config.checkpoint_file, model, optimizer, config.max_learning_rate) 
