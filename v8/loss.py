@@ -13,17 +13,18 @@ class YOLOLoss(nn.Module):
 		self.sigmoid = nn.Sigmoid() 
 	
 	def forward(self, pred, target, anchors): 
-		anchors = anchors.reshape(1, 3, 1, 1, 2) 
-
+		anchors = anchors.reshape(1, 3, 1, 1, 2)
 		obj = target[..., 0] == 1
 		no_obj = target[..., 0] == 0
 
-		no_object_loss = self.bce((pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), ) 
+		no_object_loss = self.bce((pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), )
+
+		pred[..., 1:3] = self.sigmoid(pred[..., 1:3]) 
+		target[..., 3:5] = torch.log(1e-6 + target[..., 3:5] / anchors) 
+		box_loss = self.mse(pred[..., 1:5][obj], target[..., 1:5][obj]) 
 
 		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 		ious = ciou(box_preds[obj], target[..., 1:5][obj])
-		box_loss = (1-ious).mean()
-
 		# The way I understand why ious*target is that since the objectiveness and bbox is
 		# tied together. If the bbox has small or no overlap, we should discard it's objectiveness
 		# prediction as well and penalize the model more for confident objectiveness prediction
