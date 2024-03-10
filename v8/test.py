@@ -1,6 +1,6 @@
 import torch
 import config
-from model import YOLOv8
+from model import YOLOv5
 from tqdm import tqdm
 from loss import YOLOLoss
 import torch.optim as optim 
@@ -16,7 +16,7 @@ from utils_metric import (
 )
 
 
-model = YOLOv8(num_classes=len(config.class_labels)).to(config.device) 
+model = YOLOv5(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
