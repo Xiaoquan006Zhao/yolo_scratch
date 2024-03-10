@@ -6,7 +6,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 import torch.optim as optim 
 from tqdm import tqdm
 import config
-from model import YOLOv5
+from model import YOLOv8
 from loss import YOLOLoss
 from utils import (
 	load_checkpoint,
@@ -42,7 +42,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
-model = YOLOv5(num_classes=len(config.class_labels)).to(config.device) 
+model = YOLOv8(num_classes=len(config.class_labels)).to(config.device) 
 optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
 loss_fn = YOLOLoss() 
 scaler = torch.cuda.amp.GradScaler() 
@@ -73,5 +73,5 @@ for e in range(1, config.epochs+1):
 	print("Epoch:", e) 
 	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
 
-	if config.save_model and e%100 == 0: 
+	if config.save_model: 
 		save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
