@@ -12,50 +12,19 @@ class YOLOLoss(nn.Module):
 		self.cross_entropy = nn.CrossEntropyLoss() 
 		self.sigmoid = nn.Sigmoid() 
 	
-	# def forward(self, pred, target, anchors): 
-	# 	anchors = anchors.reshape(1, 3, 1, 1, 2) 
-
-	# 	obj = target[..., 0] == 1
-	# 	no_obj = target[..., 0] == 0
-
-	# 	no_object_loss = self.bce(pred[..., 0:1][no_obj], target[..., 0:1][no_obj])
-	# 	object_loss = self.bce(pred[..., 0:1][obj], target[..., 0:1][obj])
-	
-	# 	box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
-
-	# 	ious = 1-ciou(box_preds[obj], target[..., 1:5][obj])
-	# 	box_loss = ious.mean()
-
-	# 	class_loss = self.cross_entropy((pred[..., 5:][obj]), target[..., 5][obj].long()) 
-
-	# 	return ( 
-	# 		box_loss 
-	# 		+ object_loss 
-	# 		+ no_object_loss 
-	# 		+ class_loss 
-	# 	)
-		
 	def forward(self, pred, target, anchors): 
+		anchors = anchors.reshape(1, 3, 1, 1, 2) 
+
 		obj = target[..., 0] == 1
 		no_obj = target[..., 0] == 0
 
-		no_object_loss = self.bce( 
-			(pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), 
-		) 
-
-		anchors = anchors.reshape(1, 3, 1, 1, 2) 
-
+		no_object_loss = self.bce((pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), )
+		object_loss = self.bce((pred[..., 0:1][obj]), (target[..., 0:1][obj]), )
+	
 		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 
-		ious = ciou(box_preds[obj], target[..., 1:5][obj])
-
-		object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
-		
-		pred[..., 1:3] = self.sigmoid(pred[..., 1:3]) 
-		
-		target[..., 3:5] = torch.log(1e-6 + target[..., 3:5] / anchors) 
-
-		box_loss = self.mse(pred[..., 1:5][obj], target[..., 1:5][obj]) 
+		ious = 1-ciou(box_preds[obj], target[..., 1:5][obj])
+		box_loss = ious.mean()
 
 		class_loss = self.cross_entropy((pred[..., 5:][obj]), target[..., 5][obj].long()) 
 
@@ -65,3 +34,34 @@ class YOLOLoss(nn.Module):
 			+ no_object_loss 
 			+ class_loss 
 		)
+		
+	# def forward(self, pred, target, anchors): 
+	# 	obj = target[..., 0] == 1
+	# 	no_obj = target[..., 0] == 0
+
+	# 	no_object_loss = self.bce( 
+	# 		(pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), 
+	# 	) 
+
+	# 	anchors = anchors.reshape(1, 3, 1, 1, 2) 
+
+	# 	box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
+
+	# 	ious = ciou(box_preds[obj], target[..., 1:5][obj])
+
+	# 	object_loss = self.mse(self.sigmoid(pred[..., 0:1][obj]), ious * target[..., 0:1][obj]) 
+		
+	# 	pred[..., 1:3] = self.sigmoid(pred[..., 1:3]) 
+		
+	# 	target[..., 3:5] = torch.log(1e-6 + target[..., 3:5] / anchors) 
+
+	# 	box_loss = self.mse(pred[..., 1:5][obj], target[..., 1:5][obj]) 
+
+	# 	class_loss = self.cross_entropy((pred[..., 5:][obj]), target[..., 5][obj].long()) 
+
+	# 	return ( 
+	# 		box_loss 
+	# 		+ object_loss 
+	# 		+ no_object_loss 
+	# 		+ class_loss 
+	# 	)
