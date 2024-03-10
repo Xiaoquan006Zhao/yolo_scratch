@@ -20,8 +20,6 @@ class YOLOLoss(nn.Module):
 
 		no_object_loss = self.bce((pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), ) 
 
-		no_object_loss = self.bce(pred[..., 0:1][no_obj], target[..., 0:1][no_obj])
-	
 		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
 		ious = ciou(box_preds[obj], target[..., 1:5][obj])
 		box_loss = (1-ious).mean()
