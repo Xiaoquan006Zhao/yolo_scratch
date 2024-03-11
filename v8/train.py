@@ -52,10 +52,10 @@ if config.load_model:
 
 train_dataset = Dataset( 
 	csv_file = config.train_csv_file,
-	image_dir = config.image_dir,
-	label_dir = config.label_dir,
+	image_dir = config.train_image_dir,
+	label_dir = config.train_label_dir,
 	anchors = config.ANCHORS, 
-	image_size = config.image_dir,
+	image_size = config.image_size,
 	grid_sizes = config.grid_sizes,
 	num_classes = config.num_classes,
 	transform = config.train_transform 

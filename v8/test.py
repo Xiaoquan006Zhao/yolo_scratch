@@ -26,10 +26,10 @@ if config.load_model:
 
 test_dataset = Dataset( 
     csv_file=config.test_csv_file,
-    image_dir=config.image_dir,
-    label_dir=config.label_dir,
+    image_dir=config.test_image_dir,
+    label_dir=config.test_label_dir,
     anchors=config.ANCHORS, 
-    image_size = config.image_dir,
+    image_size = config.image_size,
     grid_sizes = config.grid_sizes,
     num_classes = config.num_classes,
     transform=config.test_transform 

@@ -10,15 +10,18 @@ import platform
 
 
 # -------------------------------------- DATASET --------------------------------------
-class_labels = [ 
-	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
-	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
-	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
-]
+#class_labels = [ 
+#	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
+#	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
+#	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
+#]
+class_labels = ["pod"]
 num_classes = len(class_labels)
 
 # -------------------------------------- DATA Location --------------------------------------
-dataset = "pascal voc"
+#dataset = "pascal voc"
+dataset = "soybean"
+
 system_type = platform.system()
 if system_type == "Windows":
 	base_dir = os.getcwd()
@@ -26,8 +29,13 @@ if system_type == "Windows":
 	#test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
 	train_csv_file = os.path.join(base_dir, "data", dataset, "train.csv")
 	test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
-	image_dir = os.path.join(base_dir, "data", dataset, "images")
-	label_dir = os.path.join(base_dir, "data", dataset, "labels")
+	
+	train_image_dir = os.path.join(base_dir, "data", dataset, "train","images")
+	train_label_dir = os.path.join(base_dir, "data", dataset, "train","labels")
+
+	test_image_dir = os.path.join(base_dir, "data", dataset, "test","images")
+	test_label_dir = os.path.join(base_dir, "data", dataset, "test","labels")
+
 	checkpoint_file = os.path.join(base_dir, "v5", f"{dataset}_checkpoint.pth.tar")
 else:
 	# train_csv_file = f"../data/{dataset}/100examples.csv"
@@ -68,7 +76,7 @@ image_size = 640
 grid_sizes = [image_size // 32, image_size // 16, image_size // 8] 
 num_anchors = 3
 
-ANCHORS = auto_anchor(num_anchors, label_dir, grid_sizes)
+ANCHORS = auto_anchor(num_anchors, train_label_dir, grid_sizes)
 
 # ANCHORS = [ 
 # 	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
