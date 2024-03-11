@@ -42,36 +42,37 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		mean_loss = sum(losses) / len(losses) 
 		progress_bar.set_postfix(loss=mean_loss)
 
-model = YOLOv8(num_classes=len(config.class_labels)).to(config.device) 
-optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
-loss_fn = YOLOLoss() 
-scaler = torch.cuda.amp.GradScaler() 
+if __name__ == '__main__':
+	model = YOLOv8(num_classes=len(config.class_labels)).to(config.device) 
+	optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
+	loss_fn = YOLOLoss() 
+	scaler = torch.cuda.amp.GradScaler() 
 
-if config.load_model: 
-	load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate) 
+	if config.load_model: 
+		load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate) 
 
-train_dataset = Dataset( 
-	csv_file = config.train_csv_file,
-	image_dir = config.train_image_dir,
-	label_dir = config.train_label_dir,
-	anchors = config.ANCHORS, 
-	image_size = config.image_size,
-	grid_sizes = config.grid_sizes,
-	num_classes = config.num_classes,
-	transform = config.train_transform 
-) 
+	train_dataset = Dataset( 
+		csv_file = config.train_csv_file,
+		image_dir = config.train_image_dir,
+		label_dir = config.train_label_dir,
+		anchors = config.ANCHORS, 
+		image_size = config.image_size,
+		grid_sizes = config.grid_sizes,
+		num_classes = config.num_classes,
+		transform = config.train_transform 
+	) 
 
-train_loader = torch.utils.data.DataLoader( 
-	train_dataset, 
-	batch_size = config.train_batch_size, 
-	num_workers = config.num_workers, 
-	shuffle = True, 
-	pin_memory = True, 
-) 
+	train_loader = torch.utils.data.DataLoader( 
+		train_dataset, 
+		batch_size = config.train_batch_size, 
+		num_workers = config.num_workers, 
+		shuffle = True, 
+		pin_memory = True, 
+	) 
 
-for e in range(1, config.epochs+1): 
-	print("Epoch:", e) 
-	training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
+	for e in range(1, config.epochs+1): 
+		print("Epoch:", e) 
+		training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
 
-	if config.save_model: 
-		save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
+		if config.save_model: 
+			save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
