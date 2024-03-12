@@ -38,12 +38,18 @@ if system_type == "Windows":
 
 	checkpoint_file = os.path.join(base_dir, "v8", f"{dataset}_checkpoint.pth.tar")
 else:
-	# train_csv_file = f"../data/{dataset}/100examples.csv"
-	# test_csv_file = f"../data/{dataset}/100examples_test.csv"
-	train_csv_file = f"../data/{dataset}/train.csv"
-	test_csv_file = f"../data/{dataset}/test.csv"
-	image_dir = f"../data/{dataset}/images/"
-	label_dir = f"../data/{dataset}/labels/"  
+	train_csv_file = f"../data/{dataset}/8examples.csv"
+	test_csv_file = f"../data/{dataset}/8examples_test.csv"
+
+	# train_csv_file = f"../data/{dataset}/train.csv"
+	# test_csv_file = f"../data/{dataset}/test.csv"
+
+	train_image_dir = f"../data/{dataset}/images/"
+	train_label_dir = f"../data/{dataset}/labels/"  
+
+	test_image_dir = f"../data/{dataset}/images/"
+	test_label_dir = f"../data/{dataset}/labels/"  
+
 	checkpoint_file = f"{dataset}_checkpoint.pth.tar"
 
 	if system_type == "Darwin":
