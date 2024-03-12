@@ -10,17 +10,17 @@ import platform
 
 
 # -------------------------------------- DATASET --------------------------------------
-#class_labels = [ 
-#	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
-#	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
-#	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
-#]
-class_labels = ["pod"]
+class_labels = [ 
+	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
+	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
+	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
+]
+# class_labels = ["pod"]
 num_classes = len(class_labels)
 
 # -------------------------------------- DATA Location --------------------------------------
-#dataset = "pascal voc"
-dataset = "soybean"
+dataset = "pascal voc"
+# dataset = "soybean"
 
 system_type = platform.system()
 if system_type == "Windows":
