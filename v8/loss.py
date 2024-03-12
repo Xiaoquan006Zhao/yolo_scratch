@@ -20,7 +20,7 @@ class YOLOLoss(nn.Module):
 
 		no_object_loss = self.bce((pred[..., 0:1][no_obj]), (target[..., 0:1][no_obj]), ) 
 
-		box_preds = torch.cat([self.sigmoid(pred[..., 1:3]), torch.exp(pred[..., 3:5]) * anchors],dim=-1)
+		box_preds = torch.cat([(2*self.sigmoid(pred[..., 1:3])-0.5), ((self.sigmoid(pred[..., 3:5])*2)**2) * anchors], dim=-1)
 		ious = ciou(box_preds[obj], target[..., 1:5][obj])
 		# The way I understand why ious*target is that since the objectiveness and bbox is
 		# tied together. If the bbox has small or no overlap, we should discard its objectiveness
