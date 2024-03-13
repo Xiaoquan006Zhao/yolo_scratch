@@ -29,6 +29,11 @@ from ultralytics.nn.modules import (
     Conv2,
     ConvTranspose,
     Detect,
+    DDetect,
+    DualDetect,
+    DualDDetect,
+    TripleDetect,
+    TripleDDetect,
     DWConv,
     DWConvTranspose2d,
     Focus,
@@ -895,7 +900,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             args = [ch[f]]
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
-        elif m in (Detect, WorldDetect, Segment, Pose, OBB, ImagePoolingAttn):
+        elif m in (Detect, DDetect, DualDetect, DualDDetect, TripleDetect, TripleDDetect, WorldDetect, Segment, Pose, OBB, ImagePoolingAttn):
             args.append([ch[x] for x in f])
             if m is Segment:
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
@@ -1012,7 +1017,7 @@ def guess_model_task(model):
                 return "pose"
             elif isinstance(m, OBB):
                 return "obb"
-            elif isinstance(m, (Detect, WorldDetect)):
+            elif isinstance(m, (Detect, DDetect, DualDetect, DualDDetect, TripleDetect, TripleDDetect, WorldDetect)):
                 return "detect"
 
     # Guess from model filename
