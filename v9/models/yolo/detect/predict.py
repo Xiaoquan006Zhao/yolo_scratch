@@ -1,8 +1,8 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
-from engine.predictor import BasePredictor
-from engine.results import Results
-from utils import ops
+from ultralytics.engine.predictor import BasePredictor
+from ultralytics.engine.results import Results
+from ultralytics.utils import ops
 
 
 class DetectionPredictor(BasePredictor):
@@ -11,8 +11,8 @@ class DetectionPredictor(BasePredictor):
 
     Example:
         ```python
-        from utils import ASSETS
-        from models.yolo.detect import DetectionPredictor
+        from ultralytics.utils import ASSETS
+        from ultralytics.models.yolo.detect import DetectionPredictor
 
         args = dict(model='yolov8n.pt', source=ASSETS)
         predictor = DetectionPredictor(overrides=args)

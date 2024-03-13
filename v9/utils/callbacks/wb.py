@@ -1,7 +1,7 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
-utils import SETTINGS, TESTS_RUNNING
-utils.torch_utils import model_info_for_loggers
+from ultralytics.utils import SETTINGS, TESTS_RUNNING
+from ultralytics.utils.torch_utils import model_info_for_loggers
 
 try:
     assert not TESTS_RUNNING  # do not log pytest

@@ -3,7 +3,7 @@
 Benchmark a YOLO model formats for speed and accuracy.
 
 Usage:
-    from utils.benchmarks import ProfileModels, benchmark
+    from ultralytics.utils.benchmarks import ProfileModels, benchmark
     ProfileModels(['yolov8n.yaml', 'yolov8s.yaml']).profile()
     benchmark(model='yolov8n.pt', imgsz=160)
 
@@ -33,12 +33,12 @@ import numpy as np
 import torch.cuda
 
 from ultralytics import YOLO, YOLOWorld
-from cfg import TASK2DATA, TASK2METRIC
-from engine.exporter import export_formats
-from utils import ASSETS, LINUX, LOGGER, MACOS, TQDM, WEIGHTS_DIR
-from utils.checks import IS_PYTHON_3_12, check_requirements, check_yolo
-from utils.files import file_size
-from utils.torch_utils import select_device
+from ultralytics.cfg import TASK2DATA, TASK2METRIC
+from ultralytics.engine.exporter import export_formats
+from ultralytics.utils import ASSETS, LINUX, LOGGER, MACOS, TQDM, WEIGHTS_DIR
+from ultralytics.utils.checks import IS_PYTHON_3_12, check_requirements, check_yolo
+from ultralytics.utils.files import file_size
+from ultralytics.utils.torch_utils import select_device
 
 
 def benchmark(
@@ -64,7 +64,7 @@ def benchmark(
 
     Example:
         ```python
-        from utils.benchmarks import benchmark
+        from ultralytics.utils.benchmarks import benchmark
 
         benchmark(model='yolov8n.pt', imgsz=640)
         ```
@@ -169,7 +169,7 @@ class ProfileModels:
 
     Example:
         ```python
-        from utils.benchmarks import ProfileModels
+        from ultralytics.utils.benchmarks import ProfileModels
 
         ProfileModels(['yolov8n.yaml', 'yolov8s.yaml'], imgsz=640).profile()
         ```

@@ -343,7 +343,7 @@ class RTDETRDecoder(nn.Module):
 
     def forward(self, x, batch=None):
         """Runs the forward pass of the module, returning bounding box and classification scores for the input."""
-        from models.utils.ops import get_cdn_group
+        from ultralytics.models.utils.ops import get_cdn_group
 
         # Input projection and embedding
         feats, shapes = self._get_encoder_input(x)

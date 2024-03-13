@@ -3,8 +3,8 @@
 import json
 from time import time
 
-from hub.utils import HUB_WEB_ROOT, PREFIX, events
-from utils import LOGGER, SETTINGS
+from ultralytics.hub.utils import HUB_WEB_ROOT, PREFIX, events
+from ultralytics.utils import LOGGER, SETTINGS
 
 
 def on_pretrain_routine_end(trainer):
@@ -28,7 +28,7 @@ def on_fit_epoch_end(trainer):
             **trainer.metrics,
         }
         if trainer.epoch == 0:
-            from utils.torch_utils import model_info_for_loggers
+            from ultralytics.utils.torch_utils import model_info_for_loggers
 
             all_plots = {**all_plots, **model_info_for_loggers(trainer)}
 

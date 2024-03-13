@@ -20,7 +20,7 @@ import requests
 import torch
 from matplotlib import font_manager
 
-from utils import (
+from ultralytics.utils import (
     ASSETS,
     AUTOINSTALL,
     LINUX,
@@ -61,7 +61,7 @@ def parse_requirements(file_path=ROOT.parent / "requirements.txt", package=""):
 
     Example:
         ```python
-        from utils.checks import parse_requirements
+        from ultralytics.utils.checks import parse_requirements
 
         parse_requirements(package='ultralytics')
         ```
@@ -347,7 +347,7 @@ def check_requirements(requirements=ROOT.parent / "requirements.txt", exclude=()
 
     Example:
         ```python
-        from utils.checks import check_requirements
+        from ultralytics.utils.checks import check_requirements
 
         # Check a requirements.txt file
         check_requirements('path/to/requirements.txt')
@@ -543,7 +543,7 @@ def check_yolo(verbose=True, device=""):
     """Return a human-readable YOLO software and hardware summary."""
     import psutil
 
-    from utils.torch_utils import select_device
+    from ultralytics.utils.torch_utils import select_device
 
     if is_jupyter():
         if check_requirements("wandb", install=False):
@@ -573,8 +573,8 @@ def collect_system_info():
 
     import psutil
 
-    from utils import ENVIRONMENT, is_git_dir
-    from utils.torch_utils import get_cpu_info
+    from ultralytics.utils import ENVIRONMENT, is_git_dir
+    from ultralytics.utils.torch_utils import get_cpu_info
 
     ram_info = psutil.virtual_memory().total / (1024**3)  # Convert bytes to GB
     check_yolo()
@@ -620,7 +620,7 @@ def check_amp(model):
     Example:
         ```python
         from ultralytics import YOLO
-        from utils.checks import check_amp
+        from ultralytics.utils.checks import check_amp
 
         model = YOLO('yolov8n.pt').model.cuda()
         check_amp(model)

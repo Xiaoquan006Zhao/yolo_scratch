@@ -1,7 +1,7 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 import contextlib
 
-from utils import LOGGER, SETTINGS, TESTS_RUNNING, colorstr
+from ultralytics.utils import LOGGER, SETTINGS, TESTS_RUNNING, colorstr
 
 try:
     # WARNING: do not move SummaryWriter import due to protobuf bug https://github.com/ultralytics/ultralytics/pull/4674
@@ -15,7 +15,7 @@ try:
     # Imports below only required if TensorBoard enabled
     import warnings
     from copy import deepcopy
-    from utils.torch_utils import de_parallel, torch
+    from ultralytics.utils.torch_utils import de_parallel, torch
 
 except (ImportError, AssertionError, TypeError, AttributeError):
     # TypeError for handling 'Descriptors cannot not be created directly.' protobuf errors in Windows

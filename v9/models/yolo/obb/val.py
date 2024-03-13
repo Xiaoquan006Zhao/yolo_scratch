@@ -4,10 +4,10 @@ from pathlib import Path
 
 import torch
 
-from models.yolo.detect import DetectionValidator
-from utils import LOGGER, ops
-from utils.metrics import OBBMetrics, batch_probiou
-from utils.plotting import output_to_rotated_target, plot_images
+from ultralytics.models.yolo.detect import DetectionValidator
+from ultralytics.utils import LOGGER, ops
+from ultralytics.utils.metrics import OBBMetrics, batch_probiou
+from ultralytics.utils.plotting import output_to_rotated_target, plot_images
 
 
 class OBBValidator(DetectionValidator):
@@ -16,7 +16,7 @@ class OBBValidator(DetectionValidator):
 
     Example:
         ```python
-        from models.yolo.obb import OBBValidator
+        from ultralytics.models.yolo.obb import OBBValidator
 
         args = dict(model='yolov8n-obb.pt', data='dota8.yaml')
         validator = OBBValidator(args=args)

@@ -1,8 +1,8 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
-from engine.results import Results
-from models.yolo.detect.predict import DetectionPredictor
-from utils import DEFAULT_CFG, ops
+from ultralytics.engine.results import Results
+from ultralytics.models.yolo.detect.predict import DetectionPredictor
+from ultralytics.utils import DEFAULT_CFG, ops
 
 
 class SegmentationPredictor(DetectionPredictor):
@@ -11,8 +11,8 @@ class SegmentationPredictor(DetectionPredictor):
 
     Example:
         ```python
-        from utils import ASSETS
-        from models.yolo.segment import SegmentationPredictor
+        from ultralytics.utils import ASSETS
+        from ultralytics.models.yolo.segment import SegmentationPredictor
 
         args = dict(model='yolov8n-seg.pt', source=ASSETS)
         predictor = SegmentationPredictor(overrides=args)
