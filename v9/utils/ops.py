@@ -11,8 +11,8 @@ import torch
 import torch.nn.functional as F
 import torchvision
 
-from ultralytics.utils import LOGGER
-from ultralytics.utils.metrics import batch_probiou
+from utils import LOGGER
+from utils.metrics import batch_probiou
 
 
 class Profile(contextlib.ContextDecorator):
@@ -21,7 +21,7 @@ class Profile(contextlib.ContextDecorator):
 
     Example:
         ```python
-        from ultralytics.utils.ops import Profile
+        from utils.ops import Profile
 
         with Profile(device=device) as dt:
             pass  # slow operation here

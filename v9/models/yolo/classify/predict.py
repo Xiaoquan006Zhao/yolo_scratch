@@ -4,9 +4,9 @@ import cv2
 import torch
 from PIL import Image
 
-from ultralytics.engine.predictor import BasePredictor
-from ultralytics.engine.results import Results
-from ultralytics.utils import DEFAULT_CFG, ops
+from engine.predictor import BasePredictor
+from engine.results import Results
+from utils import DEFAULT_CFG, ops
 
 
 class ClassificationPredictor(BasePredictor):
@@ -18,8 +18,8 @@ class ClassificationPredictor(BasePredictor):
 
     Example:
         ```python
-        from ultralytics.utils import ASSETS
-        from ultralytics.models.yolo.classify import ClassificationPredictor
+        from utils import ASSETS
+        from models.yolo.classify import ClassificationPredictor
 
         args = dict(model='yolov8n-cls.pt', source=ASSETS)
         predictor = ClassificationPredictor(overrides=args)

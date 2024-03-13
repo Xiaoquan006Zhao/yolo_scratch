@@ -9,8 +9,8 @@ For more information on RT-DETR, visit: https://arxiv.org/pdf/2304.08069.pdf
 
 from pathlib import Path
 
-from ultralytics.engine.model import Model
-from ultralytics.nn.tasks import RTDETRDetectionModel
+engine.model import Model
+nn.tasks import RTDETRDetectionModel
 
 from .predict import RTDETRPredictor
 from .train import RTDETRTrainer

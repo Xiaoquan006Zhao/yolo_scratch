@@ -16,8 +16,8 @@ Key Features:
 
 from pathlib import Path
 
-from ultralytics.engine.model import Model
-from ultralytics.utils.torch_utils import model_info
+engine.model import Model
+utils.torch_utils import model_info
 from .build import build_sam
 from .predict import Predictor
 
