@@ -4,7 +4,7 @@ from torchview import draw_graph
 import torch
 import torch.nn as nn
 
-from tasks import DetectionModel
+from ultralytics.nn.tasks import DetectionModel
 
 yaml_file = "cfg/models/v9/yolov9e.yaml"
 
