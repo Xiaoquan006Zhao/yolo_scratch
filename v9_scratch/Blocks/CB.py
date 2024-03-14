@@ -19,12 +19,15 @@ class CBLinear(nn.Module):
 
 
 class CBFuse(nn.Module):
-    def __init__(self, idx):
+    def __init__(self, route_list, idx):
         super(CBFuse, self).__init__()
         self.idx = idx
+        self.route_list = route_list
 
     def forward(self, xs):
-        target_size = xs[-1].shape[2:]
-        res = [F.interpolate(x[self.idx[i]], size=target_size, mode="nearest") for i, x in enumerate(xs[:-1])]
+        selected_tensors = [xs[i] for i in self.route_list]
+
+        target_size = selected_tensors[-1].shape[2:]
+        res = [F.interpolate(x[self.idx[i]], size=target_size, mode="nearest") for i, x in enumerate(selected_tensors[:-1])]
         out = torch.sum(torch.stack(res + xs[-1:]), dim=0)
         return out
