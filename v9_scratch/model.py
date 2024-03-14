@@ -102,7 +102,6 @@ class YOLOv9(nn.Module):
 
         for layer in self.layers:
             print(x.shape)
-            print(layer)
             if isinstance(layer, ScaledPredictions):
                 predictions = layer(self.layer_outputs)
                 return predictions
