@@ -18,6 +18,7 @@ class CBLinear(nn.Module):
     def forward(self, xs):
         x = xs[self.route_connection]
         self.conv = nn.Conv2d(x.shape[1], sum(self.c2s), self.k, self.s, autopad(self.k, self.p), groups=self.g, bias=True)
+        self.conv.bias.data = self.conv.bias.data.to(x.dtype)
         outs = self.conv(x).split(self.c2s, dim=1)
         return outs
 
