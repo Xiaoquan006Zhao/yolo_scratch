@@ -31,16 +31,18 @@ class ScaledPredictions(nn.Module):
 
     def forward(self, xs): 
         outputs = []
-        sorted_idx = sorted(range(len(self.idx)), key=lambda i: xs[i].shape[2])
+        sorted_idx = sorted(range(len(self.idx)), key=lambda i: xs[self.idx[i]].shape[2])
 
         for i in sorted_idx:
             x = xs[self.idx[i]]
             conv = self.convs[i]
-            
+
             output = conv(x) 
             output = output.view(x.size(0), 3, self.num_classes + 5, x.size(2), x.size(3)) 
             output = output.permute(0, 1, 3, 4, 2) 
             outputs.append(output)
+
+            
 
         return outputs
 
