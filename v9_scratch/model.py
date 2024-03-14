@@ -36,10 +36,10 @@ class YOLOv9(nn.Module):
             Conv(64, 128, k=3, s=2), 
             RepNCSPELAN4(128, 256, 128, 64),
 
-            Conv(128, 256, k=3, s=2), 
+            Conv(256, 256, k=3, s=2), 
             RepNCSPELAN4(256, 512, 256, 128),
 
-            Conv(256, 512, k=3, s=2), 
+            Conv(512, 512, k=3, s=2), 
             RepNCSPELAN4(512, 512, 512, 256),
 
             Conv(512, 512, k=3, s=2), 
@@ -78,12 +78,12 @@ class YOLOv9(nn.Module):
             Conv(64, 128, k=3, s=2), 
             RepNCSPELAN4(128, 256, 128, 64),
 
-            Conv(128, 256, k=3, s=2), 
+            Conv(256, 256, k=3, s=2), 
 
             CBFuse([23, 24, 25, -1], ),
             RepNCSPELAN4(256, 512, 256, 128),
 
-            Conv(256, 512, k=3, s=2), 
+            Conv(512, 512, k=3, s=2), 
             CBFuse([24, 25, -1]),
             RepNCSPELAN4(512, 512, 512, 256),
 
@@ -101,6 +101,7 @@ class YOLOv9(nn.Module):
             self.layers = self.inference_layers + self.inference_prediction
 
         for layer in self.layers:
+            print(x.shape)
             if isinstance(layer, ScaledPredictions):
                 predictions = layer(self.layer_outputs)
                 return predictions
