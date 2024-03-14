@@ -70,9 +70,9 @@ class YOLOv9(nn.Module):
         ])
 
         self.auxiliary_layers = nn.ModuleList([ 
-            CBLinear(5, 512, [256]),
-            CBLinear(7, 512, [256, 512]),
-            CBLinear(9, 512, [256, 512, 512]),
+            CBLinear([5], 512, [256]),
+            CBLinear([7], 512, [256, 512]),
+            CBLinear([9], 512, [256, 512, 512]),
 
             Conv(self.in_channels, 64, k=3, s=2), 
             Conv(64, 128, k=3, s=2), 
@@ -105,7 +105,10 @@ class YOLOv9(nn.Module):
                 predictions = layer(self.layer_outputs)
                 return predictions
             elif isinstance(layer, (CBFuse, CBLinear, Concat)):
-                x = layer(self.layer_outputs)
+                route_list = layer.route_list
+                selected_tensors = [self.layer_outputs[i] for i in route_list]
+
+                x = layer(selected_tensors)
             else:
                 x = layer(x)
 

@@ -6,14 +6,13 @@ from .BasicBlock import (
 )
 
 class CBLinear(nn.Module):
-    def __init__(self, route_connection, in_channels, c2s, k=1, s=1, p=None, g=1):
+    def __init__(self, route_list, in_channels, c2s, k=1, s=1, p=None, g=1):
         super(CBLinear, self).__init__()
-        self.route_connection = route_connection
+        self.route_list = route_list
         self.c2s = c2s
         self.conv = nn.Conv2d(in_channels, sum(self.c2s), k, s, autopad(k, p), groups=g, bias=True)
 
-    def forward(self, xs):
-        x = xs[self.route_connection]
+    def forward(self, x):
         outs = self.conv(x).split(self.c2s, dim=1)
         return outs
 
@@ -25,9 +24,9 @@ class CBFuse(nn.Module):
         self.route_list = route_list
 
     def forward(self, xs):
-        selected_tensors = [xs[i] for i in self.route_list]
+        # selected_tensors = [xs[i] for i in self.route_list]
 
-        target_size = selected_tensors[-1].shape[2:]
-        res = [F.interpolate(x[self.idx[i]], size=target_size, mode="nearest") for i, x in enumerate(selected_tensors[:-1])]
+        target_size = xs[-1].shape[2:]
+        res = [F.interpolate(x[self.idx[i]], size=target_size, mode="nearest") for i, x in enumerate(xs[:-1])]
         out = torch.sum(torch.stack(res + xs[-1:]), dim=0)
         return out
