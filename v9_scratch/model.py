@@ -91,7 +91,7 @@ class YOLOv9(nn.Module):
             CBFuse([25, -1], [2]),
             RepNCSPELAN4(512, 512, 512, 256),
 
-            ScaledPredictions([31, 34, 37, 16, 19, 22], self.num_classes)
+            ScaledPredictions([31, 34, 37, 16, 19, 22], [512, 512, 512, 256, 512, 512], self.num_classes)
         ]) 
     
     def forward(self, x): 
@@ -110,7 +110,9 @@ class YOLOv9(nn.Module):
                 x = layer(self.layer_outputs)
             else:
                 x = layer(x)
+
             self.layer_outputs.append(x)
 
             if isinstance(layer, CBLinear):
                 x = self.layer_outputs[0]
+
