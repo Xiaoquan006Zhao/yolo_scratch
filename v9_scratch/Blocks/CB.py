@@ -12,7 +12,8 @@ class CBLinear(nn.Module):
         self.c2s = c2s
         self.conv = nn.Conv2d(in_channels, sum(self.c2s), k, s, autopad(k, p), groups=g, bias=True)
 
-    def forward(self, x):
+    def forward(self, xs):
+        x = xs[0]
         outs = self.conv(x).split(self.c2s, dim=1)
         return outs
 
