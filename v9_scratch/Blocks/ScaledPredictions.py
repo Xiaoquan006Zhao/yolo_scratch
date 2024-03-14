@@ -25,7 +25,7 @@ class ScaledPredictions(nn.Module):
         self.out_channels = (num_classes + 5) * 3
         self.idx = idx
 
-        self.convs = []
+        self.convs = nn.ModuleList()
         for in_channel in in_channels:
             self.convs.append(nn.Conv2d(in_channel, self.out_channels, kernel_size=1, stride=1, padding=0))
 
@@ -35,7 +35,9 @@ class ScaledPredictions(nn.Module):
 
         for i in sorted_idx:
             x = xs[self.idx[i]]
-            output = self.convs[i](x) 
+            conv = self.convs[i]
+            
+            output = conv(x) 
             output = output.view(x.size(0), 3, self.num_classes + 5, x.size(2), x.size(3)) 
             output = output.permute(0, 1, 3, 4, 2) 
             outputs.append(output)
