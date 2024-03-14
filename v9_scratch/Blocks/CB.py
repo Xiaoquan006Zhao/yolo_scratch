@@ -6,20 +6,14 @@ from .BasicBlock import (
 )
 
 class CBLinear(nn.Module):
-    def __init__(self, route_connection, c2s, k=1, s=1, p=None, g=1):
+    def __init__(self, route_connection, in_channels, c2s, k=1, s=1, p=None, g=1):
         super(CBLinear, self).__init__()
         self.route_connection = route_connection
         self.c2s = c2s
-        self.k = k
-        self.s = s
-        self.p = p
-        self.g = g
+        self.conv = nn.Conv2d(in_channels, sum(self.c2s), k, s, autopad(k, p), groups=g, bias=True)
 
     def forward(self, xs):
         x = xs[self.route_connection]
-        self.conv = nn.Conv2d(x.shape[1], sum(self.c2s), self.k, self.s, autopad(self.k, self.p), groups=self.g, bias=True)
-        self.conv.weight.data = self.conv.weight.data.to(torch.float16)
-        self.conv.bias.data = self.conv.bias.data.to(torch.float16)
         outs = self.conv(x).split(self.c2s, dim=1)
         return outs
 
