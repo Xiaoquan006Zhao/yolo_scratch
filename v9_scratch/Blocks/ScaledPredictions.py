@@ -35,9 +35,7 @@ class ScaledPredictions(nn.Module):
 
         for i in sorted_idx:
             x = xs[self.idx[i]]
-            conv = self.convs[i]
-
-            output = conv(x) 
+            output = self.convs[i](x) 
             output = output.view(x.size(0), 3, self.num_classes + 5, x.size(2), x.size(3)) 
             output = output.permute(0, 1, 3, 4, 2) 
             outputs.append(output)
