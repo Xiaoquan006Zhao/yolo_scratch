@@ -31,7 +31,7 @@ class ScaledPredictions(nn.Module):
 
     def forward(self, xs): 
         outputs = []
-        sorted_idx = sorted(range(self.idx), key=lambda i: xs[i].shape[2])
+        sorted_idx = sorted(range(len(self.idx)), key=lambda i: xs[i].shape[2])
 
         for i in sorted_idx:
             x = xs[self.idx[i]]
