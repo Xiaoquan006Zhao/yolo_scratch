@@ -70,9 +70,9 @@ class YOLOv9(nn.Module):
         ])
 
         self.auxiliary_layers = nn.ModuleList([ 
-            CBLinear(5, [[256]]),
-            CBLinear(7, [[256, 512]]),
-            CBLinear(9, [[256, 512, 512]]),
+            CBLinear(5, [256]),
+            CBLinear(7, [256, 512]),
+            CBLinear(9, [256, 512, 512]),
 
             Conv(self.in_channels, 64, k=3, s=2), 
             Conv(64, 128, k=3, s=2), 
