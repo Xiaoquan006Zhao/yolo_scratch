@@ -95,6 +95,7 @@ class YOLOv9(nn.Module):
         ]) 
     
     def forward(self, x): 
+        input_x = x
         if self.TRAINING:
             self.layers = self.inference_layers + self.auxiliary_layers
         else:
@@ -105,8 +106,11 @@ class YOLOv9(nn.Module):
             if isinstance(layer, ScaledPredictions):
                 predictions = layer(self.layer_outputs)
                 return predictions
-            if isinstance(layer, (CBFuse, CBLinear, Concat)):
+            elif isinstance(layer, (CBFuse, CBLinear, Concat)):
                 x = layer(self.layer_outputs)
             else:
                 x = layer(x)
             self.layer_outputs.append(x)
+
+            if isinstance(layer, CBLinear):
+                x = input_x
