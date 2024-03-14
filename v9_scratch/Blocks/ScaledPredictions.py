@@ -2,11 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .BasicBlock import ConvBNMish
-from .RepNCSPELAN4 import CSPBlock
 
-class ScalePrediction(nn.Module): 
+class ScaledPrediction(nn.Module): 
     def __init__(self, in_channels, num_classes): 
-        super(ScalePrediction, self).__init__()
+        super(ScaledPrediction, self).__init__()
         self.num_classes = num_classes
         out_channels = (num_classes + 5) * 3
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
@@ -21,7 +20,7 @@ class ScalePrediction(nn.Module):
 
 class ScaledPredictions(nn.Module):
     def __init__(self, idx, num_classes): 
-        super(ScalePrediction, self).__init__()
+        super(ScaledPredictions, self).__init__()
         self.num_classes = num_classes
         self.out_channels = (num_classes + 5) * 3
         self.idx = idx
