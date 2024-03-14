@@ -38,9 +38,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 
 		losses.append(loss.item()) 
 		optimizer.zero_grad() 
-		scaler.scale(loss).backward(retain_graph=True)
-
-		# scaler.scale(loss).backward() 
+		scaler.scale(loss).backward() 
 		scaler.step(optimizer) 
 		scaler.update() 
 
