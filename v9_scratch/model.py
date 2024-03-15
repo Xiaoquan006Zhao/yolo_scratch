@@ -91,11 +91,11 @@ class YOLOv9(nn.Module):
 
                 predictions = layer(selected_tensors)
                 return predictions
-            # elif isinstance(layer, (CBFuse, CBLinear, Concat)):
-            #     route_list = layer.route_list
-            #     selected_tensors = [self.layer_outputs[i] for i in route_list]
+            elif isinstance(layer, (CBFuse, CBLinear, Concat)):
+                route_list = layer.route_list
+                selected_tensors = [self.layer_outputs[i] for i in route_list]
 
-            #     x = layer(selected_tensors)
+                x = layer(selected_tensors)
             else:
                 x = layer(x)
 
