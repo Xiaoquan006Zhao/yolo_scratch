@@ -63,11 +63,8 @@ class YOLOv9(nn.Module):
             Downsample(512),
             Concat([10, -1], 1),
             RepNCSPELAN4(1024, 512, 512, 256),
-        ]) 
-
-        inference_prediction = nn.ModuleList([
             ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
-        ])
+        ]) 
 
         auxiliary_layers = nn.ModuleList([ 
             CBLinear([5], 512, [256]),
@@ -79,7 +76,6 @@ class YOLOv9(nn.Module):
             RepNCSPELAN4(128, 256, 128, 64),
 
             Conv(256, 256, k=3, s=2), 
-
             CBFuse([23, 24, 25, -1], [0,0,0]),
             RepNCSPELAN4(256, 512, 256, 128),
 
@@ -91,27 +87,30 @@ class YOLOv9(nn.Module):
             CBFuse([25, -1], [2]),
             RepNCSPELAN4(512, 512, 512, 256),
 
-            ScaledPredictions([31, 34, 37, 16, 19, 22], [512, 512, 512, 256, 512, 512], self.num_classes),
+            ScaledPredictions([31, 34, 37], [512, 512, 512], self.num_classes),
         ]) 
     
 
         self.layers = nn.ModuleList()
         self.layers.extend(inference_layers)
-        if self.TRAINING:
-            self.layers.extend(auxiliary_layers)
-        else:
-            self.layers.extend(inference_prediction)
+        self.layers.extend(auxiliary_layers)
 
     def forward(self, x): 
         layer_outputs = []
+        outputs = []
 
-        for layer in self.layers:
+        if self.TRAINING:
+            layers = self.layers
+        else:
+            layers = self.layers[0:24]
+
+        for layer in layers:
             if isinstance(layer, ScaledPredictions):
                 route_list = layer.route_list
                 selected_tensors = [layer_outputs[i] for i in route_list]
 
                 predictions = layer(selected_tensors)
-                return predictions
+                outputs.extend(predictions)
             elif isinstance(layer, (CBFuse, CBLinear, Concat)):
                 route_list = layer.route_list
                 selected_tensors = [layer_outputs[i] for i in route_list]
@@ -125,3 +124,4 @@ class YOLOv9(nn.Module):
             if isinstance(layer, CBLinear):
                 x = layer_outputs[0]
 
+        return outputs
