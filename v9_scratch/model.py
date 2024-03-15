@@ -62,6 +62,6 @@ class YOLOv9(nn.Module):
 			# if isinstance(layer, SPPFBlock): 
 			# 	route_connections.append(x) 
 				
-		return outputs
+		return outputs[::-1]
 
 
