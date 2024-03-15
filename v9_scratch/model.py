@@ -65,9 +65,9 @@ class YOLOv9(nn.Module):
             RepNCSPELAN4(1024, 512, 512, 256),
         ]) 
 
-        self.inference_prediction = nn.ModuleList([
-            ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
-        ])
+        # self.inference_prediction = nn.ModuleList([
+        #     ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
+        # ])
 
         self.auxiliary_layers = nn.ModuleList([ 
             CBLinear([5], 512, [256]),
@@ -95,11 +95,11 @@ class YOLOv9(nn.Module):
         ]) 
     
     def forward(self, x): 
-        if self.TRAINING:
-            self.layers = self.inference_layers + self.auxiliary_layers
-        else:
-            self.layers = self.inference_layers + self.inference_prediction
-
+        # if self.TRAINING:
+        #     self.layers = self.inference_layers + self.auxiliary_layers
+        # else:
+        #     self.layers = self.inference_layers + self.inference_prediction
+        self.layers = self.inference_layers + self.auxiliary_layers
         layer_outputs = []
 
         for layer in self.layers:
