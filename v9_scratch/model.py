@@ -40,11 +40,13 @@ class YOLOv9(nn.Module):
             # RepNCSPELAN4(128, 256, 128, 64),
 
             Conv(256, 256, k=3, s=2), 
+            ScaledPrediction(256, self.num_classes),
 
             Conv(256, 512), 
             # RepNCSPELAN4(256, 512, 256, 128),
 
             Conv(512, 512, k=3, s=2), 
+            ScaledPrediction(512, self.num_classes),
 
             Conv(512, 512), 
             # RepNCSPELAN4(512, 512, 512, 256),
@@ -52,36 +54,37 @@ class YOLOv9(nn.Module):
             Conv(512, 512, k=3, s=2), 
 
             Conv(512, 512), 
+            ScaledPrediction(512, self.num_classes),
             # RepNCSPELAN4(512, 512, 512, 256),
             
             # --------------------------
             # SPPELAN(512, 512, 256),
 
-            Upsample(),
-            Concat([7, -1], 1),
+            # Upsample(),
+            # Concat([7, -1], 1),
 
-            Conv(1024, 512), 
-            # RepNCSPELAN4(1024, 512, 512, 256),
+            # Conv(1024, 512), 
+            # # RepNCSPELAN4(1024, 512, 512, 256),
 
-            Upsample(),
-            Concat([5, -1], 1),
+            # Upsample(),
+            # Concat([5, -1], 1),
 
-            Conv(1024, 256), 
-            ScaledPrediction(256, self.num_classes),
-            # RepNCSPELAN4(1024, 256, 256, 128),
+            # Conv(1024, 256), 
+            # ScaledPrediction(256, self.num_classes),
+            # # RepNCSPELAN4(1024, 256, 256, 128),
 
-            Downsample(256),
-            Concat([13, -1], 1),
+            # Downsample(256),
+            # Concat([13, -1], 1),
 
-            Conv(768, 512), 
-            ScaledPrediction(512, self.num_classes),
-            # RepNCSPELAN4(768, 512, 512, 256),
+            # Conv(768, 512), 
+            # ScaledPrediction(512, self.num_classes),
+            # # RepNCSPELAN4(768, 512, 512, 256),
 
-            Downsample(512),
-            Concat([10, -1], 1),
+            # Downsample(512),
+            # Concat([10, -1], 1),
 
-            Conv(1024, 512), 
-            ScaledPrediction(512, self.num_classes),
+            # Conv(1024, 512), 
+            # ScaledPrediction(512, self.num_classes),
             # RepNCSPELAN4(1024, 512, 512, 256),
         ]) 
 
