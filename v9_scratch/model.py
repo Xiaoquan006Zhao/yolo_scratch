@@ -31,6 +31,7 @@ class YOLOv9(nn.Module):
         super().__init__() 
         self.num_classes = num_classes 
         self.in_channels = in_channels 
+        self.layer_outputs = []
 
         self.layers = nn.ModuleList([ 
             Silence(),
