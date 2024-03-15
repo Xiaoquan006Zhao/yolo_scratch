@@ -151,7 +151,7 @@ def load_checkpoint(checkpoint_file, model, optimizer=None, lr=None, TRAINING=Tr
         new_state_dict = {}
         for key, value in checkpoint["state_dict"].items():
             if key.startswith("module.layers.") and int(key.split('.')[2]) <= 23:
-                new_state_dict[key] = value
+                new_state_dict[key.split('.')[1:]] = value
         model.load_state_dict(new_state_dict)
     else:
         model.load_state_dict(checkpoint["state_dict"])
