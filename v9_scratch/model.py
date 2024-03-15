@@ -94,7 +94,7 @@ class YOLOv9(nn.Module):
         all_layers.extend(inference_layers)
         all_layers.extend(auxiliary_layers)
 
-        self.layers = all_layers if self.TRAINING else all_layers[0:24]
+        self.layers = all_layers if self.TRAINING else inference_layers
 
     def forward(self, x): 
         layer_outputs = []
