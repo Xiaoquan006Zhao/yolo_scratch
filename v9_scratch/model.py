@@ -33,27 +33,27 @@ class YOLOv9(nn.Module):
 
         self.inference_layers = nn.ModuleList([ 
             Silence(),
-            Conv(self.in_channels, 64, k=3, s=2), 
-            Conv(64, 128, k=3, s=2), 
+            ConvBNMish(self.in_channels, 64, kernel_size=3, stride=2, padding=1), 
+            ConvBNMish(64, 128, kernel_size=3, stride=2, padding=1), 
 
-            Conv(128, 256), 
+            ConvBNMish(128, 256, kernel_size=1, stride=1, padding=0), 
             # RepNCSPELAN4(128, 256, 128, 64),
 
-            Conv(256, 256, k=3, s=2), 
+            ConvBNMish(256, 256, kernel_size=3, stride=2, padding=1), 
             ScaledPrediction(256, self.num_classes),
 
-            Conv(256, 512), 
+            ConvBNMish(256, 512, kernel_size=1, stride=1, padding=0), 
             # RepNCSPELAN4(256, 512, 256, 128),
 
-            Conv(512, 512, k=3, s=2), 
+            ConvBNMish(512, 512, kernel_size=3, stride=2, padding=1), 
             ScaledPrediction(512, self.num_classes),
 
-            Conv(512, 512), 
+            ConvBNMish(512, 512, kernel_size=1, stride=1, padding=0), 
             # RepNCSPELAN4(512, 512, 512, 256),
 
-            Conv(512, 512, k=3, s=2), 
+            ConvBNMish(512, 512, kernel_size=3, stride=2, padding=1), 
 
-            Conv(512, 512), 
+            ConvBNMish(512, 512, kernel_size=1, stride=1, padding=0),  
             ScaledPrediction(512, self.num_classes),
             # RepNCSPELAN4(512, 512, 512, 256),
             
