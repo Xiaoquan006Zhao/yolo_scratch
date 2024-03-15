@@ -18,13 +18,9 @@ from utils_metric import (
 
 if __name__ == '__main__':
     model = YOLOv9(num_classes=len(config.class_labels), TRAINING=False).to(config.device) 
-    model = nn.DataParallel(model)
-    optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
-    loss_fn = YOLOLoss() 
-    scaler = torch.cuda.amp.GradScaler() 
 
     if config.load_model: 
-        load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate, TRAINING=False) 
+        load_checkpoint(config.checkpoint_file, model, TRAINING=False) 
 
     test_dataset = Dataset( 
         csv_file=config.test_csv_file,
