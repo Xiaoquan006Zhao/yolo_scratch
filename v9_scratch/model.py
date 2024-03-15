@@ -34,35 +34,51 @@ class YOLOv9(nn.Module):
             Silence(),
             Conv(self.in_channels, 64, k=3, s=2), 
             Conv(64, 128, k=3, s=2), 
-            RepNCSPELAN4(128, 256, 128, 64),
+
+            Conv(128, 256), 
+            # RepNCSPELAN4(128, 256, 128, 64),
 
             Conv(256, 256, k=3, s=2), 
-            RepNCSPELAN4(256, 512, 256, 128),
+
+            Conv(256, 512), 
+            # RepNCSPELAN4(256, 512, 256, 128),
 
             Conv(512, 512, k=3, s=2), 
-            RepNCSPELAN4(512, 512, 512, 256),
+
+            Conv(512, 512), 
+            # RepNCSPELAN4(512, 512, 512, 256),
 
             Conv(512, 512, k=3, s=2), 
-            RepNCSPELAN4(512, 512, 512, 256),
+
+            Conv(512, 512), 
+            # RepNCSPELAN4(512, 512, 512, 256),
             
             # --------------------------
             SPPELAN(512, 512, 256),
 
             Upsample(),
             Concat([7, -1], 1),
-            RepNCSPELAN4(1024, 512, 512, 256),
+
+            Conv(1024, 512), 
+            # RepNCSPELAN4(1024, 512, 512, 256),
 
             Upsample(),
             Concat([5, -1], 1),
-            RepNCSPELAN4(1024, 256, 256, 128),
+
+            Conv(1024, 256), 
+            # RepNCSPELAN4(1024, 256, 256, 128),
 
             Downsample(256),
             Concat([13, -1], 1),
-            RepNCSPELAN4(768, 512, 512, 256),
+
+            Conv(768, 512), 
+            # RepNCSPELAN4(768, 512, 512, 256),
 
             Downsample(512),
             Concat([10, -1], 1),
-            RepNCSPELAN4(1024, 512, 512, 256),
+
+            Conv(1024, 512), 
+            # RepNCSPELAN4(1024, 512, 512, 256),
         ]) 
 
         self.inference_prediction = nn.ModuleList([
