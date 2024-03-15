@@ -46,7 +46,7 @@ if __name__ == '__main__':
     x, y = next(iter(test_loader)) 
     x = x.to(config.device) 
 
-    model.TRAINING = False
+    model.set_training_mode(False)
     model.eval() 
     with torch.no_grad(): 
         # output shape (num_scale, batch, num_anchor, grid_size, grid_size, num_class+5)

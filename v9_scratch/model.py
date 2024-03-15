@@ -125,3 +125,6 @@ class YOLOv9(nn.Module):
                 x = layer_outputs[0]
 
         return outputs
+
+    def set_training_mode(self, training_mode):
+        self.TRAINING = training_mode
