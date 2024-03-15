@@ -90,20 +90,17 @@ class YOLOv9(nn.Module):
             ScaledPredictions([31, 34, 37], [512, 512, 512], self.num_classes),
         ]) 
     
-        self.layers = nn.ModuleList()
-        self.layers.extend(inference_layers)
-        self.layers.extend(auxiliary_layers)
+        all_layers = nn.ModuleList()
+        all_layers.extend(inference_layers)
+        all_layers.extend(auxiliary_layers)
+
+        self.layers = all_layers if self.TRAINING else all_layers[0:24]
 
     def forward(self, x): 
         layer_outputs = []
         outputs = []
 
-        if self.TRAINING:
-            layers = self.layers
-        else:
-            layers = self.layers[0:24]
-
-        for layer in layers:
+        for layer in self.layers:
             if isinstance(layer, ScaledPredictions):
                 route_list = layer.route_list
                 selected_tensors = [layer_outputs[i] for i in route_list]
@@ -125,6 +122,3 @@ class YOLOv9(nn.Module):
                 x = layer_outputs[0]
 
         return outputs
-
-    def set_training_mode(self, training_mode):
-        self.TRAINING = training_mode
