@@ -1,5 +1,7 @@
 import config
 import torch
+import torch.autograd as autograd
+
 from dataset import Dataset
 from PIL import ImageFile 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -46,7 +48,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		progress_bar.set_postfix(loss=mean_loss)
 
 if __name__ == '__main__':
-	model = YOLOv9(num_classes=len(config.class_labels)).to(config.device) 
+	model = YOLOv9(num_classes=len(config.class_labels), TRAINING=False).to(config.device) 
 	optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
 	loss_fn = YOLOLoss() 
 	scaler = torch.cuda.amp.GradScaler() 
@@ -73,6 +75,7 @@ if __name__ == '__main__':
 		pin_memory = True, 
 	) 
 
+	autograd.detect_anomaly()
 	for e in range(1, config.epochs+1): 
 		print("Epoch:", e) 
 		training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
