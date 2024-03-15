@@ -1,10 +1,30 @@
 import torch.nn as nn 
 import config
-from Blocks.BasicBlock import ConvBNMish
 from Blocks.CSP import CSPBlock
 from Blocks.PAN import PAN
-from Blocks.SPPELAN import SPPFBlock
-from Blocks.ScaledPredictions import ScaledPrediction
+from Blocks.BasicBlock import (
+    ConvBNMish,
+    Conv,
+    Silence,
+    Upsample,
+    Downsample,
+    Concat,
+)
+from Blocks.RepNCSPELAN4 import (
+    RepNCSPELAN4,
+)
+from Blocks.ScaledPredictions import (
+	ScaledPrediction,
+    ScaledPredictions,
+)
+from Blocks.CB import (
+    CBLinear,
+    CBFuse,
+)
+from Blocks.SPPELAN import (
+	SPPFBlock,
+    SPPELAN,
+)
 
 class YOLOv9(nn.Module): 
 	def __init__(self, in_channels=3, num_classes=20, TRAINING=True): 
@@ -16,19 +36,17 @@ class YOLOv9(nn.Module):
 			ConvBNMish(in_channels, 64, kernel_size=3, stride=2, padding=1), 
 			ConvBNMish(64, 128, kernel_size=3, stride=2, padding=1), 
 
-			CSPBlock(128, 128, bottleNeck_use_residual=True, BottleNeck_repeats=3),
-
-			ConvBNMish(128, 256, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(256, 256, bottleNeck_use_residual=True, BottleNeck_repeats=6),
+			RepNCSPELAN4(128, 256, 128, 64),
+			Conv(256, 256, k=3, s=2), 
 			ScaledPrediction(256, self.num_classes),
 
-			ConvBNMish(256, 512, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(512, 512, bottleNeck_use_residual=True, BottleNeck_repeats=9),
+			RepNCSPELAN4(256, 512, 256, 128),
+            Conv(512, 512, k=3, s=2), 
 			ScaledPrediction(512, self.num_classes),
 
-			ConvBNMish(512, 1024, kernel_size=3, stride=2, padding=1), 
-			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
-            ScaledPrediction(1024, self.num_classes),
+			RepNCSPELAN4(512, 512, 256, 128),
+            Conv(512, 512, k=3, s=2), 
+            ScaledPrediction(512, self.num_classes),
 			
 			# ConvBNMish(in_channels, 64, kernel_size=3, stride=2, padding=1), 
 			# ConvBNMish(64, 128, kernel_size=3, stride=2, padding=1), 
