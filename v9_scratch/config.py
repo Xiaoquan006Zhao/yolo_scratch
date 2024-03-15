@@ -62,7 +62,7 @@ num_workers = 2 if device == "cuda" else 0
 load_model = True
 save_model = True
 train_batch_size = 4
-batch_accumulation_steps = 4
+batch_accumulation_steps = 2
 test_batch_size = 2
 epochs = 1000
 learning_rate = 1e-4
