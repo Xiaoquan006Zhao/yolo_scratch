@@ -111,6 +111,7 @@ class YOLOv9(nn.Module):
 
                 predictions = layer(selected_tensors)
                 outputs.extend(predictions)
+                continue
             elif isinstance(layer, (CBFuse, CBLinear, Concat)):
                 route_list = layer.route_list
                 selected_tensors = [layer_outputs[i] for i in route_list]
