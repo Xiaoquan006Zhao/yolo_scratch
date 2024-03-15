@@ -19,11 +19,11 @@ class ScaledPrediction(nn.Module):
         return output
 
 class ScaledPredictions(nn.Module):
-    def __init__(self, idx, in_channels, num_classes): 
+    def __init__(self, route_list, in_channels, num_classes): 
         super(ScaledPredictions, self).__init__()
         self.num_classes = num_classes
         self.out_channels = (num_classes + 5) * 3
-        self.idx = idx
+        self.route_list = route_list
 
         self.convs = nn.ModuleList()
         for in_channel in in_channels:
@@ -31,10 +31,10 @@ class ScaledPredictions(nn.Module):
 
     def forward(self, xs): 
         outputs = []
-        sorted_idx = sorted(range(len(self.idx)), key=lambda i: xs[self.idx[i]].shape[2])
+        sorted_idx = sorted(range(len(self.route_list)), key=lambda i: xs[i].shape[2])
 
         for i in sorted_idx:
-            x = xs[self.idx[i]]
+            x = xs[i]
             conv = self.convs[i]
 
             output = conv(x) 

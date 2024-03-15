@@ -102,7 +102,10 @@ class YOLOv9(nn.Module):
 
         for layer in self.layers:
             if isinstance(layer, ScaledPredictions):
-                predictions = layer(self.layer_outputs)
+                route_list = layer.route_list
+                selected_tensors = [self.layer_outputs[i] for i in route_list]
+
+                predictions = layer(selected_tensors)
                 return predictions
             elif isinstance(layer, (CBFuse, CBLinear, Concat)):
                 route_list = layer.route_list
