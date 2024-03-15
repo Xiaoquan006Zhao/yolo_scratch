@@ -46,7 +46,7 @@ if __name__ == '__main__':
     x, y = next(iter(test_loader)) 
     x = x.to(config.device) 
 
-    model.TRAINING = False
+    # model.TRAINING = False
     model.eval() 
     with torch.no_grad(): 
         # output shape (num_scale, batch, num_anchor, grid_size, grid_size, num_class+5)
@@ -74,13 +74,13 @@ if __name__ == '__main__':
         batch_size = x.shape[0]
 
         with torch.no_grad(): 
-            output = model(x) 
+            outputs = model(x) 
             prediction_bboxes = [[] for _ in range(batch_size)] 
             target_bboxes = [[] for _ in range(batch_size)] 
 
-            for i in range(3): 
-                _, A, _, _, _ = output[i].shape 
-                prediction_bboxes_scale_i = convert_cells_to_bboxes(output[i], config.scaled_anchors[i], config.grid_sizes[i]) 
+            for i in range(len(outputs)): 
+                _, A, _, _, _ = outputs[i].shape 
+                prediction_bboxes_scale_i = convert_cells_to_bboxes(outputs[i], config.scaled_anchors[i], config.grid_sizes[i]) 
                 target_bboxes_scale_i = convert_cells_to_bboxes(y[i].to(config.device), config.scaled_anchors[i], config.grid_sizes[i], is_groundTruth=True) 
 
                 for index in range(batch_size):
