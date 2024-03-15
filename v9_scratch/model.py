@@ -6,7 +6,7 @@ from Blocks.PAN import PAN
 from Blocks.SPPELAN import SPPFBlock
 
 class YOLOv9(nn.Module): 
-	def __init__(self, in_channels=3, num_classes=20): 
+	def __init__(self, in_channels=3, num_classes=20, TRAINING=True): 
 		super().__init__() 
 		self.num_classes = num_classes 
 		self.in_channels = in_channels 

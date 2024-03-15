@@ -13,7 +13,7 @@ from utils import (
 	save_checkpoint,
 )
 
-def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors, TRAINING=True): 
+def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
 	progress_bar = tqdm(loader, leave=True) 
 	losses = [] 
 
