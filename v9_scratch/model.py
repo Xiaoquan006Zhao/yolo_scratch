@@ -55,7 +55,7 @@ class YOLOv9(nn.Module):
             # RepNCSPELAN4(512, 512, 512, 256),
             
             # --------------------------
-            SPPELAN(512, 512, 256),
+            # SPPELAN(512, 512, 256),
 
             Upsample(),
             Concat([7, -1], 1),
@@ -125,8 +125,8 @@ class YOLOv9(nn.Module):
 
         for layer in self.layers:
             if isinstance(layer, ScaledPrediction):
-                predictions = layer(x)
-                outputs.append(predictions)
+                prediction = layer(x)
+                outputs.append(prediction)
             # if isinstance(layer, ScaledPredictions):
             #     route_list = layer.route_list
             #     selected_tensors = [self.layer_outputs[i] for i in route_list]
@@ -146,5 +146,5 @@ class YOLOv9(nn.Module):
             if isinstance(layer, CBLinear):
                 x = self.layer_outputs[0]
 
-        return predictions
+        return outputs[::-1]
         
