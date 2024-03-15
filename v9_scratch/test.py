@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import config
 from model import YOLOv9
 from tqdm import tqdm
@@ -17,6 +18,7 @@ from utils_metric import (
 
 if __name__ == '__main__':
     model = YOLOv9(num_classes=len(config.class_labels)).to(config.device) 
+    model = nn.DataParallel(model)
     optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
     loss_fn = YOLOLoss() 
     scaler = torch.cuda.amp.GradScaler() 

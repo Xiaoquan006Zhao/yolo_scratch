@@ -1,5 +1,6 @@
 import config
 import torch
+import torch.nn as nn
 from dataset import Dataset
 from PIL import ImageFile 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -58,6 +59,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 
 if __name__ == '__main__':
     model = YOLOv9(num_classes=len(config.class_labels)).to(config.device) 
+    model = nn.DataParallel(model)
     optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
     loss_fn = YOLOLoss() 
     scaler = torch.cuda.amp.GradScaler() 
