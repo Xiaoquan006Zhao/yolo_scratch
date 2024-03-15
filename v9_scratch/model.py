@@ -30,7 +30,7 @@ class YOLOv9(nn.Module):
         self.in_channels = in_channels 
         
 
-        self.inference_layers = nn.ModuleList([ 
+        inference_layers = nn.ModuleList([ 
             Silence(),
             Conv(self.in_channels, 64, k=3, s=2), 
             Conv(64, 128, k=3, s=2), 
@@ -88,11 +88,11 @@ class YOLOv9(nn.Module):
             ScaledPredictions([31, 34, 37, 16, 19, 22], [512, 512, 512, 256, 512, 512], self.num_classes),
         ]) 
 
-        # self.inference_prediction = nn.ModuleList([
-        #     ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
-        # ])
+        inference_prediction = nn.ModuleList([
+            ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
+        ])
 
-        self.auxiliary_layers = nn.ModuleList([ 
+        auxiliary_layers = nn.ModuleList([ 
             CBLinear([5], 512, [256]),
             CBLinear([7], 512, [256, 512]),
             CBLinear([9], 512, [256, 512, 512]),
@@ -117,15 +117,18 @@ class YOLOv9(nn.Module):
             ScaledPredictions([31, 34, 37, 16, 19, 22], [512, 512, 512, 256, 512, 512], self.num_classes),
         ]) 
     
+
+        self.training_layers = nn.ModuleList()
+        self.training_layers.extend(inference_layers)
+        if self.TRAINING:
+            self.training_layers.extend(auxiliary_layers)
+        else:
+            self.training_layers.extend(inference_prediction)
+
     def forward(self, x): 
-        # if self.TRAINING:
-        #     self.layers = self.inference_layers + self.auxiliary_layers
-        # else:
-        #     self.layers = self.inference_layers + self.inference_prediction
-        # self.layers = self.inference_layers + self.auxiliary_layers
         layer_outputs = []
 
-        for layer in self.inference_layers:
+        for layer in self.training_layers:
             if isinstance(layer, ScaledPredictions):
                 route_list = layer.route_list
                 selected_tensors = [layer_outputs[i] for i in route_list]
