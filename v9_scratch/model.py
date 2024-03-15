@@ -66,7 +66,7 @@ class YOLOv9(nn.Module):
         ]) 
 
         self.inference_prediction = nn.ModuleList([
-            ScaledPredictions([16, 19, 22], self.num_classes)
+            ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
         ])
 
         self.auxiliary_layers = nn.ModuleList([ 
@@ -91,7 +91,7 @@ class YOLOv9(nn.Module):
             CBFuse([25, -1]),
             RepNCSPELAN4(512, 512, 512, 256),
 
-            ScaledPredictions([31, 34, 37, 16, 19, 22], self.num_classes)
+            ScaledPredictions([31, 34, 37, 16, 19, 22], [512, 512, 512, 256, 512, 512], self.num_classes),
         ]) 
     
     def forward(self, x): 
