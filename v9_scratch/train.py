@@ -9,74 +9,85 @@ import config
 from model import YOLOv9
 from loss import YOLOLoss
 from utils import (
-	load_checkpoint,
-	save_checkpoint,
+    load_checkpoint,
+    save_checkpoint,
 )
 
 def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors): 
-	progress_bar = tqdm(loader, leave=True) 
-	losses = [] 
+    progress_bar = tqdm(loader, leave=True) 
+    losses = [] 
+    accumulation_steps = 0
 
-	for _, (x, y) in enumerate(progress_bar): 
-		x = x.to(config.device) 
-		y0, y1, y2 = ( 
-			y[0].to(config.device), 
-			y[1].to(config.device), 
-			y[2].to(config.device), 
-		) 
+    for _, (x, y) in enumerate(progress_bar): 
+        x = x.to(config.device) 
+        y0, y1, y2 = ( 
+            y[0].to(config.device), 
+            y[1].to(config.device), 
+            y[2].to(config.device), 
+        ) 
 
-		with torch.cuda.amp.autocast(): 
-			outputs = model(x) 
-			loss = ( 
-				loss_fn(outputs[0], y0, scaled_anchors[0]) 
-				+ loss_fn(outputs[1], y0, scaled_anchors[0]) 
-				+ loss_fn(outputs[2], y1, scaled_anchors[1]) 
-				+ loss_fn(outputs[3], y1, scaled_anchors[1]) 
-				+ loss_fn(outputs[4], y2, scaled_anchors[2]) 
-				+ loss_fn(outputs[5], y2, scaled_anchors[2]) 
-			) 
+        with torch.cuda.amp.autocast(): 
+            outputs = model(x) 
+            loss = ( 
+                loss_fn(outputs[0], y0, scaled_anchors[0]) 
+                + loss_fn(outputs[1], y0, scaled_anchors[0]) 
+                + loss_fn(outputs[2], y1, scaled_anchors[1]) 
+                + loss_fn(outputs[3], y1, scaled_anchors[1]) 
+                + loss_fn(outputs[4], y2, scaled_anchors[2]) 
+                + loss_fn(outputs[5], y2, scaled_anchors[2]) 
+            ) 
 
-		losses.append(loss.item()) 
-		optimizer.zero_grad() 
-		scaler.scale(loss).backward() 
-		scaler.step(optimizer) 
-		scaler.update() 
+        losses.append(loss.item())
+        scaler.scale(loss).backward()
 
-		mean_loss = sum(losses) / len(losses) 
-		progress_bar.set_postfix(loss=mean_loss)
+        accumulation_steps += 1
+        if accumulation_steps % config.batch_accumulation_steps == 0:
+            # Update model parameters every accumulation_steps
+            scaler.step(optimizer) 
+            optimizer.zero_grad()
+            scaler.update()
+
+        # losses.append(loss.item()) 
+        # optimizer.zero_grad() 
+        # scaler.scale(loss).backward() 
+        # scaler.step(optimizer) 
+        # scaler.update() 
+
+        mean_loss = sum(losses) / len(losses) 
+        progress_bar.set_postfix(loss=mean_loss)
 
 if __name__ == '__main__':
-	model = YOLOv9(num_classes=len(config.class_labels)).to(config.device) 
-	optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
-	loss_fn = YOLOLoss() 
-	scaler = torch.cuda.amp.GradScaler() 
+    model = YOLOv9(num_classes=len(config.class_labels)).to(config.device) 
+    optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
+    loss_fn = YOLOLoss() 
+    scaler = torch.cuda.amp.GradScaler() 
 
-	if config.load_model: 
-		load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate) 
+    if config.load_model: 
+        load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate) 
 
-	train_dataset = Dataset( 
-		csv_file = config.train_csv_file,
-		image_dir = config.train_image_dir,
-		label_dir = config.train_label_dir,
-		anchors = config.ANCHORS, 
-		image_size = config.image_size,
-		grid_sizes = config.grid_sizes,
-		num_classes = config.num_classes,
-		transform = config.train_transform 
-	) 
+    train_dataset = Dataset( 
+        csv_file = config.train_csv_file,
+        image_dir = config.train_image_dir,
+        label_dir = config.train_label_dir,
+        anchors = config.ANCHORS, 
+        image_size = config.image_size,
+        grid_sizes = config.grid_sizes,
+        num_classes = config.num_classes,
+        transform = config.train_transform 
+    ) 
 
-	train_loader = torch.utils.data.DataLoader( 
-		train_dataset, 
-		batch_size = config.train_batch_size, 
-		num_workers = config.num_workers, 
-		shuffle = True, 
-		pin_memory = True, 
-	) 
+    train_loader = torch.utils.data.DataLoader( 
+        train_dataset, 
+        batch_size = config.train_batch_size, 
+        num_workers = config.num_workers, 
+        shuffle = True, 
+        pin_memory = True, 
+    ) 
 
-	for e in range(1, config.epochs+1): 
-		print("Epoch:", e) 
-		training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
+    for e in range(1, config.epochs+1): 
+        print("Epoch:", e) 
+        training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
 
-		if config.save_model and e%100 == 0: 
-		# if config.save_model: 
-			save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
+        if config.save_model and e%100 == 0: 
+        # if config.save_model: 
+            save_checkpoint(model, optimizer, checkpoint_file=config.checkpoint_file)
