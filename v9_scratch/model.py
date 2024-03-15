@@ -120,5 +120,5 @@ class YOLOv9(nn.Module):
             layer_outputs.append(x)
 
             if isinstance(layer, CBLinear):
-                x = self.layer_outputs[0]
+                x = layer_outputs[0]
 
