@@ -139,18 +139,28 @@ def save_checkpoint(model, optimizer, checkpoint_file):
     } 
     torch.save(checkpoint, checkpoint_file)
 
-def load_checkpoint(checkpoint_file, model, optimizer, lr): 
+def load_checkpoint(checkpoint_file, model, optimizer, lr, TRAINING=True): 
     if not os.path.exists(checkpoint_file):
         print(f"==> Checkpoint file {checkpoint_file} does not exist. Skipping load.")
         return
     
     print("==> Loading checkpoint")
     checkpoint = torch.load(checkpoint_file, map_location=torch.device('cuda')) # Assuming you are using a CUDA device, adjust accordingly.
-    model.load_state_dict(checkpoint["state_dict"])
+
+    if not TRAINING:
+        new_state_dict = {}
+        for key, value in checkpoint["state_dict"].items():
+            if key.startswith("module.layers.") and int(key.split('.')[2]) <= 23:
+                new_state_dict[key] = value
+        model.load_state_dict(new_state_dict)
+    else:
+        model.load_state_dict(checkpoint["state_dict"])
+
     optimizer.load_state_dict(checkpoint["optimizer"])
 
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
+
 
 def stable_divide(a, b):
     return a / (b + config.numerical_stability)

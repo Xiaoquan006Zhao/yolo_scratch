@@ -24,7 +24,7 @@ if __name__ == '__main__':
     scaler = torch.cuda.amp.GradScaler() 
 
     if config.load_model: 
-        load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate) 
+        load_checkpoint(config.checkpoint_file, model, optimizer, config.learning_rate, TRAINING=False) 
 
     test_dataset = Dataset( 
         csv_file=config.test_csv_file,
