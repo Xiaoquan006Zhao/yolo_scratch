@@ -141,7 +141,6 @@ def save_checkpoint(model, optimizer, checkpoint_file):
 
 def load_checkpoint(checkpoint_file, model, optimizer, lr): 
     if not os.path.exists(checkpoint_file):
-        # If the checkpoint file does not exist, print a message and return early.
         print(f"==> Checkpoint file {checkpoint_file} does not exist. Skipping load.")
         return
     

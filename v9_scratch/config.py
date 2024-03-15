@@ -36,13 +36,12 @@ if system_type == "Windows":
 	test_image_dir = os.path.join(base_dir, "data", dataset, "test","images")
 	test_label_dir = os.path.join(base_dir, "data", dataset, "test","labels")
 
-	checkpoint_file = os.path.join(base_dir, "v8", f"{dataset}_checkpoint.pth.tar")
+	checkpoint_file = os.path.join(base_dir, "v9", f"{dataset}_checkpoint.pth.tar")
 else:
-	# train_csv_file = f"../data/{dataset}/8examples.csv"
-	# test_csv_file = f"../data/{dataset}/8examples_test.csv"
-
-	train_csv_file = f"../data/{dataset}/train.csv"
-	test_csv_file = f"../data/{dataset}/test.csv"
+	train_csv_file = f"../data/{dataset}/8examples.csv"
+	test_csv_file = f"../data/{dataset}/8examples_test.csv"
+	# train_csv_file = f"../data/{dataset}/train.csv"
+	# test_csv_file = f"../data/{dataset}/test.csv"
 
 	train_image_dir = f"../data/{dataset}/images/"
 	train_label_dir = f"../data/{dataset}/labels/"  

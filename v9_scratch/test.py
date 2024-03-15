@@ -16,7 +16,7 @@ from utils_metric import (
 )
 
 if __name__ == '__main__':
-    model = YOLOv9(num_classes=len(config.class_labels), TRAINING=False).to(config.device) 
+    model = YOLOv9(num_classes=len(config.class_labels)).to(config.device) 
     optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
     loss_fn = YOLOLoss() 
     scaler = torch.cuda.amp.GradScaler() 
@@ -44,6 +44,7 @@ if __name__ == '__main__':
     x, y = next(iter(test_loader)) 
     x = x.to(config.device) 
 
+    model.TRAINING = False
     model.eval() 
     with torch.no_grad(): 
         # output shape (num_scale, batch, num_anchor, grid_size, grid_size, num_class+5)
