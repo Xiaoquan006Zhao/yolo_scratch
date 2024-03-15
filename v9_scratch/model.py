@@ -31,7 +31,7 @@ class YOLOv9(nn.Module):
         super().__init__() 
         self.num_classes = num_classes 
         self.in_channels = in_channels 
-        self.layer_outputs = []
+        
 
         self.layers = nn.ModuleList([ 
             Silence(),
@@ -84,22 +84,24 @@ class YOLOv9(nn.Module):
         # else:
         #     self.layers = self.inference_layers + self.inference_prediction
 
+        layer_outputs = []
+
         for layer in self.layers:
             if isinstance(layer, ScaledPredictions):
                 route_list = layer.route_list
-                selected_tensors = [self.layer_outputs[i] for i in route_list]
+                selected_tensors = [layer_outputs[i] for i in route_list]
 
                 predictions = layer(selected_tensors)
                 return predictions
             elif isinstance(layer, (CBFuse, CBLinear, Concat)):
                 route_list = layer.route_list
-                selected_tensors = [self.layer_outputs[i] for i in route_list]
+                selected_tensors = [layer_outputs[i] for i in route_list]
 
                 x = layer(selected_tensors)
             else:
                 x = layer(x)
 
-            self.layer_outputs.append(x)
+            layer_outputs.append(x)
 
             # if isinstance(layer, CBLinear):
             #     x = self.layer_outputs[0]
