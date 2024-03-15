@@ -29,11 +29,11 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 			outputs = model(x) 
 			loss = ( 
 				loss_fn(outputs[0], y0, scaled_anchors[0]) 
-				+ loss_fn(outputs[1], y0, scaled_anchors[0]) 
-				+ loss_fn(outputs[2], y1, scaled_anchors[1]) 
-				+ loss_fn(outputs[3], y1, scaled_anchors[1]) 
-				+ loss_fn(outputs[4], y2, scaled_anchors[2]) 
-				+ loss_fn(outputs[5], y2, scaled_anchors[2]) 
+				+ loss_fn(outputs[1], y1, scaled_anchors[0]) 
+				+ loss_fn(outputs[2], y2, scaled_anchors[1]) 
+				# + loss_fn(outputs[3], y1, scaled_anchors[1]) 
+				# + loss_fn(outputs[4], y2, scaled_anchors[2]) 
+				# + loss_fn(outputs[5], y2, scaled_anchors[2]) 
 			) 
 
 		losses.append(loss.item()) 

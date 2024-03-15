@@ -31,9 +31,9 @@ class ScaledPredictions(nn.Module):
 
     def forward(self, xs): 
         outputs = []
-        sorted_idx = sorted(range(len(self.route_list)), key=lambda i: xs[i].shape[2])
+        sorted_route_list = sorted(range(len(self.route_list)), key=lambda i: xs[i].shape[2])
 
-        for i in sorted_idx:
+        for i in sorted_route_list:
             x = xs[i]
             conv = self.convs[i]
 
