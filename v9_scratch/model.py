@@ -12,6 +12,7 @@ from Blocks.RepNCSPELAN4 import (
     RepNCSPELAN4,
 )
 from Blocks.ScaledPredictions import (
+    ScaledPrediction,
     ScaledPredictions,
 )
 from Blocks.CB import (
@@ -66,18 +67,21 @@ class YOLOv9(nn.Module):
             Concat([5, -1], 1),
 
             Conv(1024, 256), 
+            ScaledPrediction(256, self.num_classes),
             # RepNCSPELAN4(1024, 256, 256, 128),
 
             Downsample(256),
             Concat([13, -1], 1),
 
             Conv(768, 512), 
+            ScaledPrediction(512, self.num_classes),
             # RepNCSPELAN4(768, 512, 512, 256),
 
             Downsample(512),
             Concat([10, -1], 1),
 
             Conv(1024, 512), 
+            ScaledPrediction(512, self.num_classes),
             # RepNCSPELAN4(1024, 512, 512, 256),
         ]) 
 
@@ -111,18 +115,24 @@ class YOLOv9(nn.Module):
         ]) 
     
     def forward(self, x): 
+        outputs = []
+
         if self.TRAINING:
             self.layers = self.inference_layers + self.auxiliary_layers
         else:
-            self.layers = self.inference_layers + self.inference_prediction
+            # self.layers = self.inference_layers + self.inference_prediction
+            self.layers = self.inference_layers
 
         for layer in self.layers:
-            if isinstance(layer, ScaledPredictions):
-                route_list = layer.route_list
-                selected_tensors = [self.layer_outputs[i] for i in route_list]
+            if isinstance(layer, ScaledPrediction):
+                predictions = layer(x)
+                outputs.append(predictions)
+            # if isinstance(layer, ScaledPredictions):
+            #     route_list = layer.route_list
+            #     selected_tensors = [self.layer_outputs[i] for i in route_list]
 
-                predictions = layer(selected_tensors)
-                return predictions
+            #     predictions = layer(selected_tensors)
+            #     return predictions
             elif isinstance(layer, (CBFuse, CBLinear, Concat)):
                 route_list = layer.route_list
                 selected_tensors = [self.layer_outputs[i] for i in route_list]
@@ -136,3 +146,5 @@ class YOLOv9(nn.Module):
             if isinstance(layer, CBLinear):
                 x = self.layer_outputs[0]
 
+        return predictions
+        

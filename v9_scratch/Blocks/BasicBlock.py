@@ -184,7 +184,7 @@ class Concat(nn.Module):
 class Downsample(nn.Module):
     def __init__(self, in_channels):
         super(Downsample, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=2, padding=1)
+        self.conv1 = Conv(in_channels, in_channels, k=3, s=2)
 
     def forward(self, x):
         return self.conv1(x)
