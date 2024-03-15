@@ -1,7 +1,5 @@
 import config
 import torch
-import torch.autograd as autograd
-
 from dataset import Dataset
 from PIL import ImageFile 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -75,7 +73,6 @@ if __name__ == '__main__':
 		pin_memory = True, 
 	) 
 
-	autograd.detect_anomaly()
 	for e in range(1, config.epochs+1): 
 		print("Epoch:", e) 
 		training_loop(train_loader, model, optimizer, loss_fn, scaler, config.scaled_anchors) 
