@@ -99,9 +99,6 @@ class YOLOv9(nn.Module):
         outputs = []
 
         for i, layer in enumerate(self.layers):
-            if not self.TRAINING and i == 24:
-                break
-            
             if isinstance(layer, ScaledPredictions):
                 route_list = layer.route_list
                 selected_tensors = [layer_outputs[i] for i in route_list]
