@@ -62,8 +62,6 @@ class YOLOv9(nn.Module):
             Downsample(512),
             Concat([10, -1], 1),
             RepNCSPELAN4(1024, 512, 512, 256),
-
-            ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
         ]) 
 
         auxiliary_layers = nn.ModuleList([ 
@@ -87,6 +85,7 @@ class YOLOv9(nn.Module):
             CBFuse([25, -1], [2]),
             RepNCSPELAN4(512, 512, 512, 256),
 
+            ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
             ScaledPredictions([31, 34, 37], [512, 512, 512], self.num_classes),
         ]) 
     
