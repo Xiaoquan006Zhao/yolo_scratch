@@ -28,7 +28,6 @@ class YOLOv9(nn.Module):
         self.TRAINING = TRAINING
         self.num_classes = num_classes 
         self.in_channels = in_channels 
-        
 
         inference_layers = nn.ModuleList([ 
             Silence(),
@@ -63,6 +62,7 @@ class YOLOv9(nn.Module):
             Downsample(512),
             Concat([10, -1], 1),
             RepNCSPELAN4(1024, 512, 512, 256),
+
             ScaledPredictions([16, 19, 22], [256, 512, 512], self.num_classes),
         ]) 
 
@@ -90,7 +90,6 @@ class YOLOv9(nn.Module):
             ScaledPredictions([31, 34, 37], [512, 512, 512], self.num_classes),
         ]) 
     
-
         self.layers = nn.ModuleList()
         self.layers.extend(inference_layers)
         self.layers.extend(auxiliary_layers)
@@ -99,12 +98,10 @@ class YOLOv9(nn.Module):
         layer_outputs = []
         outputs = []
 
-        if self.TRAINING:
-            layers = self.layers
-        else:
-            layers = self.layers[0:24]
-
-        for layer in layers:
+        for i, layer in enumerate(self.layers):
+            if not self.TRAINING and i == 24:
+                break
+            
             if isinstance(layer, ScaledPredictions):
                 route_list = layer.route_list
                 selected_tensors = [layer_outputs[i] for i in route_list]
