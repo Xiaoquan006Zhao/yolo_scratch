@@ -25,10 +25,7 @@ class CBFuse(nn.Module):
         self.route_list = route_list
 
     def forward(self, xs):
-        # selected_tensors = [xs[i] for i in self.route_list]
-
-        # target_size = xs[-1].shape[2:]
-        # res = [F.interpolate(x[self.idx[i]], size=target_size, mode="nearest") for i, x in enumerate(xs[:-1])]
-        # out = torch.sum(torch.stack(res + xs[-1:]), dim=0)
-        # return out
-        return xs[-1]
+        target_size = xs[-1].shape[2:]
+        res = [F.interpolate(x[self.idx[i]], size=target_size, mode="nearest") for i, x in enumerate(xs[:-1])]
+        out = torch.sum(torch.stack(res + xs[-1:]), dim=0)
+        return out

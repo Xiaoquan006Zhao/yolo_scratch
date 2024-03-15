@@ -46,7 +46,7 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 		progress_bar.set_postfix(loss=mean_loss)
 
 if __name__ == '__main__':
-	model = YOLOv9(num_classes=len(config.class_labels), TRAINING=False).to(config.device) 
+	model = YOLOv9(num_classes=len(config.class_labels)).to(config.device) 
 	optimizer = optim.Adam(model.parameters(), lr = config.learning_rate) 
 	loss_fn = YOLOLoss() 
 	scaler = torch.cuda.amp.GradScaler() 

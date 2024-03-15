@@ -176,7 +176,6 @@ class Concat(nn.Module):
         self.channel_dim = channel_dim
 
     def forward(self, xs):
-        # selected_tensors = [xs[i] for i in self.route_list]
         concatenated_output = torch.cat(xs, dim=self.channel_dim)
         
         return concatenated_output
