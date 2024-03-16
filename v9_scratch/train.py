@@ -30,13 +30,13 @@ def training_loop(loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         with torch.cuda.amp.autocast(): 
             outputs = model(x) 
             loss = ( 
-                4 * loss_fn(outputs[0], y0, scaled_anchors[0]) 
-                + loss_fn(outputs[1], y1, scaled_anchors[1]) 
-                + 0.4 * loss_fn(outputs[2], y2, scaled_anchors[2]) 
+                loss_fn(outputs[0], y0, scaled_anchors[0]) 
+                +loss_fn(outputs[1], y1, scaled_anchors[1]) 
+                +loss_fn(outputs[2], y2, scaled_anchors[2]) 
 
-                + 4 * loss_fn(outputs[3], y0, scaled_anchors[0]) 
-                + loss_fn(outputs[4], y1, scaled_anchors[1]) 
-                + 0.4 * loss_fn(outputs[5], y2, scaled_anchors[2]) 
+                +loss_fn(outputs[3], y0, scaled_anchors[0]) 
+                +loss_fn(outputs[4], y1, scaled_anchors[1]) 
+                +loss_fn(outputs[5], y2, scaled_anchors[2]) 
             ) 
 
         losses.append(loss.item())
