@@ -4,7 +4,6 @@ from Blocks.BasicBlock import ConvBNMish
 from Blocks.CSP import CSPBlock
 from Blocks.PAN import PAN
 from Blocks.SPPF import SPPFBlock
-from Blocks.CBAM import CBAM
 
 class YOLOv8(nn.Module): 
 	def __init__(self, in_channels=3, num_classes=20): 
@@ -27,7 +26,6 @@ class YOLOv8(nn.Module):
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
 
 			SPPFBlock(1024, pool_size=5, pool_repeats=3),
-			CBAM(1024),
 			PAN(config.PAN_channels, num_classes=config.num_classes),
 		]) 
 	
@@ -40,15 +38,12 @@ class YOLOv8(nn.Module):
 			
 			x = layer(x) 
 			
-			# if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 6 or layer.BottleNeck_repeats == 9): 
-			# 	route_connections.append(x) 
-
-			# if isinstance(layer, SPPFBlock): 
-			# 	route_connections.append(x) 
-
-			if isinstance(layer, CBAM): 
+			if isinstance(layer, CSPBlock) and (layer.BottleNeck_repeats == 6 or layer.BottleNeck_repeats == 9): 
 				route_connections.append(x) 
-				
+
+			if isinstance(layer, SPPFBlock): 
+				route_connections.append(x) 
+
 		# return outputs
 
 
