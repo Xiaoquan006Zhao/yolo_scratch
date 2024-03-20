@@ -70,7 +70,7 @@ learning_rate = 1e-4
 # One covers half of the other, then we are left with 50% uncovered, 50% overlap, 50 uncovered
 # Thus, 50% overlap = 0.33 IoU
 enough_overlap_threshold = 0.33 
-valid_prediction_threshold = 0.75
+valid_prediction_threshold = 0.50
 numerical_stability = 1e-6
 
 class CIOU_MODE(Enum):
