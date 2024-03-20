@@ -19,11 +19,9 @@ class YOLOv8(nn.Module):
 
 			ConvBNMish(128, 256, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(256, 256, bottleNeck_use_residual=True, BottleNeck_repeats=6),
-			CBAM(256),
 
 			ConvBNMish(256, 512, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(512, 512, bottleNeck_use_residual=True, BottleNeck_repeats=9),
-			CBAM(512),
 
 			ConvBNMish(512, 1024, kernel_size=3, stride=2, padding=1), 
 			CSPBlock(1024, 1024, bottleNeck_use_residual=True, BottleNeck_repeats=4),
