@@ -10,31 +10,39 @@ import platform
 
 
 # -------------------------------------- DATASET --------------------------------------
-class_labels = [ 
-	"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", 
-	"chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", 
-	"pottedplant", "sheep", "sofa", "train", "tvmonitor"
-]
-# class_labels = ["pod"]
-num_classes = len(class_labels)
+class_labels = []
 
 # -------------------------------------- DATA Location --------------------------------------
-dataset = "pascal voc"
+# dataset = "pascal voc"
 # dataset = "soybean"
+dataset = "coco"
 
 system_type = platform.system()
-if system_type == "Windows":
+print(system_type)
+if system_type in ["Windows", "indows"]:
 	base_dir = os.getcwd()
+
+	class_file = os.path.join(base_dir, "data", dataset, "class.txt")
+	with open(class_file, 'r') as file:
+		lines = file.readlines()
+		for line in lines:
+			class_labels.append(line.strip())
+	num_classes = len(class_labels)
+	print(f"{num_classes} classes")
+
+	train = "train"
+	test = "test"
+
 	#train_csv_file = os.path.join(base_dir, "data", dataset, "100examples.csv")
 	#test_csv_file = os.path.join(base_dir, "data", dataset, "100examples_test.csv")
-	train_csv_file = os.path.join(base_dir, "data", dataset, "train.csv")
-	test_csv_file = os.path.join(base_dir, "data", dataset, "test.csv")
+	train_csv_file = os.path.join(base_dir, "data", dataset, f"{train}.csv")
+	test_csv_file = os.path.join(base_dir, "data", dataset, f"{test}.csv")
 	
-	train_image_dir = os.path.join(base_dir, "data", dataset, "train","images")
-	train_label_dir = os.path.join(base_dir, "data", dataset, "train","labels")
+	train_image_dir = os.path.join(base_dir, "data", dataset, f"{train}","images")
+	train_label_dir = os.path.join(base_dir, "data", dataset, f"{train}","labels")
 
-	test_image_dir = os.path.join(base_dir, "data", dataset, "test","images")
-	test_label_dir = os.path.join(base_dir, "data", dataset, "test","labels")
+	test_image_dir = os.path.join(base_dir, "data", dataset, f"{test}","images")
+	test_label_dir = os.path.join(base_dir, "data", dataset, f"{test}","labels")
 
 	checkpoint_file = os.path.join(base_dir, "v8", f"{dataset}_checkpoint.pth.tar")
 else:
@@ -52,17 +60,13 @@ else:
 
 	checkpoint_file = f"{dataset}_checkpoint.pth.tar"
 
-	if system_type == "Darwin":
-		train_csv_file = f"../data/{dataset}/8examples.csv"
-		test_csv_file = f"../data/{dataset}/8examples_test.csv"
-
 # -------------------------------------- Model Parameter --------------------------------------
 device = "cuda" if torch.cuda.is_available() else "cpu"
 num_workers = 2 if device == "cuda" else 0
 
 load_model = True
 save_model = True
-train_batch_size = 4
+train_batch_size = 32
 test_batch_size = 2
 epochs = 1000
 learning_rate = 1e-4
@@ -82,32 +86,34 @@ image_size = 640
 grid_sizes = [image_size // 32, image_size // 16, image_size // 8] 
 num_anchors = 3
 
-ANCHORS = auto_anchor(num_anchors, train_label_dir, grid_sizes)
+# ANCHORS = auto_anchor(num_anchors, train_label_dir, grid_sizes)
 
-# ANCHORS = [ 
-# 	[(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)], 
-# 	[(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)], 
-# 	[(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)], 
-# ] 
+# ANCHORS = auto_anchor(num_anchors, train_label_dir, grid_sizes, train_anchors=[[0.03223271, 0.02965047],
+#  [0.05670906, 0.03912174],
+#  [0.09040741, 0.04414847]])
+
+ANCHORS = [[(0.078, 0.1015), (0.2739, 0.4381), (0.7544, 0.6781)], 
+		   [(0.039, 0.0508), (0.137, 0.219), (0.3772, 0.3391)], 
+		   [(0.0195, 0.0254), (0.0685, 0.1095), (0.1886, 0.1695)]]
 
 scaled_anchors = ( 
     torch.tensor(ANCHORS, dtype=torch.float32) *
     torch.tensor(grid_sizes, dtype=torch.float32).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
 ).to(device)
 
-
 PAN_channels = [256, 512, 1024]
 
 # -------------------------------------- Augmentation --------------------------------------
 train_transform = A.Compose( 
-	[ 
-		A.LongestMaxSize(max_size=image_size), 
-		A.PadIfNeeded(min_height=image_size, min_width=image_size, border_mode=cv2.BORDER_CONSTANT), 
-		A.ColorJitter( 
-			brightness=0.5, contrast=0.5, 
-			saturation=0.5, hue=0.5, p=0.5
-		), 
-		A.HorizontalFlip(p=0.5), 
+	[ 	
+		A.Resize(height=image_size, width=image_size, interpolation=cv2.INTER_LINEAR), 
+		A.PadIfNeeded(min_height=image_size+20, min_width=image_size+20, border_mode=cv2.BORDER_CONSTANT), 
+		A.Resize(height=image_size, width=image_size, interpolation=cv2.INTER_LINEAR), 
+		# A.ColorJitter( 
+		# 	brightness=0.5, contrast=0.5, 
+		# 	saturation=0.5, hue=0.5, p=0.5
+		# ), 
+		# A.HorizontalFlip(p=0.5), 
 		A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255), 
 		ToTensorV2() 
 	], 
@@ -116,8 +122,9 @@ train_transform = A.Compose(
 
 test_transform = A.Compose( 
 	[ 
-		A.LongestMaxSize(max_size=image_size), 
-		A.PadIfNeeded(min_height=image_size, min_width=image_size, border_mode=cv2.BORDER_CONSTANT), 
+		# A.LongestMaxSize(max_size=image_size), 
+		# A.PadIfNeeded(min_height=image_size, min_width=image_size, border_mode=cv2.BORDER_CONSTANT), 
+		A.Resize(height=image_size, width=image_size, interpolation=cv2.INTER_LINEAR), 
 		A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255), 
 		ToTensorV2() 
 	], 

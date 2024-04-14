@@ -114,20 +114,20 @@ def plot_image(image, boxes):
             (upper_left_x * w, upper_left_y * h), 
             box[2] * w, 
             box[3] * h, 
-            linewidth=2, 
+            linewidth=1, 
             edgecolor=colors[int(class_pred)], 
             facecolor="none", 
         ) 
         
         ax.add_patch(rect) 
-        plt.text( 
-            upper_left_x * w, 
-            upper_left_y * h, 
-            s=config.class_labels[int(class_pred)], 
-            color="white", 
-            verticalalignment="top", 
-            bbox={"color": colors[int(class_pred)], "pad": 0}, 
-        ) 
+        # plt.text( 
+        #     upper_left_x * w, 
+        #     upper_left_y * h, 
+        #     s=config.class_labels[int(class_pred)], 
+        #     color="white", 
+        #     verticalalignment="top", 
+        #     bbox={"color": colors[int(class_pred)], "pad": 0}, 
+        # ) 
 
     plt.show()
 

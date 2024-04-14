@@ -21,21 +21,21 @@ def perform_kmeans(data, num_clusters):
     kmeans.fit(data)
     return kmeans.cluster_centers_
 
-def auto_anchor(num_anchors, label_dir, scales):
+def auto_anchor(num_anchors, label_dir, scales, train_anchors=None):
     num_clusters = num_anchors
     label_data = read_labels(label_dir)
     anchor_boxes = np.sort(perform_kmeans(label_data, num_clusters), axis=0)
 
-    print("Resulting Anchor Box Sizes:")
-    print(anchor_boxes)
-
     ANCHORS = [[] for _ in range(len(scales))]
-    ANCHORS[0] = anchor_boxes
+    ANCHORS[0] = anchor_boxes if train_anchors is None else train_anchors
 
     for i in range(1, len(scales)):
         scaled_anchor_boxes = [anchor_box / float(2*i) for anchor_box in anchor_boxes]
         ANCHORS[i].extend(scaled_anchor_boxes)
     
-    ANCHORS = [[tuple(subarray) for subarray in outer] for outer in ANCHORS]
+    ANCHORS = [[tuple(round(elem, 4) for elem in subarray) for subarray in outer] for outer in ANCHORS]
+
+    print("Resulting Anchor Box Sizes:")
+    print(ANCHORS)
     
     return ANCHORS
