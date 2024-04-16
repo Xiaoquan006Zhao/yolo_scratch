@@ -3,4 +3,7 @@ data/
 __pycache__/
 .DS_Store
 sandbox.py
+aqua*/
+soy*/
 *.tar
+soy*
