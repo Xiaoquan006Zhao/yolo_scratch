@@ -3,7 +3,6 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import cv2
 import os
-from kmeans_anchor import auto_anchor
 from enum import Enum
 import platform
 
