@@ -15,7 +15,6 @@ from pycocotools.coco import COCO
 # Now, we will define our transforms
 from albumentations.pytorch import ToTensorV2
 
-
 class AquariumDetection(datasets.VisionDataset):
     def __init__(self, root, split='train', transform=None, target_transform=None, transforms=None):
         # the 3 transform parameters are reuqired for datasets.VisionDataset
@@ -63,7 +62,6 @@ class AquariumDetection(datasets.VisionDataset):
         targ['image_id'] = torch.tensor([t['image_id'] for t in target])
         targ['area'] = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0]) # we have a different area
         targ['iscrowd'] = torch.tensor([t['iscrowd'] for t in target], dtype=torch.int64)
-        
         return image.div(255), targ # scale images
     
     def __len__(self):
